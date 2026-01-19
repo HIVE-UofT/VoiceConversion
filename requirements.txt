@@ -1,0 +1,11 @@
+datasets
+pandas
+pathlib
+
+librosa
+soundfile
+numpy
+
+matplotlib
+seaborn
+
