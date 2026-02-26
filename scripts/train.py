@@ -22,9 +22,8 @@ class SurgeryDataset(Dataset):
     def __getitem__(self, idx):
         item = self.data[idx]
         mel = item['mel_spectrogram'] 
-        label = item['surgery_status'] 
+        label = item['label'] 
         
-        # Data Consistency Check
         if mel.shape[1] > self.target_len:
             mel = mel[:, :self.target_len]
         elif mel.shape[1] < self.target_len:
@@ -37,7 +36,7 @@ def training_step(model, x, labels, alpha, beta_c=1.0, beta_s=0.1):
     recon, mu_c, var_c, mu_s, var_s, s_pred_adv = model(x, alpha)
     
     # 1. Recon Loss
-    loss_recon = F.mse_loss(recon, x, reduction='mean')
+    loss_recon = F.l1_loss(recon, x, reduction='mean')
     
     # 2. KL Losses
     kl_c = -0.5 * torch.mean(1 + var_c - mu_c.pow(2) - var_c.exp())
@@ -58,12 +57,14 @@ def training_step(model, x, labels, alpha, beta_c=1.0, beta_s=0.1):
 device = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
 model = SurgeryVAE().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5)
 # Loaders
 train_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/train_dataset.pkl'), batch_size=16, shuffle=True)
 val_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/val_dataset.pkl'), batch_size=16)
 
-epochs = 100
+
+print(f"Length of train_loader: {len(train_loader)}")
+epochs = 200
 total_steps = len(train_loader) * epochs
 global_step = 0
 
@@ -101,7 +102,7 @@ for epoch in range(epochs):
             val_loss += v_loss.item()
             
             # VISUAL CHECK: Save the first batch's first sample reconstruction
-            if i == 0:
+            if i == 3:
                 recon, _, _, _, _, _ = model(x_val, alpha=1.0)
                 
                 plt.figure(figsize=(10, 4))

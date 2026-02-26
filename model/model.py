@@ -12,7 +12,7 @@ class GRL(torch.autograd.Function):
         return grad_output.neg() * ctx.alpha, None
 
 class SurgeryVAE(nn.Module):
-    def __init__(self, content_dim=128, surgery_dim=8):
+    def __init__(self, content_dim=512, surgery_dim=8):
         super(SurgeryVAE, self).__init__()
         
         # --- ENCODER ---
