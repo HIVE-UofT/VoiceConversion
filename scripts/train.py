@@ -63,16 +63,19 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patienc
 # Loaders
 train_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/train_dataset.pkl'), batch_size=16, shuffle=True)
 val_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/val_dataset.pkl'), batch_size=16)
-
+test_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/test_dataset.pkl'), batch_size=16)
 
 print(f"Length of train_loader: {len(train_loader)}")
-epochs = 200
+epochs = 250
 total_steps = len(train_loader) * epochs
 global_step = 0
 
+train_losses = []
+val_losses = []
+
 for epoch in range(epochs):
     model.train()
-    # Using tqdm for a live progress bar in the terminal
+    epoch_train_loss = 0  # Track total loss for this epoch
     pbar = tqdm(train_loader, desc=f"Epoch {epoch}")
     
     for x, labels in pbar:
@@ -82,17 +85,18 @@ for epoch in range(epochs):
         beta = min(1.0, global_step / (total_steps * 0.4))
         
         optimizer.zero_grad()
-        
-        # Tip: Modify training_step to return a dictionary of losses
         loss = training_step(model, x, labels, alpha, beta_c=beta, beta_s=beta*0.1)
         
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
         
-        # Update progress bar with current loss
+        epoch_train_loss += loss.item()
         pbar.set_postfix({"loss": f"{loss.item():.4f}", "alpha": f"{alpha:.2f}"})
         global_step += 1
+
+    # Store average training loss for this epoch
+    train_losses.append(epoch_train_loss / len(train_loader))
 
     # --- Validation & Visualization ---
     model.eval()
@@ -103,20 +107,41 @@ for epoch in range(epochs):
             v_loss = training_step(model, x_val, labels_val, alpha=1.0, beta_c=1.0, beta_s=0.1)
             val_loss += v_loss.item()
             
-            # VISUAL CHECK: Save the first batch's first sample reconstruction
             if i == 3:
-                recon, _, _, _, _, _ = model(x_val, alpha=1.0)
-                
+                recon, _, _, _, _, _, _ = model(x_val, alpha=1.0)
                 plt.figure(figsize=(10, 4))
-                plt.subplot(1, 2, 1)
-                plt.title("Original")
+                plt.subplot(1, 2, 1); plt.title("Original")
                 plt.imshow(x_val[0, 0].cpu().numpy(), aspect='auto', origin='lower')
-                
-                plt.subplot(1, 2, 2)
-                plt.title("Reconstructed")
+                plt.subplot(1, 2, 2); plt.title("Reconstructed")
                 plt.imshow(recon[0, 0].cpu().numpy(), aspect='auto', origin='lower')
-                
                 plt.savefig(f"plots/epoch_{epoch}_recon.png")
                 plt.close()
 
-    print(f"\nSummary Epoch {epoch} | Val Loss: {val_loss/len(val_loader):.4f}")
+    # Store average validation loss
+    avg_val_loss = val_loss / len(val_loader)
+    val_losses.append(avg_val_loss)
+    print(f"\nSummary Epoch {epoch} | Train Loss: {train_losses[-1]:.4f} | Val Loss: {avg_val_loss:.4f}")
+
+# --- FINAL PLOTTING ---
+plt.figure(figsize=(10, 6))
+plt.plot(range(epochs), train_losses, label='Training Loss')
+plt.plot(range(epochs), val_losses, label='Validation Loss')
+plt.title('Training and Validation Loss Over Epochs')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.grid(True)
+plt.savefig('loss_plot.png')
+plt.show()
+
+# --- FINAL TESTING PHASE (Post-Training) ---
+model.eval()
+test_loss = 0
+with torch.no_grad():
+    for x_test, labels_test in tqdm(test_loader, desc="Testing"):
+        x_test, labels_test = x_test.to(device), labels_test.to(device)
+        t_loss = training_step(model, x_test, labels_test, alpha=1.0, beta_c=1.0, beta_s=0.1)
+        test_loss += t_loss.item()
+
+avg_test_loss = test_loss / len(test_loader)
+print(f"\nFinal Test Loss: {avg_test_loss:.4f}")

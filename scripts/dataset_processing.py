@@ -31,7 +31,6 @@ def process_file(file_path, status):
         # Load audio (mono=True is default and usually best for speech)
         y, sr = librosa.load(file_path, sr=SAMPLE_RATE)
         
-        # Gentle Trim
         y, _ = librosa.effects.trim(y, top_db=30) 
 
         # We want segments of exactly 5 seconds
@@ -45,7 +44,7 @@ def process_file(file_path, status):
 
             # Handle the last segment: if it's > 2 seconds, pad it. If shorter, discard.
             if len(segment_audio) < step:
-                if len(segment_audio) < (SAMPLE_RATE * 2): # Less than 2 seconds
+                if len(segment_audio) < (SAMPLE_RATE * 2): 
                     continue 
                 segment_audio = np.pad(segment_audio, (0, step - len(segment_audio)), mode='constant')
             

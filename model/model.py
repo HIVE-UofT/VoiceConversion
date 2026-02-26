@@ -56,7 +56,8 @@ class SurgeryVAE(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(256, 1, (3,3), stride=2, padding=1, output_padding=1)     
         )
-
+        
+        # Post-net for residual learning
         self.post_net = nn.Sequential(
             nn.Conv1d(80, 512, kernel_size=5, padding=2),
             nn.BatchNorm1d(512), nn.Tanh(),
