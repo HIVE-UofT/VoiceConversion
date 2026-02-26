@@ -32,13 +32,13 @@ class SurgeryDataset(Dataset):
             
         return torch.from_numpy(mel).float().unsqueeze(0), torch.tensor([label]).float()
 
-def training_step(model, x, labels, alpha, beta_c=1.0, beta_s=0.1):
+def training_step(model, x, labels, alpha, gamma, beta_c=1.0, beta_s=0.1):
     recon_final, mu_c, var_c, mu_s, var_s, s_pred_adv, recon_initial = model(x, alpha)
     
     # 1. Recon Loss (Calculated on both for better gradient flow)
     loss_recon_init = F.l1_loss(recon_initial, x, reduction='mean')
     loss_recon_final = F.l1_loss(recon_final, x, reduction='mean')
-    loss_recon = loss_recon_init + loss_recon_final
+    loss_recon = (gamma * loss_recon_init) + loss_recon_final
     
     # 2. KL Losses
     kl_c = -0.5 * torch.mean(1 + var_c - mu_c.pow(2) - var_c.exp())
@@ -53,7 +53,12 @@ def training_step(model, x, labels, alpha, beta_c=1.0, beta_s=0.1):
     loss_surgery_truth = F.binary_cross_entropy(s_pred_truth, labels)
     
     total_loss = loss_recon + (beta_c * kl_c) + (beta_s * kl_s) + loss_adv + loss_surgery_truth
-    return total_loss
+    return {
+        "total": total_loss,
+        "adv": loss_adv.item(),
+        "surgery": loss_surgery_truth.item(),
+        "recon": loss_recon.item()
+    }
 
 # --- Main Execution ---
 device = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
@@ -66,16 +71,21 @@ val_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sep
 test_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/test_dataset.pkl'), batch_size=16)
 
 print(f"Length of train_loader: {len(train_loader)}")
-epochs = 250
+epochs = 200
 total_steps = len(train_loader) * epochs
 global_step = 0
 
 train_losses = []
 val_losses = []
 
+adv_losses = []
+surgery_truth_losses = []
+
 for epoch in range(epochs):
     model.train()
-    epoch_train_loss = 0  # Track total loss for this epoch
+    epoch_train_loss = 0 
+    epoch_adv = 0
+    epoch_surgery = 0
     pbar = tqdm(train_loader, desc=f"Epoch {epoch}")
     
     for x, labels in pbar:
@@ -83,32 +93,36 @@ for epoch in range(epochs):
         
         alpha = min(1.0, global_step / (total_steps * 0.2))
         beta = min(1.0, global_step / (total_steps * 0.4))
+        gamma = max(0.1, 1.0 - 0.5 * (global_step / (total_steps * 0.5)))
         
         optimizer.zero_grad()
-        loss = training_step(model, x, labels, alpha, beta_c=beta, beta_s=beta*0.1)
-        
-        loss.backward()
+        loss_dict = training_step(model, x, labels, alpha, gamma, beta_c=beta, beta_s=beta*0.1)        
+        loss_dict["total"].backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
         
-        epoch_train_loss += loss.item()
-        pbar.set_postfix({"loss": f"{loss.item():.4f}", "alpha": f"{alpha:.2f}"})
+        epoch_adv += loss_dict["adv"]
+        epoch_surgery += loss_dict["surgery"]
+        
+        epoch_train_loss += loss_dict["total"].item()
+        pbar.set_postfix({"total": f'{loss_dict["total"].item():.3f}', "adv": f'{loss_dict["adv"]:.3f}'})        
         global_step += 1
 
     # Store average training loss for this epoch
     train_losses.append(epoch_train_loss / len(train_loader))
-
+    adv_losses.append(epoch_adv / len(train_loader))
+    surgery_truth_losses.append(epoch_surgery / len(train_loader))
     # --- Validation & Visualization ---
     model.eval()
     val_loss = 0
     with torch.no_grad():
         for i, (x_val, labels_val) in enumerate(val_loader):
             x_val, labels_val = x_val.to(device), labels_val.to(device)
-            v_loss = training_step(model, x_val, labels_val, alpha=1.0, beta_c=1.0, beta_s=0.1)
+            v_loss = training_step(model, x_val, labels_val, alpha=alpha, gamma=gamma, beta_c=beta, beta_s=beta*0.1)['total']
             val_loss += v_loss.item()
             
             if i == 3:
-                recon, _, _, _, _, _, _ = model(x_val, alpha=1.0)
+                recon, _, _, _, _, _, _ = model(x_val, alpha=alpha)
                 plt.figure(figsize=(10, 4))
                 plt.subplot(1, 2, 1); plt.title("Original")
                 plt.imshow(x_val[0, 0].cpu().numpy(), aspect='auto', origin='lower')
@@ -131,7 +145,19 @@ plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.legend()
 plt.grid(True)
-plt.savefig('loss_plot.png')
+plt.savefig('plots/loss_plot.png')
+plt.show()
+
+
+plt.figure(figsize=(10, 6))
+plt.plot(range(epochs), adv_losses, label='Adversarial Loss (Content Latent)', color='red')
+plt.plot(range(epochs), surgery_truth_losses, label='Surgery Truth Loss (Surgery Latent)', color='green')
+plt.title('Classifier Performance: Disentanglement Tracking')
+plt.xlabel('Epochs')
+plt.ylabel('BCE Loss')
+plt.legend()
+plt.grid(True, linestyle='--')
+plt.savefig('plots/classifier_losses.png')
 plt.show()
 
 # --- FINAL TESTING PHASE (Post-Training) ---
@@ -140,8 +166,8 @@ test_loss = 0
 with torch.no_grad():
     for x_test, labels_test in tqdm(test_loader, desc="Testing"):
         x_test, labels_test = x_test.to(device), labels_test.to(device)
-        t_loss = training_step(model, x_test, labels_test, alpha=1.0, beta_c=1.0, beta_s=0.1)
-        test_loss += t_loss.item()
+        t_loss = training_step(model, x_test, labels_test, alpha=alpha, gamma=gamma, beta_c=beta, beta_s=beta*0.1)
+        test_loss += t_loss["total"].item()
 
 avg_test_loss = test_loss / len(test_loader)
 print(f"\nFinal Test Loss: {avg_test_loss:.4f}")
