@@ -1,144 +1,119 @@
-import pandas as pd
-from datasets import load_from_disk
-import librosa
 import torch
-from sklearn.model_selection import train_test_split
-from torch.utils.data import Dataset, DataLoader
-import math
-import numpy as np
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from model.model import MyVAE, VAEMultiLoss
 import torch.nn.functional as F
-import torch.nn as nn   
-import os
+from model.model import SurgeryVAE # Ensure your path is correct
+import pickle
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import os
+import numpy as np
+from torch.utils.data import Dataset, DataLoader
 
+os.makedirs('plots', exist_ok=True)
 
-ds_segmented = load_from_disk("/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/segmented_dataset")
-# 1. Get all unique original file IDs (removing the '_segX' suffix)
-all_ids = list(set([fid.split("_seg")[0] for fid in ds_segmented["file_id"]]))
-
-# 2. Split IDs into Train (80%), Val (10%), Test (10%)
-train_ids, temp_ids = train_test_split(all_ids, test_size=0.2, random_state=42)
-val_ids, test_ids = train_test_split(temp_ids, test_size=0.5, random_state=42)
-
-# 3. Filter the segmented dataset based on these splits
-train_ds = ds_segmented.filter(lambda x: x["file_id"].split("_seg")[0] in train_ids)
-val_ds = ds_segmented.filter(lambda x: x["file_id"].split("_seg")[0] in val_ids)
-test_ds = ds_segmented.filter(lambda x: x["file_id"].split("_seg")[0] in test_ids)
-# Set format to return Tensors for the columns used in training
-cols_to_tensor = ["mel_pre", "mel_post", "wav_pre", "wav_post"]
-train_ds.set_format(type="torch", columns=cols_to_tensor, output_all_columns=True)
-val_ds.set_format(type="torch", columns=cols_to_tensor, output_all_columns=True)
-test_ds.set_format(type="torch", columns=cols_to_tensor, output_all_columns=True)
-
-def collate_fn(batch):
-    # Mel spectrograms need a channel dimension for Conv2d: [Batch, 1, 128, 157]
-    mel_pre = torch.stack([item["mel_pre"] for item in batch]).unsqueeze(1)
-    mel_post = torch.stack([item["mel_post"] for item in batch]).unsqueeze(1)
+class SurgeryDataset(Dataset):
+    def __init__(self, pkl_path, target_len=400):
+        with open(pkl_path, 'rb') as f:
+            self.data = pickle.load(f)
+        self.target_len = target_len
+            
+    def __len__(self):
+        return len(self.data)
     
-    # Waveforms for loss models: [Batch, 80000]
-    wav_pre = torch.stack([item["wav_pre"] for item in batch])
-    wav_post = torch.stack([item["wav_post"] for item in batch])
+    def __getitem__(self, idx):
+        item = self.data[idx]
+        mel = item['mel_spectrogram'] 
+        label = item['surgery_status'] 
+        
+        # Data Consistency Check
+        if mel.shape[1] > self.target_len:
+            mel = mel[:, :self.target_len]
+        elif mel.shape[1] < self.target_len:
+            pad_amount = self.target_len - mel.shape[1]
+            mel = np.pad(mel, ((0, 0), (0, pad_amount)), mode='constant')
+            
+        return torch.from_numpy(mel).float().unsqueeze(0), torch.tensor([label]).float()
+
+def training_step(model, x, labels, alpha, beta_c=1.0, beta_s=0.1):
+    recon, mu_c, var_c, mu_s, var_s, s_pred_adv = model(x, alpha)
     
-    return {
-        "mel_pre": mel_pre,
-        "mel_post": mel_post,
-        "wav_pre": wav_pre,
-        "wav_post": wav_post,
-        "surgery_type": [item["surgery_type"] for item in batch],
-        "file_id": [item["file_id"] for item in batch]
-    }
+    # 1. Recon Loss
+    loss_recon = F.mse_loss(recon, x, reduction='mean')
+    
+    # 2. KL Losses
+    kl_c = -0.5 * torch.mean(1 + var_c - mu_c.pow(2) - var_c.exp())
+    kl_s = -0.5 * torch.mean(1 + var_s - mu_s.pow(2) - var_s.exp())
+    
+    # 3. Adversarial Loss (from Content)
+    loss_adv = F.binary_cross_entropy(s_pred_adv, labels)
 
-train_loader = DataLoader(train_ds, batch_size=8, shuffle=True, collate_fn=collate_fn)
-val_loader = DataLoader(val_ds, batch_size=8, shuffle=False, collate_fn=collate_fn)
-test_loader = DataLoader(test_ds, batch_size=8, shuffle=False, collate_fn=collate_fn)
-print(f"Train Batches: {len(train_loader)} | Val Batches: {len(val_loader)} | Test Batches: {len(test_loader)}")
+    # 4. Surgery Truth Loss (from Surgery Latent)
+    z_s = model.reparameterize(mu_s, var_s)
+    s_pred_truth = torch.sigmoid(model.surgery_truth_classifier(z_s))
+    loss_surgery_truth = F.binary_cross_entropy(s_pred_truth, labels)
+    
+    total_loss = loss_recon + (beta_c * kl_c) + (beta_s * kl_s) + loss_adv + loss_surgery_truth
+    return total_loss
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
-model = MyVAE(n_mels=128).to(device)
+# --- Main Execution ---
+device = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
+model = SurgeryVAE().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-criterion = VAEMultiLoss(device=device)
 
-epochs = 80
-kl_weight_max = 1.0
-best_val_loss = float('inf')
+# Loaders
+train_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/train_dataset.pkl'), batch_size=16, shuffle=True)
+val_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/val_dataset.pkl'), batch_size=16)
 
-# Ensure directory for checkpoints exists
-os.makedirs("checkpoints", exist_ok=True)
+epochs = 100
+total_steps = len(train_loader) * epochs
+global_step = 0
 
 for epoch in range(epochs):
-    # --- TRAINING PHASE ---
     model.train()
-    train_running_loss = 0.0
+    # Using tqdm for a live progress bar in the terminal
+    pbar = tqdm(train_loader, desc=f"Epoch {epoch}")
     
-    # KL Annealing update
-    current_kl_weight = min(kl_weight_max, epoch / 20.0) 
-    criterion.kl_weight = current_kl_weight
-
-    pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs} [Train]")
-    for batch in pbar:
-        # Load batch to device
-        pre_mel = batch['mel_pre'].to(device)
-        post_mel = batch['mel_post'].to(device)
-        pre_wav = batch['wav_pre'].to(device)
-        post_wav = batch['wav_post'].to(device)
-
-        # Forward Pass
-        recon_mel, mu, logvar = model(pre_mel)
-
-        # Calculate Multi-Loss
-        loss_dict = criterion(recon_mel, post_mel, mu, logvar, pre_wav, post_wav)
-        loss = loss_dict['total_loss']
-
-        # Backward Pass
+    for x, labels in pbar:
+        x, labels = x.to(device), labels.to(device)
+        
+        alpha = min(1.0, global_step / (total_steps * 0.2))
+        beta = min(1.0, global_step / (total_steps * 0.4))
+        
         optimizer.zero_grad()
+        
+        # Tip: Modify training_step to return a dictionary of losses
+        loss = training_step(model, x, labels, alpha, beta_c=beta, beta_s=beta*0.1)
+        
         loss.backward()
-        
-        # Gradient Clipping
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-        
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
         
-        train_running_loss += loss.item()
-        pbar.set_postfix({"loss": loss.item()})
+        # Update progress bar with current loss
+        pbar.set_postfix({"loss": f"{loss.item():.4f}", "alpha": f"{alpha:.2f}"})
+        global_step += 1
 
-    avg_train_loss = train_running_loss / len(train_loader)
-
-    # --- VALIDATION PHASE ---
+    # --- Validation & Visualization ---
     model.eval()
-    val_running_loss = 0.0
-    
+    val_loss = 0
     with torch.no_grad():
-        for batch in val_loader:
-            pre_mel = batch['mel_pre'].to(device)
-            post_mel = batch['mel_post'].to(device)
-            pre_wav = batch['wav_pre'].to(device)
-            post_wav = batch['wav_post'].to(device)
-
-            recon_mel, mu, logvar = model(pre_mel)
-            loss_dict = criterion(recon_mel, post_mel, mu, logvar, pre_wav, post_wav)
+        for i, (x_val, labels_val) in enumerate(val_loader):
+            x_val, labels_val = x_val.to(device), labels_val.to(device)
+            v_loss = training_step(model, x_val, labels_val, alpha=1.0, beta_c=1.0, beta_s=0.1)
+            val_loss += v_loss.item()
             
-            val_running_loss += loss_dict['total_loss'].item()
+            # VISUAL CHECK: Save the first batch's first sample reconstruction
+            if i == 0:
+                recon, _, _, _, _, _ = model(x_val, alpha=1.0)
+                
+                plt.figure(figsize=(10, 4))
+                plt.subplot(1, 2, 1)
+                plt.title("Original")
+                plt.imshow(x_val[0, 0].cpu().numpy(), aspect='auto', origin='lower')
+                
+                plt.subplot(1, 2, 2)
+                plt.title("Reconstructed")
+                plt.imshow(recon[0, 0].cpu().numpy(), aspect='auto', origin='lower')
+                
+                plt.savefig(f"plots/epoch_{epoch}_recon.png")
+                plt.close()
 
-    avg_val_loss = val_running_loss / len(val_loader)
-    
-    print(f"\nSummary Epoch {epoch+1}:")
-    print(f"Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} | KL Weight: {current_kl_weight:.2f}")
-
-    # --- SAVE BEST MODEL ---
-    if avg_val_loss < best_val_loss:
-        best_val_loss = avg_val_loss
-        checkpoint_path = os.path.join("checkpoints", "best_vae_model.pth")
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'loss': best_val_loss,
-        }, checkpoint_path)
-        print(f"⭐ New best model saved at {checkpoint_path}")
-
-    print("-" * 30)
+    print(f"\nSummary Epoch {epoch} | Val Loss: {val_loss/len(val_loader):.4f}")
