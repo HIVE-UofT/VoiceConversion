@@ -33,10 +33,12 @@ class SurgeryDataset(Dataset):
         return torch.from_numpy(mel).float().unsqueeze(0), torch.tensor([label]).float()
 
 def training_step(model, x, labels, alpha, beta_c=1.0, beta_s=0.1):
-    recon, mu_c, var_c, mu_s, var_s, s_pred_adv = model(x, alpha)
+    recon_final, mu_c, var_c, mu_s, var_s, s_pred_adv, recon_initial = model(x, alpha)
     
-    # 1. Recon Loss
-    loss_recon = F.l1_loss(recon, x, reduction='mean')
+    # 1. Recon Loss (Calculated on both for better gradient flow)
+    loss_recon_init = F.l1_loss(recon_initial, x, reduction='mean')
+    loss_recon_final = F.l1_loss(recon_final, x, reduction='mean')
+    loss_recon = loss_recon_init + loss_recon_final
     
     # 2. KL Losses
     kl_c = -0.5 * torch.mean(1 + var_c - mu_c.pow(2) - var_c.exp())
@@ -56,7 +58,7 @@ def training_step(model, x, labels, alpha, beta_c=1.0, beta_s=0.1):
 # --- Main Execution ---
 device = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
 model = SurgeryVAE().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5)
 # Loaders
 train_loader = DataLoader(SurgeryDataset('/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/processed_data/train_dataset.pkl'), batch_size=16, shuffle=True)

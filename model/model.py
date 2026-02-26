@@ -57,6 +57,14 @@ class SurgeryVAE(nn.Module):
             nn.ConvTranspose2d(256, 1, (3,3), stride=2, padding=1, output_padding=1)     
         )
 
+        self.post_net = nn.Sequential(
+            nn.Conv1d(80, 512, kernel_size=5, padding=2),
+            nn.BatchNorm1d(512), nn.Tanh(),
+            nn.Conv1d(512, 512, kernel_size=5, padding=2),
+            nn.BatchNorm1d(512), nn.Tanh(),
+            nn.Conv1d(512, 80, kernel_size=5, padding=2)
+        )
+
     def encode(self, x):
         h = self.conv(x)
         # Content branch
@@ -88,10 +96,12 @@ class SurgeryVAE(nn.Module):
         d_out, _ = self.dec_rnn(self.dec_fc(z_joint))
         
         d_out = d_out.permute(0, 2, 1).unsqueeze(2) 
-        recon = self.upsample(d_out)
+        recon_initial = self.upsample(d_out)
 
-        # FINAL FIX: Force recon size to match input x size exactly
-        if recon.shape != x.shape:
-            recon = F.interpolate(recon, size=(x.size(2), x.size(3)), mode='bilinear', align_corners=False)
+        if recon_initial.shape != x.shape:
+            recon_initial = F.interpolate(recon_initial, size=(x.size(2), x.size(3)), mode='bilinear', align_corners=False)
 
-        return recon, mu_c, var_c, mu_s, var_s, s_pred_adv
+        residual = self.post_net(recon_initial.squeeze(1))
+        recon_final = recon_initial + residual.unsqueeze(1) # Add it back as a residual
+
+        return recon_final, mu_c, var_c, mu_s, var_s, s_pred_adv, recon_initial
