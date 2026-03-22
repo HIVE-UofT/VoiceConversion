@@ -1,0 +1,20 @@
+Lmod has detected the following error: These module(s) or extension(s) exist
+but cannot be loaded as requested: "cuda/11.8"
+   Try: "module spider cuda/11.8" to see how to load the module(s).
+
+
+
+Device: cuda
+Traceback (most recent call last):
+  File "/project/6086959/sepehr/VoiceConversion/vqvae/scripts/evaluate.py", line 334, in <module>
+    evaluate()
+  File "/project/6086959/sepehr/VoiceConversion/vqvae/scripts/evaluate.py", line 152, in evaluate
+    model.load_state_dict(checkpoint['model'])
+  File "/project/6086959/sepehr/VoiceConversion/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 2629, in load_state_dict
+    raise RuntimeError(
+RuntimeError: Error(s) in loading state_dict for VQVAE:
+	Missing key(s) in state_dict: "vq.usage_count", "vq.forward_count", "decoder.deconv1.0.weight", "decoder.deconv1.0.bias", "decoder.deconv1.1.weight", "decoder.deconv1.1.bias", "decoder.deconv1.1.running_mean", "decoder.deconv1.1.running_var", "decoder.res1.block.0.weight", "decoder.res1.block.0.bias", "decoder.res1.block.1.weight", "decoder.res1.block.1.bias", "decoder.res1.block.1.running_mean", "decoder.res1.block.1.running_var", "decoder.res1.block.3.weight", "decoder.res1.block.3.bias", "decoder.res1.block.4.weight", "decoder.res1.block.4.bias", "decoder.res1.block.4.running_mean", "decoder.res1.block.4.running_var", "decoder.deconv2.0.weight", "decoder.deconv2.0.bias", "decoder.deconv2.1.weight", "decoder.deconv2.1.bias", "decoder.deconv2.1.running_mean", "decoder.deconv2.1.running_var", "decoder.res2.block.0.weight", "decoder.res2.block.0.bias", "decoder.res2.block.1.weight", "decoder.res2.block.1.bias", "decoder.res2.block.1.running_mean", "decoder.res2.block.1.running_var", "decoder.res2.block.3.weight", "decoder.res2.block.3.bias", "decoder.res2.block.4.weight", "decoder.res2.block.4.bias", "decoder.res2.block.4.running_mean", "decoder.res2.block.4.running_var", "decoder.deconv3.0.weight", "decoder.deconv3.0.bias". 
+	Unexpected key(s) in state_dict: "decoder.deconv_stack.0.weight", "decoder.deconv_stack.0.bias", "decoder.deconv_stack.1.weight", "decoder.deconv_stack.1.bias", "decoder.deconv_stack.1.running_mean", "decoder.deconv_stack.1.running_var", "decoder.deconv_stack.1.num_batches_tracked", "decoder.deconv_stack.3.weight", "decoder.deconv_stack.3.bias", "decoder.deconv_stack.4.weight", "decoder.deconv_stack.4.bias", "decoder.deconv_stack.4.running_mean", "decoder.deconv_stack.4.running_var", "decoder.deconv_stack.4.num_batches_tracked", "decoder.deconv_stack.6.weight", "decoder.deconv_stack.6.bias". 
+	size mismatch for quality_encoder.proj.0.weight: copying a param with shape torch.Size([16, 64]) from checkpoint, the shape in current model is torch.Size([32, 64]).
+	size mismatch for quality_encoder.proj.0.bias: copying a param with shape torch.Size([16]) from checkpoint, the shape in current model is torch.Size([32]).
+	size mismatch for decoder.pre_conv.0.weight: copying a param with shape torch.Size([256, 80, 3]) from checkpoint, the shape in current model is torch.Size([256, 96, 3]).
