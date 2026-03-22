@@ -108,6 +108,51 @@ Vector-quantized VAE that explicitly disentangles voice into content (discrete V
 - Codebook collapse is the persistent blocker — only ~10 codes used regardless of codebook size or reset strategies
 - Product quantization + entropy regularization (Exp 4) targets this directly
 
+### 5. Mean Shift VC (Domain-Level Feature Transform)
+
+**Directory:** `mean_shift/`
+
+The simplest possible domain transform: shift all WavLM features by the difference in domain means.
+
+- **How it works:** `converted = source_features + (mean_post - mean_pre)` in WavLM space, then vocode with HiFi-GAN
+- **Training:** Compute mean WavLM embedding for pre and post surgery domains (no neural network)
+- **Inference:** Apply fixed shift — no reference audio needed
+- **Rationale:** If pre/post surgery differences are captured as a consistent direction in WavLM embedding space, a simple translation should work
+
+### 6. LinearVC (Linear Domain Transform)
+
+**Directory:** `linear_vc/`
+
+Learns a linear projection matrix W in WavLM space, based on [LinearVC (2025)](https://arxiv.org/html/2506.01510).
+
+- **How it works:** `converted = source_features @ W` where W is a 1024x1024 matrix
+- **Training:** Pair pre/post surgery frames via nearest neighbors, solve ridge regression: `W = (X^T X + λI)^{-1} X^T Y`
+- **Inference:** Matrix multiply — no reference audio needed
+- **Key insight:** Content and speaker/quality information occupy orthogonal subspaces in WavLM. A linear map can rotate from one domain to another while preserving content.
+
+### 7. MKL-VC (Factorized Optimal Transport)
+
+**Directory:** `mkl_vc/`
+
+Optimal transport map between domain distributions in WavLM space, based on [MKL-VC (Interspeech 2025)](https://arxiv.org/html/2506.09709).
+
+- **How it works:** Models pre and post surgery WavLM features as multivariate Gaussians, computes the Monge-Kantorovich Linear transport map (closed-form solution)
+- **Factorization:** Splits 1024-dim features into K=2 dimensional subgroups sorted by variance, solves OT independently per subgroup. Prevents information loss from low-variance dimensions.
+- **Training:** Compute domain-level Gaussian statistics (mean + covariance per subgroup)
+- **Inference:** Apply analytical transform — no reference audio needed
+- **Advantage over kNN-VC:** Generates new feature combinations rather than retrieving existing frames
+
+### 8. UNet-VC (Nonlinear Feature Transform)
+
+**Directory:** `unet_vc/`
+
+Residual 1D U-Net that learns a nonlinear transform in WavLM feature space. Extends LinearVC by allowing nonlinear mappings while preserving content through skip connections and residual learning.
+
+- **Architecture:** Residual 1D U-Net: project 1024→256, 3-level encoder/decoder with skip connections, project back to 1024. Global residual: `output = input + α * network(input)` where α is learned (initialized at 0.1)
+- **Training:** NN-paired frames (same as LinearVC), segmented into overlapping 64-frame windows. MSE loss, AdamW with cosine schedule, early stopping
+- **Inference:** Forward pass through U-Net + HiFi-GAN vocoding — no reference audio needed
+- **Key design:** Residual learning means network only learns the small delta between domains. Skip connections preserve content structure. Lightweight (~2M params) to avoid overfitting on small dataset
+
 ## Project Structure
 
 ```
@@ -138,17 +183,48 @@ VoiceConversion/
 │   ├── submit_build.sh
 │   ├── submit_inference.sh
 │   └── submit_evaluate.sh
-└── vqvae/
+├── vqvae/
+│   ├── model/
+│   │   ├── vqvae.py                # VQVAE, ProductVQ, encoders, decoder, GRU classifier
+│   │   └── __init__.py
+│   ├── scripts/
+│   │   ├── train.py                # Training with 6 losses
+│   │   ├── inference.py            # Convert using avg quality vector
+│   │   └── evaluate.py             # MCD, F0, disentanglement probes
+│   ├── checkpoints/                # Saved model weights
+│   ├── plots/                      # Training visualizations per epoch
+│   ├── PROGRESS.md                 # Detailed experiment log with analysis
+│   └── submit.sh
+├── mean_shift/
+│   ├── scripts/
+│   │   ├── train.py                # Compute domain mean vectors
+│   │   ├── inference.py            # Apply mean shift + vocode
+│   │   └── evaluate.py             # MCD, F0, content preservation
+│   ├── domain_stats.pt             # Saved mean vectors (after training)
+│   └── submit.sh
+├── linear_vc/
+│   ├── scripts/
+│   │   ├── train.py                # Learn linear projection W via ridge regression
+│   │   ├── inference.py            # Apply W @ features + vocode
+│   │   └── evaluate.py             # MCD, F0, content preservation
+│   ├── linear_transform.pt         # Saved W matrices (after training)
+│   └── submit.sh
+├── mkl_vc/
+│   ├── scripts/
+│   │   ├── train.py                # Compute factorized OT maps
+│   │   ├── inference.py            # Apply MKL transform + vocode
+│   │   └── evaluate.py             # MCD, F0, content preservation
+│   ├── mkl_transform.pt            # Saved OT parameters (after training)
+│   └── submit.sh
+└── unet_vc/
     ├── model/
-    │   ├── vqvae.py                # VQVAE, ProductVQ, encoders, decoder, GRU classifier
+    │   ├── unet.py                 # Residual 1D U-Net architecture
     │   └── __init__.py
     ├── scripts/
-    │   ├── train.py                # Training with 6 losses
-    │   ├── inference.py            # Convert using avg quality vector
-    │   └── evaluate.py             # MCD, F0, disentanglement probes
-    ├── checkpoints/                # Saved model weights
-    ├── plots/                      # Training visualizations per epoch
-    ├── PROGRESS.md                 # Detailed experiment log with analysis
+    │   ├── train.py                # Train on NN-paired WavLM features
+    │   ├── inference.py            # Apply U-Net transform + vocode
+    │   └── evaluate.py             # MCD, F0, content preservation
+    ├── checkpoints/                # Saved model weights (after training)
     └── submit.sh
 ```
 
@@ -178,4 +254,6 @@ All methods are evaluated with comparable metrics:
 - [MaskCycleGAN-VC (Kaneko et al., 2021)](https://arxiv.org/abs/2102.12841) — CycleGAN with FIF masking
 - [kNN-VC (Baas et al., Interspeech 2023)](https://arxiv.org/abs/2305.18975) — Nearest neighbor VC with WavLM
 - [PQ-VAE (2024)](https://arxiv.org/html/2406.02940v1) — Product quantization for speech tokenization
+- [LinearVC (2025)](https://arxiv.org/html/2506.01510) — Linear transforms of SSL features for VC
+- [MKL-VC (Interspeech 2025)](https://arxiv.org/html/2506.09709) — Training-free VC with factorized optimal transport
 - [Deep Learning for Pathological Speech (2025)](https://arxiv.org/html/2501.03536v1) — Survey of DL methods for pathological speech

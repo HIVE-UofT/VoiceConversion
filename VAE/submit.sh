@@ -11,5 +11,5 @@
 module load python/3.10 
 module load cuda/11.8
 
-source .venv/bin/activate
+source .env/bin/activate
 python -m scripts.train.

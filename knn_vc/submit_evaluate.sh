@@ -8,7 +8,7 @@
 
 module load python/3.10
 
-source ../.venv/bin/activate
+source ../.env/bin/activate
 
 python scripts/evaluate.py \
     --converted_dir knn_vc_converted

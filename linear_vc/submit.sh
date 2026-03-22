@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=knnvc_infer
+#SBATCH --job-name=linear_vc
 #SBATCH --account=def-zshakeri
 #SBATCH --gres=gpu:h100:1
 #SBATCH --cpus-per-task=4
@@ -12,7 +12,16 @@ module load cuda/11.8
 
 source ../.env/bin/activate
 
-# Convert all pre-surgery test files
+# Step 1: Learn linear transform from paired frames
+python scripts/train.py
+
+# Step 2: Convert all pre-surgery files
 python scripts/inference.py \
     --input_dir /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1 \
-    --output_dir ../knn_vc_converted
+    --output_dir converted
+
+# Step 3: Evaluate
+python scripts/evaluate.py \
+    --converted_dir converted \
+    --method_name "LinearVC" \
+    --skip_f0
