@@ -1,11 +1,15 @@
 datasets
 pandas
 pathlib
-
 librosa
 soundfile
 numpy
-
 matplotlib
 seaborn
+tqdm
+torch
 
+git+https://github.com/speechbrain/speechbrain.git@develop
+transformers
+torchaudio
+torchcodec

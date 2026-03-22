@@ -1,1 +1,8 @@
 .venv/
+.env/
+*.pth
+*.pt
+plots/
+*/plots/
+knn_vc/knn_vc_converted/
+__pycache__/
