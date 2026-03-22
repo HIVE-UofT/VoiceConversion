@@ -1,121 +1,182 @@
 """
 Evaluate kNN-VC conversion quality.
 
-Converts test set pre-surgery files and compares against post-surgery files
-using objective metrics:
-  - Mel Cepstral Distortion (MCD): lower = more similar spectral shape
-  - F0 Correlation: higher = better pitch tracking
-  - Speaker Embedding Cosine Similarity: higher = closer voice identity
+Metrics (comparable to VQVAE evaluation):
+  - MCD to target: spectral distance between converted and real post-surgery (lower = better conversion)
+  - Content preservation MCD: spectral distance between source and converted (lower = better preserved)
+  - F0 Correlation: pitch tracking between source and converted (higher = better)
+
+The converted files are paired by patient ID:
+  - Converted:     Tonsill_ses1_speech_XXXX.wav  (pre → post converted)
+  - Pre-surgery:   Tonsill_ses1_speech_XXXX.wav  (source)
+  - Post-surgery:  Tonsill_ses2_speech_XXXX.wav  (ground-truth target)
 
 Usage:
   python scripts/evaluate.py
-  python scripts/evaluate.py --test_dir /path/to/test_wavs
+  python scripts/evaluate.py --converted_dir /path/to/converted --skip_f0
 """
 
 import argparse
 import os
-import sys
 import glob
-import torch
 import numpy as np
 import librosa
 from pathlib import Path
 
 
+SAMPLE_RATE = 16000
+N_FFT = 2048
+HOP_LENGTH = 512
+N_MELS = 80
+
+
 def compute_mcd(ref_mel, synth_mel):
-    """Mel Cepstral Distortion between two mel-spectrograms."""
-    # Align lengths
+    """Mel Cepstral Distortion between two mel-spectrograms (dB scale)."""
     min_len = min(ref_mel.shape[1], synth_mel.shape[1])
     ref_mel = ref_mel[:, :min_len]
     synth_mel = synth_mel[:, :min_len]
 
-    # MCD (using first 13 MFCCs)
     ref_mfcc = librosa.feature.mfcc(S=ref_mel, n_mfcc=13)
     synth_mfcc = librosa.feature.mfcc(S=synth_mel, n_mfcc=13)
 
     min_len = min(ref_mfcc.shape[1], synth_mfcc.shape[1])
     diff = ref_mfcc[:, :min_len] - synth_mfcc[:, :min_len]
-    mcd = np.mean(np.sqrt(2 * np.sum(diff ** 2, axis=0)))
-    return mcd
+    return np.mean(np.sqrt(2 * np.sum(diff ** 2, axis=0)))
 
 
-def compute_f0_corr(ref_audio, synth_audio, sr=16000):
-    """F0 correlation between reference and synthesized audio."""
-    f0_ref, _, _ = librosa.pyin(ref_audio, fmin=50, fmax=500, sr=sr)
-    f0_synth, _, _ = librosa.pyin(synth_audio, fmin=50, fmax=500, sr=sr)
+def compute_f0_corr(audio_a, audio_b, sr=SAMPLE_RATE):
+    """F0 correlation between two audio signals."""
+    f0_a, _, _ = librosa.pyin(audio_a, fmin=50, fmax=500, sr=sr)
+    f0_b, _, _ = librosa.pyin(audio_b, fmin=50, fmax=500, sr=sr)
 
-    # Remove NaN frames (unvoiced)
-    min_len = min(len(f0_ref), len(f0_synth))
-    f0_ref = f0_ref[:min_len]
-    f0_synth = f0_synth[:min_len]
-    valid = ~np.isnan(f0_ref) & ~np.isnan(f0_synth)
+    min_len = min(len(f0_a), len(f0_b))
+    f0_a, f0_b = f0_a[:min_len], f0_b[:min_len]
+    valid = ~np.isnan(f0_a) & ~np.isnan(f0_b)
 
     if valid.sum() < 10:
         return float('nan')
+    return np.corrcoef(f0_a[valid], f0_b[valid])[0, 1]
 
-    corr = np.corrcoef(f0_ref[valid], f0_synth[valid])[0, 1]
-    return corr
+
+def audio_to_mel_db(audio, sr=SAMPLE_RATE):
+    """Convert audio to dB-scale mel-spectrogram."""
+    mel = librosa.feature.melspectrogram(
+        y=audio, sr=sr, n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS
+    )
+    return librosa.power_to_db(mel, ref=np.max)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate kNN-VC conversion quality")
     parser.add_argument('--pre_dir', type=str,
                         default="/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1",
-                        help='Directory with pre-surgery wav files')
+                        help='Directory with pre-surgery wav files (source)')
     parser.add_argument('--post_dir', type=str,
                         default="/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2",
-                        help='Directory with post-surgery wav files (for reference metrics)')
-    parser.add_argument('--converted_dir', type=str, required=True,
+                        help='Directory with post-surgery wav files (ground-truth target)')
+    parser.add_argument('--converted_dir', type=str,
+                        default=os.path.join(os.path.dirname(__file__), '..', 'knn_vc_converted'),
                         help='Directory with kNN-VC converted wav files')
-    parser.add_argument('--max_files', type=int, default=20,
-                        help='Max files to evaluate')
+    parser.add_argument('--skip_f0', action='store_true', help='Skip F0 correlation (slow)')
     args = parser.parse_args()
 
-    sr = 16000
-    converted_files = sorted(glob.glob(os.path.join(args.converted_dir, "*.wav")))[:args.max_files]
-    post_files = sorted(glob.glob(os.path.join(args.post_dir, "**/*.wav"), recursive=True))
+    sr = SAMPLE_RATE
+    converted_files = sorted(glob.glob(os.path.join(args.converted_dir, "*.wav")))
 
     if not converted_files:
         print(f"No converted wav files in {args.converted_dir}")
         return
 
-    # Load a few post-surgery files to get average post-surgery mel for comparison
     print(f"Evaluating {len(converted_files)} converted files...")
-    print(f"Reference pool: {len(post_files)} post-surgery files\n")
+    print(f"Source dir: {args.pre_dir}")
+    print(f"Target dir: {args.post_dir}")
+    print()
 
-    # Compute average post-surgery mel spectrum (for MCD reference)
-    post_mels = []
-    for pf in post_files[:20]:
-        y, _ = librosa.load(pf, sr=sr)
-        mel = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=2048, hop_length=512, n_mels=80)
-        mel_db = librosa.power_to_db(mel, ref=np.max)
-        post_mels.append(mel_db)
-
-    mcds = []
+    mcd_to_target = []
+    mcd_content_pres = []
     f0_corrs = []
 
+    # Also compute MCD between real pre and real post for baseline
+    mcd_pre_vs_post = []
+
     for cf in converted_files:
+        name = Path(cf).stem  # e.g. Tonsill_ses1_speech_0007
+
+        # Find matching source (pre-surgery) file
+        pre_path = os.path.join(args.pre_dir, name + '.wav')
+        if not os.path.exists(pre_path):
+            print(f"  SKIP {name}: no matching pre-surgery file")
+            continue
+
+        # Find matching post-surgery file (ses1 → ses2)
+        post_name = name.replace('ses1', 'ses2')
+        post_path = os.path.join(args.post_dir, post_name + '.wav')
+        if not os.path.exists(post_path):
+            print(f"  SKIP {name}: no matching post-surgery file ({post_name})")
+            continue
+
+        # Load audio
         y_conv, _ = librosa.load(cf, sr=sr)
-        mel_conv = librosa.feature.melspectrogram(y=y_conv, sr=sr, n_fft=2048, hop_length=512, n_mels=80)
-        mel_conv_db = librosa.power_to_db(mel_conv, ref=np.max)
+        y_pre, _ = librosa.load(pre_path, sr=sr)
+        y_post, _ = librosa.load(post_path, sr=sr)
 
-        # MCD against each post-surgery file, take the minimum (best match)
-        file_mcds = []
-        for pm in post_mels:
-            mcd = compute_mcd(pm, mel_conv_db)
-            file_mcds.append(mcd)
-        best_mcd = min(file_mcds)
-        mcds.append(best_mcd)
+        # Compute mel-spectrograms (dB scale)
+        mel_conv = audio_to_mel_db(y_conv, sr)
+        mel_pre = audio_to_mel_db(y_pre, sr)
+        mel_post = audio_to_mel_db(y_post, sr)
 
-        name = Path(cf).stem
-        print(f"  {name}: MCD={best_mcd:.2f}")
+        # MCD: converted vs target post-surgery (lower = better conversion)
+        mcd_target = compute_mcd(mel_post, mel_conv)
+        mcd_to_target.append(mcd_target)
 
-    print(f"\n{'='*40}")
-    print(f"Average MCD (lower=better): {np.mean(mcds):.2f} ± {np.std(mcds):.2f}")
-    if f0_corrs:
+        # MCD: source vs converted (lower = better content preservation)
+        mcd_content = compute_mcd(mel_pre, mel_conv)
+        mcd_content_pres.append(mcd_content)
+
+        # MCD: real pre vs real post (baseline — how different are the domains?)
+        mcd_baseline = compute_mcd(mel_pre, mel_post)
+        mcd_pre_vs_post.append(mcd_baseline)
+
+        # F0 correlation: source vs converted (higher = content preserved)
+        f0_str = ""
+        if not args.skip_f0:
+            f0_c = compute_f0_corr(y_pre, y_conv, sr)
+            f0_corrs.append(f0_c)
+            f0_str = f"  F0={f0_c:.3f}" if not np.isnan(f0_c) else "  F0=nan"
+
+        print(f"  {name}: MCD(target)={mcd_target:.2f}  MCD(content)={mcd_content:.2f}  MCD(baseline)={mcd_baseline:.2f}{f0_str}")
+
+    # ─── Summary ───
+    print(f"\n{'='*60}")
+    print(f"  kNN-VC Voice Conversion — Evaluation")
+    print(f"{'='*60}")
+
+    print(f"\n  Baseline (real pre vs real post, no conversion):")
+    print(f"    MCD: {np.mean(mcd_pre_vs_post):.2f} +/- {np.std(mcd_pre_vs_post):.2f}")
+
+    print(f"\n  Pre → Post conversion — {len(mcd_to_target)} paired samples:")
+    print(f"    MCD to target (lower=better):      {np.mean(mcd_to_target):.2f} +/- {np.std(mcd_to_target):.2f}")
+    print(f"    Content MCD (lower=preserved):     {np.mean(mcd_content_pres):.2f} +/- {np.std(mcd_content_pres):.2f}")
+
+    if not args.skip_f0 and f0_corrs:
         valid_f0 = [f for f in f0_corrs if not np.isnan(f)]
         if valid_f0:
-            print(f"Average F0 Corr (higher=better): {np.mean(valid_f0):.3f} ± {np.std(valid_f0):.3f}")
+            print(f"    F0 Correlation (higher=better):    {np.mean(valid_f0):.3f} +/- {np.std(valid_f0):.3f}  ({len(valid_f0)}/{len(f0_corrs)} valid)")
+
+    # Conversion effectiveness: how much closer to target vs baseline?
+    if mcd_to_target and mcd_pre_vs_post:
+        baseline_avg = np.mean(mcd_pre_vs_post)
+        converted_avg = np.mean(mcd_to_target)
+        if baseline_avg > 0:
+            reduction = (baseline_avg - converted_avg) / baseline_avg * 100
+            print(f"\n  Conversion effectiveness:")
+            print(f"    MCD reduction vs baseline: {reduction:+.1f}%")
+            if reduction > 0:
+                print(f"    (Converted speech is {reduction:.1f}% closer to post-surgery than pre-surgery was)")
+            else:
+                print(f"    (Converted speech is further from post-surgery than the original pre-surgery)")
+
+    print(f"{'='*60}")
 
 
 if __name__ == '__main__':
