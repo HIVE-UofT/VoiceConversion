@@ -101,12 +101,35 @@ Vector-quantized VAE that explicitly disentangles voice into content (discrete V
 | 2 | + Cycle loss, dead code reset, quality dropout | 15/256 | 0.0337 | Still collapsed, steganography in code sequences |
 | 3 | + T/8 bottleneck, 64 codes, GRU classifier, content noise | 9/64 | 0.0433 | Collapse worse, reconstruction degraded |
 | 4 | + Product VQ (4×16), entropy regularization, lower commitment | *pending* | *pending* | — |
+| 5 | **WavLM features** instead of mel-specs, 1D convolutions, HiFi-GAN vocoder | *pending* | *pending* | — |
 
-**Key findings:**
+**Key findings (Exp 1-4):**
 - Disentanglement works well across all experiments (adversarial loss stays at random chance ~0.693)
 - Quality encoder successfully separates pre/post surgery (BCE < 0.02)
 - Codebook collapse is the persistent blocker — only ~10 codes used regardless of codebook size or reset strategies
 - Product quantization + entropy regularization (Exp 4) targets this directly
+
+**Experiment 5 — WavLM Feature Space (Novel Contribution):**
+
+Instead of operating on raw mel-spectrograms (Exp 1-4), Exp 5 operates on frozen WavLM-Large features (1024-dim, pretrained on 1000s of hours). The VQ only needs to disentangle content from quality in an already well-structured space. Uses 1D convolutions, HiFi-GAN vocoder from knn-vc for audio output. See `vqvae/scripts/train_exp5.py`.
+
+**Why this is novel** (based on exhaustive literature review of 25+ papers):
+
+The full pipeline — a learned VQ-VAE on SSL features with explicit dual-branch disentanglement (discrete content codes + continuous quality vector), decoding back to SSL feature space — has not been done before. The closest individual components come from different papers:
+
+| Component | Closest Prior Work | How We Differ |
+|---|---|---|
+| Learned VQ on SSL features | Vevo (ICLR 2025): VQ-VAE on HuBERT | Vevo has no explicit continuous quality branch; uses autoregressive + flow-matching decoders |
+| Dual branch (discrete + continuous) from SSL | QR-VC (2024): k-means on WavLM + residual decomposition | QR-VC uses k-means (not learned VQ); decomposes residual, not a separate encoder |
+| Decode back to SSL feature space | RepCodec (ACL 2024): VQ encoder-decoder for SSL features | RepCodec is purely a tokenizer — no speaker/quality disentanglement |
+| SSL-space HiFi-GAN vocoding | kNN-VC (Interspeech 2023) | kNN-VC has no VQ, no learned transform |
+| Adversarial disentanglement + VQ | VQMIVC (Interspeech 2021): VQ + MI minimization | VQMIVC operates on mel-specs (not SSL features), needs large datasets |
+| Medical/pathological VC with SSL | None | No prior work applies SSL-based VQ disentanglement to pathological voice conversion |
+
+Additionally:
+- **Tonsillectomy voice conversion** has no prior work in deep learning
+- **Learned VQ-VC with ~28 files per domain** is unprecedented — all existing VQ-VC methods require hundreds to thousands of hours
+- The "quality vector" framing (pre/post surgery voice quality, not speaker identity) is distinct from standard speaker embeddings
 
 ### 5. Mean Shift VC (Domain-Level Feature Transform)
 
@@ -185,16 +208,23 @@ VoiceConversion/
 │   └── submit_evaluate.sh
 ├── vqvae/
 │   ├── model/
-│   │   ├── vqvae.py                # VQVAE, ProductVQ, encoders, decoder, GRU classifier
+│   │   ├── vqvae.py                # VQVAE on mel-specs (Exp 1-4)
+│   │   ├── vqvae_wavlm.py          # VQVAE on WavLM features (Exp 5)
 │   │   └── __init__.py
 │   ├── scripts/
-│   │   ├── train.py                # Training with 6 losses
-│   │   ├── inference.py            # Convert using avg quality vector
-│   │   └── evaluate.py             # MCD, F0, disentanglement probes
-│   ├── checkpoints/                # Saved model weights
+│   │   ├── train.py                # Training Exp 1-4 (mel-spectrogram)
+│   │   ├── train_exp5.py           # Training Exp 5 (WavLM features)
+│   │   ├── inference.py            # Inference Exp 1-4
+│   │   ├── inference_exp5.py       # Inference Exp 5 (WavLM + HiFi-GAN)
+│   │   ├── evaluate.py             # Evaluation Exp 1-4
+│   │   └── evaluate_exp5.py        # Evaluation Exp 5
+│   ├── checkpoints/                # Exp 1-4 model weights
+│   ├── checkpoints_exp5/           # Exp 5 model weights
+│   ├── wavlm_cache/                # Cached WavLM features (auto-generated)
 │   ├── plots/                      # Training visualizations per epoch
 │   ├── PROGRESS.md                 # Detailed experiment log with analysis
-│   └── submit.sh
+│   ├── submit.sh                   # Exp 1-4
+│   └── submit_exp5.sh              # Exp 5
 ├── mean_shift/
 │   ├── scripts/
 │   │   ├── train.py                # Compute domain mean vectors
@@ -256,4 +286,11 @@ All methods are evaluated with comparable metrics:
 - [PQ-VAE (2024)](https://arxiv.org/html/2406.02940v1) — Product quantization for speech tokenization
 - [LinearVC (2025)](https://arxiv.org/html/2506.01510) — Linear transforms of SSL features for VC
 - [MKL-VC (Interspeech 2025)](https://arxiv.org/html/2506.09709) — Training-free VC with factorized optimal transport
+- [VQMIVC (Wang et al., Interspeech 2021)](https://arxiv.org/abs/2106.10132) — VQ + mutual information disentanglement for VC
+- [Polyak et al. (Interspeech 2021)](https://arxiv.org/abs/2104.00355) — Speech resynthesis from discrete disentangled SSL representations
+- [FreeVC (Li et al., ICASSP 2023)](https://arxiv.org/abs/2210.15418) — Text-free one-shot VC with WavLM bottleneck
+- [RepCodec (ACL 2024)](https://arxiv.org/abs/2309.00169) — VQ codec for SSL speech representation
+- [QR-VC (2024)](https://arxiv.org/abs/2411.16147) — Quantization residuals from WavLM for VC
+- [AdaptVC (ICASSP 2025)](https://arxiv.org/abs/2501.01347) — Adaptive learning with VQ on HuBERT
+- [Vevo (ICLR 2025)](https://arxiv.org/abs/2502.07243) — VQ-VAE tokenizer on HuBERT for controllable voice imitation
 - [Deep Learning for Pathological Speech (2025)](https://arxiv.org/html/2501.03536v1) — Survey of DL methods for pathological speech
