@@ -14,7 +14,7 @@ All methods evaluated on the **Tonsill** subset (28 patients) using ECAPA-TDNN s
 | Mean-Shift | 0.638 ± 0.098 | -3.5% | Mean translation | No |
 | VQVAE Exp5 | 0.394 ± 0.119 | -40.4% | VQ disentanglement | Yes |
 | VQ-UNet (Exp6) | *pending* | — | VQ + U-Net + FiLM | Yes |
-| **AdaptVC** | *pending* | — | **Adapter + VQ + FiLM U-Net** | Yes |
+| **DLA-VC** | *pending* | — | **Dual Layer Adapter + VQ + FiLM U-Net** | Yes |
 | LinearVC | *failed* | — | Linear projection | No |
 
 **Baseline** (pre vs post, same patient, no conversion): **0.661 ± 0.118**
@@ -100,8 +100,8 @@ Vector-quantized VAE operating on WavLM features with explicit content (VQ codes
 
 Exp5 showed disentanglement works (adversarial loss ~0.693, quality classification converges) but the reconstruction quality is too poor for useful conversion.
 
-### AdaptVC — Adapter + VQ + FiLM U-Net (Proposed Method)
-**Directory:** `adapt_vc/`
+### DLA-VC — Dual Layer Adapter VC (Proposed Method)
+**Directory:** `dla_vc/`
 
 Novel architecture inspired by [AdaptVC (ICASSP 2025)](https://arxiv.org/abs/2501.01347), combining learned WavLM layer selection with VQ disentanglement and FiLM-conditioned U-Net decoding. Designed for paired surgical voice conversion with minimal data.
 
@@ -158,8 +158,8 @@ VoiceConversion/
 ├── README.md
 ├── shared_evaluate.py          # Shared ECAPA-TDNN + spectral metrics
 ├── compare_all_spksim.py       # Cross-method comparison script
-├── adapt_vc/                   # AdaptVC-inspired (proposed method)
-│   ├── model/adapt_vc.py       # Adapters + VQ + FiLM U-Net decoder
+├── dla_vc/                     # DLA-VC: Dual Layer Adapter (proposed method)
+│   ├── model/dla_vc.py         # Adapters + VQ + FiLM U-Net decoder
 │   ├── scripts/{train,inference,evaluate}.py
 │   └── submit.sh
 ├── unet_vc/                    # Residual U-Net (current best)

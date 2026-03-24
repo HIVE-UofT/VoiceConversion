@@ -1,5 +1,5 @@
 """
-AdaptVC-Inspired Model for Surgical Voice Conversion.
+DLA-VC: Dual Layer Adapter Voice Conversion for Surgical Speech.
 
 Combines ideas from AdaptVC (ICASSP 2025) with paired-training disentanglement:
   - Learned layer-weighted adapters on frozen WavLM-Large (24 layers)
@@ -376,9 +376,9 @@ class DomainClassifier1D(nn.Module):
 # Main Model
 # ──────────────────────────────────────────────────────
 
-class AdaptVCModel(nn.Module):
+class DLAVCModel(nn.Module):
     """
-    AdaptVC-inspired model for surgical voice conversion.
+    DLA-VC: Dual Layer Adapter model for surgical voice conversion.
 
     WavLM-Large (frozen) → 24 hidden states
       ├─ Content Adapter (learned layer weights) → Content Encoder → Product VQ

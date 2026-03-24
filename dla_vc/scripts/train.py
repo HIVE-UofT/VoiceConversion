@@ -1,5 +1,5 @@
 """
-AdaptVC-Inspired — Training Script
+DLA-VC: Dual Layer Adapter VC — Training Script
 
 Trains on raw audio with on-the-fly WavLM feature extraction.
 WavLM-Large stays frozen on GPU; only adapters, encoders, VQ, and decoder are trained.
@@ -31,7 +31,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from model.adapt_vc import AdaptVCModel, DomainClassifier1D, gradient_reversal
+from model.dla_vc import DLAVCModel, DomainClassifier1D, gradient_reversal
 
 
 # ──────────────────────────────────────────────
@@ -225,7 +225,7 @@ def train():
                             pin_memory=True)
 
     # ─── Models ───
-    model = AdaptVCModel(
+    model = DLAVCModel(
         feat_dim=FEAT_DIM, code_dim=CODE_DIM, num_codes=NUM_CODES,
         num_heads=NUM_HEADS, quality_dim=QUALITY_DIM,
         num_wavlm_layers=wavlm.num_layers,
@@ -238,7 +238,7 @@ def train():
         nn.Linear(QUALITY_DIM, 32), nn.ReLU(), nn.Dropout(0.3), nn.Linear(32, 1),
     ).to(device)
 
-    print(f"AdaptVC parameters: {model.count_parameters():,}")
+    print(f"DLA-VC parameters: {model.count_parameters():,}")
 
     # ─── Optimizers ───
     opt_model = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-3)
@@ -444,12 +444,12 @@ def train():
                     'quality_dim': QUALITY_DIM,
                     'num_wavlm_layers': wavlm.num_layers,
                 },
-            }, os.path.join(CHECKPOINT_DIR, 'best_adapt_vc.pth'))
+            }, os.path.join(CHECKPOINT_DIR, 'best_dla_vc.pth'))
             print(f"  -> Saved best model (val={avg_val:.4f})")
 
         if (epoch + 1) % 50 == 0:
             torch.save({'epoch': epoch, 'model': model.state_dict()},
-                       os.path.join(CHECKPOINT_DIR, f'adapt_vc_epoch{epoch+1}.pth'))
+                       os.path.join(CHECKPOINT_DIR, f'dla_vc_epoch{epoch+1}.pth'))
 
         if (epoch + 1) % 20 == 0:
             plot_training_curves(history, epoch + 1, adapter_w)
@@ -526,7 +526,7 @@ def plot_training_curves(history, epoch, adapter_weights=None):
     else:
         axes[1, 3].axis('off')
 
-    plt.suptitle(f'AdaptVC — Epoch {epoch}', fontsize=14)
+    plt.suptitle(f'DLA-VC — Epoch {epoch}', fontsize=14)
     plt.tight_layout()
     plt.savefig(os.path.join(PLOT_DIR, f'training_curves_epoch{epoch}.png'), dpi=150)
     plt.close()

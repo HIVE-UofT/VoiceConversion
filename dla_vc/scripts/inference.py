@@ -1,5 +1,5 @@
 """
-AdaptVC-Inspired — Inference
+DLA-VC: Dual Layer Adapter VC — Inference
 
 Converts pre-surgery audio to post-surgery using:
 1. WavLM-Large (frozen) → all 24 hidden states
@@ -22,7 +22,7 @@ import torch
 import torchaudio
 from pathlib import Path
 
-from model.adapt_vc import AdaptVCModel
+from model.dla_vc import DLAVCModel
 
 
 SAMPLE_RATE = 16000
@@ -69,7 +69,7 @@ def convert_file(wavlm_model, model, avg_quality, input_path, output_path, devic
 
 
 def main():
-    parser = argparse.ArgumentParser(description="AdaptVC — Inference")
+    parser = argparse.ArgumentParser(description="DLA-VC — Inference")
     parser.add_argument('--input', type=str)
     parser.add_argument('--output', type=str)
     parser.add_argument('--input_dir', type=str,
@@ -77,7 +77,7 @@ def main():
     parser.add_argument('--output_dir', type=str,
                         default=os.path.join(os.path.dirname(__file__), '..', 'converted'))
     parser.add_argument('--checkpoint', type=str,
-                        default=os.path.join(os.path.dirname(__file__), '..', 'checkpoints', 'best_adapt_vc.pth'))
+                        default=os.path.join(os.path.dirname(__file__), '..', 'checkpoints', 'best_dla_vc.pth'))
     parser.add_argument('--direction', type=str, default='A2B', choices=['A2B', 'B2A'])
     args = parser.parse_args()
 
@@ -96,7 +96,7 @@ def main():
     ckpt = torch.load(args.checkpoint, map_location=device, weights_only=True)
     config = ckpt['config']
 
-    model = AdaptVCModel(
+    model = DLAVCModel(
         feat_dim=config['feat_dim'], code_dim=config['code_dim'],
         num_codes=config['num_codes'], num_heads=config['num_heads'],
         quality_dim=config['quality_dim'],

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=adapt_vc
+#SBATCH --job-name=dla_vc
 #SBATCH --account=def-zshakeri
 #SBATCH --gres=gpu:h100:1
 #SBATCH --cpus-per-task=4
@@ -12,7 +12,7 @@ module load cuda/11.8
 
 source ../.env/bin/activate
 
-# Step 1: Train AdaptVC on raw audio (WavLM features extracted on-the-fly)
+# Step 1: Train DLA-VC on raw audio (WavLM features extracted on-the-fly)
 python scripts/train.py
 
 # Step 2: Convert all pre-surgery files
