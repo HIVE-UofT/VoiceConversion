@@ -101,7 +101,8 @@ Vector-quantized VAE that explicitly disentangles voice into content (discrete V
 | 2 | + Cycle loss, dead code reset, quality dropout | 15/256 | 0.0337 | Still collapsed, steganography in code sequences |
 | 3 | + T/8 bottleneck, 64 codes, GRU classifier, content noise | 9/64 | 0.0433 | Collapse worse, reconstruction degraded |
 | 4 | + Product VQ (4×16), entropy regularization, lower commitment | *pending* | *pending* | — |
-| 5 | **WavLM features** instead of mel-specs, 1D convolutions, HiFi-GAN vocoder | *pending* | *pending* | — |
+| 5 | **WavLM features** instead of mel-specs, 1D convolutions, HiFi-GAN vocoder | 20-23/32 | 2.15 (train) / 2.71 (val) | SpkSim 0.394 vs 0.661 baseline — bottleneck destroys too much info |
+| 6 | **VQ-UNet**: U-Net skip connections + VQ bottleneck + FiLM quality modulation | *pending* | *pending* | — |
 
 **Key findings (Exp 1-4):**
 - Disentanglement works well across all experiments (adversarial loss stays at random chance ~0.693)
@@ -130,6 +131,27 @@ Additionally:
 - **Tonsillectomy voice conversion** has no prior work in deep learning
 - **Learned VQ-VC with ~28 files per domain** is unprecedented — all existing VQ-VC methods require hundreds to thousands of hours
 - The "quality vector" framing (pre/post surgery voice quality, not speaker identity) is distinct from standard speaker embeddings
+
+**Experiment 6 — VQ-UNet (Hybrid Architecture):**
+
+Motivated by Exp5's failure (SpkSim dropped from 0.661 baseline to 0.394 — the pure VQVAE bottleneck destroyed too much information), Exp6 combines the best of both worlds:
+
+- **U-Net skip connections** (from UNet-VC) preserve fine-grained spectral detail around the bottleneck
+- **VQ bottleneck** (from VQVAE Exp5) at the deepest level forces content through discrete codes
+- **FiLM-conditioned skip connections** — Feature-wise Linear Modulation layers gate skip connection features based on the quality vector, preserving disentanglement while letting structural detail flow through
+
+Architecture:
+```
+WavLM (1024, T)
+  → EncBlock1 (1024→256, T) ─── skip1 → FiLM(quality) → DecBlock1 (512→1024, T)
+  → EncBlock2 (256→128, T/2) ── skip2 → FiLM(quality) → DecBlock2 (256→256, T/2)
+  → VQ bottleneck (128→64→VQ→64, T/4)
+  → quality vector (64-dim) ──────────→ FiLM layers + decoder concat
+```
+
+Key insight: during conversion, skip connections carry the source speaker's structural detail, but the FiLM layers modulate this detail based on the target quality vector — allowing quality-dependent features (resonance, nasality) to be transformed while content-dependent features (formant transitions, phoneme boundaries) pass through unchanged.
+
+Same losses as Exp5: reconstruction, VQ, adversarial, quality classification, cycle consistency, cross-reconstruction. See `vqvae/scripts/train_exp6.py`.
 
 ### 5. Mean Shift VC (Domain-Level Feature Transform)
 
@@ -210,21 +232,27 @@ VoiceConversion/
 │   ├── model/
 │   │   ├── vqvae.py                # VQVAE on mel-specs (Exp 1-4)
 │   │   ├── vqvae_wavlm.py          # VQVAE on WavLM features (Exp 5)
+│   │   ├── vqvae_unet.py           # VQ-UNet with FiLM skip connections (Exp 6)
 │   │   └── __init__.py
 │   ├── scripts/
 │   │   ├── train.py                # Training Exp 1-4 (mel-spectrogram)
 │   │   ├── train_exp5.py           # Training Exp 5 (WavLM features)
+│   │   ├── train_exp6.py           # Training Exp 6 (VQ-UNet + FiLM)
 │   │   ├── inference.py            # Inference Exp 1-4
 │   │   ├── inference_exp5.py       # Inference Exp 5 (WavLM + HiFi-GAN)
+│   │   ├── inference_exp6.py       # Inference Exp 6 (VQ-UNet + HiFi-GAN)
 │   │   ├── evaluate.py             # Evaluation Exp 1-4
-│   │   └── evaluate_exp5.py        # Evaluation Exp 5
+│   │   ├── evaluate_exp5.py        # Evaluation Exp 5
+│   │   └── evaluate_exp6.py        # Evaluation Exp 6
 │   ├── checkpoints/                # Exp 1-4 model weights
 │   ├── checkpoints_exp5/           # Exp 5 model weights
+│   ├── checkpoints_exp6/           # Exp 6 model weights
 │   ├── wavlm_cache/                # Cached WavLM features (auto-generated)
 │   ├── plots/                      # Training visualizations per epoch
 │   ├── PROGRESS.md                 # Detailed experiment log with analysis
 │   ├── submit.sh                   # Exp 1-4
-│   └── submit_exp5.sh              # Exp 5
+│   ├── submit_exp5.sh              # Exp 5
+│   └── submit_exp6.sh              # Exp 6
 ├── mean_shift/
 │   ├── scripts/
 │   │   ├── train.py                # Compute domain mean vectors
@@ -267,15 +295,20 @@ VoiceConversion/
 
 ## Evaluation Metrics
 
-All methods are evaluated with comparable metrics:
+All methods are evaluated using shared metrics via `shared_evaluate.py`:
 
 | Metric | What it measures | Ideal |
 |--------|-----------------|-------|
-| MCD to target | Spectral distance between converted and real post-surgery | Lower |
-| Content preservation MCD | Spectral distance between source and converted | Lower |
+| **Speaker Similarity (conv vs target)** | ECAPA-TDNN cosine similarity: does converted voice sound like post-surgery? | Higher (>baseline) |
+| Speaker Similarity (conv vs source) | ECAPA-TDNN: how much does converted voice still sound like pre-surgery? | Reference |
+| Baseline Speaker Similarity | ECAPA-TDNN: pre vs post same patient, no conversion | Floor to beat |
+| LSD to target | Log-spectral distance between converted and real post-surgery | Lower |
+| SED to target | Spectral envelope distance | Lower |
 | F0 Correlation | Pitch tracking: source vs converted | Higher |
-| Disentanglement (VQVAE only) | Can a linear probe predict surgery status from content codes? | ~50% accuracy |
-| Quality classification (VQVAE only) | Can a linear probe predict surgery status from quality vector? | ~100% accuracy |
+| Disentanglement (VQVAE only) | Can a classifier predict surgery status from content codes? | ~50% accuracy |
+| Quality classification (VQVAE only) | Can a classifier predict surgery status from quality vector? | ~100% accuracy |
+
+Speaker similarity is the **primary metric** — it measures content-independent voice identity using ECAPA-TDNN (SpeechBrain pretrained, 192-dim embeddings). A good conversion should push conv-vs-target similarity above the baseline (pre-vs-post same patient).
 
 ## References
 

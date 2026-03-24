@@ -44,28 +44,33 @@ PLOT_DIR = os.path.join(os.path.dirname(__file__), '..', 'plots_exp5')
 
 # Model
 FEAT_DIM = 1024
-CODE_DIM = 64
-NUM_CODES = 16
-NUM_HEADS = 4
-QUALITY_DIM = 32
+CODE_DIM = 64            # tight bottleneck — forces quality info into quality vector
+NUM_CODES = 32           # 32 codes per head
+NUM_HEADS = 4            # 4 heads × 16-dim each = 64-dim
+QUALITY_DIM = 64         # was 32 — more capacity for quality info
 COMMITMENT_WEIGHT = 0.25
-EMA_DECAY = 0.95
-ENTROPY_WEIGHT = 0.1
+EMA_DECAY = 0.99         # slow codebook updates = stable
+ENTROPY_WEIGHT = 0.5     # strong push against codebook collapse
+DROPOUT = 0.15           # regularization
+QUALITY_DROPOUT = 0.0    # was 0.3 — DISABLED so decoder learns to use quality
+CONTENT_NOISE = 0.2      # was 0.1 — more noise degrades content, forces quality reliance
 
 # Training
 BATCH_SIZE = 8
-EPOCHS = 300
-LR = 2e-4
-LR_ADV = 2e-4
+EPOCHS = 400
+LR = 1e-4                # was 2e-4 — slower learning for stability
+LR_ADV = 1e-4
 SEGMENT_LEN = 128      # ~2.5s at 50fps WavLM
 TARGET_LEN = SEGMENT_LEN
+WARMUP_EPOCHS = 30      # was 20 — more warmup for stable reconstruction
 
 # Loss weights
-LAMBDA_RECON = 1.0
+LAMBDA_RECON = 5.0       # reconstruction dominates
 LAMBDA_VQ = 1.0
-LAMBDA_ADV = 1.0
-LAMBDA_QUAL_CLS = 2.0
-LAMBDA_CYCLE = 5.0
+LAMBDA_ADV = 1.5         # was 1.0 — stronger adversarial push
+LAMBDA_QUAL_CLS = 5.0    # was 2.0 — force quality vector to encode domain info
+LAMBDA_CYCLE = 2.0
+LAMBDA_CROSS_RECON = 2.0 # NEW: cross-reconstruction must be plausible
 
 
 # ──────────────────────────────────────────────
@@ -237,15 +242,23 @@ def train():
         feat_dim=FEAT_DIM, code_dim=CODE_DIM, num_codes=NUM_CODES,
         num_heads=NUM_HEADS, quality_dim=QUALITY_DIM,
         commitment_weight=COMMITMENT_WEIGHT, ema_decay=EMA_DECAY,
-        entropy_weight=ENTROPY_WEIGHT,
+        entropy_weight=ENTROPY_WEIGHT, dropout=DROPOUT,
+        quality_dropout_rate=QUALITY_DROPOUT,
+        content_noise_std=CONTENT_NOISE,
     ).to(device)
     domain_cls = DomainClassifier1D(code_dim=CODE_DIM).to(device)
-    quality_cls = nn.Linear(QUALITY_DIM, 1).to(device)
+    # MLP quality classifier instead of single Linear (was collapsing to 0 too fast)
+    quality_cls = nn.Sequential(
+        nn.Linear(QUALITY_DIM, 32),
+        nn.ReLU(),
+        nn.Dropout(0.3),
+        nn.Linear(32, 1),
+    ).to(device)
 
     print(f"VQVAE parameters: {model.count_parameters():,}")
 
     # ─── Optimizers ───
-    opt_model = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-4)
+    opt_model = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-3)
     opt_adv = torch.optim.Adam(domain_cls.parameters(), lr=LR_ADV)
     opt_qual = torch.optim.Adam(quality_cls.parameters(), lr=LR_ADV)
 
@@ -255,8 +268,8 @@ def train():
     # ─── Logging ───
     history = {
         'recon_loss': [], 'vq_loss': [], 'adv_loss': [],
-        'qual_cls_loss': [], 'cycle_loss': [], 'perplexity': [],
-        'val_recon': [],
+        'qual_cls_loss': [], 'cycle_loss': [], 'cross_recon_loss': [],
+        'perplexity': [], 'val_recon': [],
     }
     best_val_loss = float('inf')
 
@@ -266,7 +279,7 @@ def train():
         domain_cls.train()
         quality_cls.train()
 
-        ep = {k: 0.0 for k in ['recon', 'vq', 'adv', 'qual', 'cycle', 'perp']}
+        ep = {k: 0.0 for k in ['recon', 'vq', 'adv', 'qual', 'cycle', 'cross', 'perp']}
         n_batches = 0
 
         pbar = tqdm(paired_loader, desc=f"Epoch {epoch+1}/{EPOCHS}")
@@ -279,15 +292,21 @@ def train():
             feat = torch.cat([feat_pre, feat_post], dim=0)
             labels = torch.cat([lab_pre, lab_post], dim=0)
 
-            # ═══ Step 1: Train adversarial classifier ═══
-            with torch.no_grad():
-                content_z_all = model.content_encoder(feat)
+            # ═══ Step 1: Train adversarial classifier (skip during warmup) ═══
+            loss_adv_cls = torch.tensor(0.693)  # default = random
+            loss_adv_g = torch.tensor(0.0, device=device)
+            loss_qual = torch.tensor(0.0, device=device)
+            loss_cross_recon = torch.tensor(0.0, device=device)
 
-            opt_adv.zero_grad()
-            adv_pred = domain_cls(content_z_all.detach())
-            loss_adv_cls = F.binary_cross_entropy_with_logits(adv_pred.squeeze(1), labels)
-            loss_adv_cls.backward()
-            opt_adv.step()
+            if epoch >= WARMUP_EPOCHS:
+                with torch.no_grad():
+                    content_z_all = model.content_encoder(feat)
+
+                opt_adv.zero_grad()
+                adv_pred = domain_cls(content_z_all.detach())
+                loss_adv_cls = F.binary_cross_entropy_with_logits(adv_pred.squeeze(1), labels)
+                loss_adv_cls.backward()
+                opt_adv.step()
 
             # ═══ Step 2: Train VQVAE + quality classifier ═══
             opt_model.zero_grad()
@@ -297,53 +316,79 @@ def train():
             recon, vq_loss, perplexity, content_z = model(feat)
             loss_recon = F.mse_loss(recon, feat)
 
-            # Adversarial disentanglement
-            content_reversed = gradient_reversal(content_z, alpha=LAMBDA_ADV)
-            adv_pred_gr = domain_cls(content_reversed)
-            loss_adv_g = F.binary_cross_entropy_with_logits(adv_pred_gr.squeeze(1), labels)
+            if epoch >= WARMUP_EPOCHS:
+                # Adversarial disentanglement
+                content_reversed = gradient_reversal(content_z, alpha=LAMBDA_ADV)
+                adv_pred_gr = domain_cls(content_reversed)
+                loss_adv_g = F.binary_cross_entropy_with_logits(adv_pred_gr.squeeze(1), labels)
 
-            # Quality classification
-            quality = model.quality_encoder(feat)
-            qual_pred = quality_cls(quality)
-            loss_qual = F.binary_cross_entropy_with_logits(qual_pred.squeeze(1), labels)
+                # Quality classification
+                quality = model.quality_encoder(feat)
+                qual_pred = quality_cls(quality)
+                loss_qual = F.binary_cross_entropy_with_logits(qual_pred.squeeze(1), labels)
 
-            # ═══ Step 3: Cycle loss ═══
-            B = feat_pre.shape[0]
+            # ═══ Step 3: Cycle loss (skip during warmup) ═══
+            loss_cycle = torch.tensor(0.0, device=device)
 
-            content_z_pre = model.content_encoder(feat_pre)
-            content_q_pre, _, _ = model.vq(content_z_pre)
-            quality_pre = model.quality_encoder(feat_pre)
+            if epoch >= WARMUP_EPOCHS:
+                B = feat_pre.shape[0]
 
-            content_z_post = model.content_encoder(feat_post)
-            content_q_post, _, _ = model.vq(content_z_post)
-            quality_post = model.quality_encoder(feat_post)
+                content_z_pre = model.content_encoder(feat_pre)
+                content_q_pre, _, _ = model.vq(content_z_pre)
+                quality_pre = model.quality_encoder(feat_pre)
 
-            # Cross-reconstruct
-            cross_pre2post = model.decoder(content_q_pre, quality_post)
-            cross_pre2post = model._match_time(cross_pre2post, feat_pre)
+                content_z_post = model.content_encoder(feat_post)
+                content_q_post, _, _ = model.vq(content_z_post)
+                quality_post = model.quality_encoder(feat_post)
 
-            cross_post2pre = model.decoder(content_q_post, quality_pre)
-            cross_post2pre = model._match_time(cross_post2pre, feat_post)
+                # Cross-reconstruct
+                cross_pre2post = model.decoder(content_q_pre, quality_post)
+                cross_pre2post = model._match_time(cross_pre2post, feat_pre)
 
-            # Re-encode
-            re_content_q_a2b, _, _ = model.vq(model.content_encoder(cross_pre2post))
-            re_quality_a2b = model.quality_encoder(cross_pre2post)
+                cross_post2pre = model.decoder(content_q_post, quality_pre)
+                cross_post2pre = model._match_time(cross_post2pre, feat_post)
 
-            re_content_q_b2a, _, _ = model.vq(model.content_encoder(cross_post2pre))
-            re_quality_b2a = model.quality_encoder(cross_post2pre)
+                # Re-encode and check cycle consistency
+                re_content_q_a2b, _, _ = model.vq(model.content_encoder(cross_pre2post))
+                re_quality_a2b = model.quality_encoder(cross_pre2post)
 
-            loss_cycle_content = (F.l1_loss(re_content_q_a2b, content_q_pre.detach())
-                                + F.l1_loss(re_content_q_b2a, content_q_post.detach()))
-            loss_cycle_quality = (F.l1_loss(re_quality_a2b, quality_post.detach())
-                                + F.l1_loss(re_quality_b2a, quality_pre.detach()))
-            loss_cycle = loss_cycle_content + loss_cycle_quality
+                re_content_q_b2a, _, _ = model.vq(model.content_encoder(cross_post2pre))
+                re_quality_b2a = model.quality_encoder(cross_post2pre)
+
+                loss_cycle_content = (F.l1_loss(re_content_q_a2b, content_q_pre.detach())
+                                    + F.l1_loss(re_content_q_b2a, content_q_post.detach()))
+                loss_cycle_quality = (F.l1_loss(re_quality_a2b, quality_post.detach())
+                                    + F.l1_loss(re_quality_b2a, quality_pre.detach()))
+                loss_cycle = loss_cycle_content + loss_cycle_quality
+
+                # Cross-reconstruction quality check:
+                # The cross-reconstructed output should produce the TARGET quality
+                # when re-encoded. This forces quality vector to actually affect output.
+                cross_qual_pred_a2b = quality_cls(re_quality_a2b)
+                cross_qual_pred_b2a = quality_cls(re_quality_b2a)
+                # cross_pre2post should have post quality (label=1)
+                # cross_post2pre should have pre quality (label=0)
+                loss_cross_recon = (
+                    F.binary_cross_entropy_with_logits(
+                        cross_qual_pred_a2b.squeeze(1),
+                        torch.ones(B, device=device))
+                    + F.binary_cross_entropy_with_logits(
+                        cross_qual_pred_b2a.squeeze(1),
+                        torch.zeros(B, device=device))
+                )
 
             # ═══ Total loss ═══
-            loss_total = (LAMBDA_RECON * loss_recon
-                         + LAMBDA_VQ * vq_loss
-                         + loss_adv_g
-                         + LAMBDA_QUAL_CLS * loss_qual
-                         + LAMBDA_CYCLE * loss_cycle)
+            # Warmup: recon + VQ only for first N epochs, then add adv/cycle/cross
+            if epoch < WARMUP_EPOCHS:
+                loss_total = (LAMBDA_RECON * loss_recon
+                             + LAMBDA_VQ * vq_loss)
+            else:
+                loss_total = (LAMBDA_RECON * loss_recon
+                             + LAMBDA_VQ * vq_loss
+                             + loss_adv_g
+                             + LAMBDA_QUAL_CLS * loss_qual
+                             + LAMBDA_CYCLE * loss_cycle
+                             + LAMBDA_CROSS_RECON * loss_cross_recon)
 
             loss_total.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -355,6 +400,7 @@ def train():
             ep['adv'] += loss_adv_cls.item()
             ep['qual'] += loss_qual.item()
             ep['cycle'] += loss_cycle.item()
+            ep['cross'] += loss_cross_recon.item()
             ep['perp'] += perplexity.item()
             n_batches += 1
 
@@ -367,7 +413,8 @@ def train():
 
         # Average epoch metrics
         for key, ep_key in [('recon_loss', 'recon'), ('vq_loss', 'vq'), ('adv_loss', 'adv'),
-                            ('qual_cls_loss', 'qual'), ('cycle_loss', 'cycle'), ('perplexity', 'perp')]:
+                            ('qual_cls_loss', 'qual'), ('cycle_loss', 'cycle'),
+                            ('cross_recon_loss', 'cross'), ('perplexity', 'perp')]:
             history[key].append(ep[ep_key] / max(n_batches, 1))
 
         sched_model.step()
@@ -387,9 +434,10 @@ def train():
         avg_val = val_recon / max(n_val, 1)
         history['val_recon'].append(avg_val)
 
-        print(f"Epoch {epoch+1} | Recon: {history['recon_loss'][-1]:.4f} | "
-              f"VQ: {history['vq_loss'][-1]:.4f} | Perp: {history['perplexity'][-1]:.0f} | "
-              f"Cycle: {history['cycle_loss'][-1]:.4f} | "
+        warmup_tag = " [WARMUP]" if epoch < WARMUP_EPOCHS else ""
+        print(f"Epoch {epoch+1}{warmup_tag} | Recon: {history['recon_loss'][-1]:.4f} | "
+              f"VQ: {history['vq_loss'][-1]:.4f} | Perp: {history['perplexity'][-1]:.0f}/{NUM_CODES} | "
+              f"Cycle: {history['cycle_loss'][-1]:.4f} | Cross: {history['cross_recon_loss'][-1]:.4f} | "
               f"Adv: {history['adv_loss'][-1]:.4f} | Qual: {history['qual_cls_loss'][-1]:.4f} | "
               f"Val Recon: {avg_val:.4f}")
 
@@ -465,7 +513,7 @@ def compute_avg_quality(model, pre_data, post_data, device, segment_len):
 
 
 def plot_training_curves(history, epoch):
-    fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+    fig, axes = plt.subplots(2, 4, figsize=(24, 10))
 
     axes[0, 0].plot(history['recon_loss'], label='Train')
     axes[0, 0].plot(history['val_recon'], label='Val')
@@ -477,8 +525,12 @@ def plot_training_curves(history, epoch):
 
     axes[0, 2].plot(history['perplexity'], label='Avg Perplexity')
     axes[0, 2].axhline(y=NUM_CODES, color='r', linestyle='--', label=f'Max per head ({NUM_CODES})')
-    axes[0, 2].set_title(f'Codebook Perplexity ({NUM_HEADS}×{NUM_CODES})')
+    axes[0, 2].set_title(f'Codebook Perplexity ({NUM_HEADS}x{NUM_CODES})')
     axes[0, 2].legend(); axes[0, 2].grid(True)
+
+    axes[0, 3].plot(history['cross_recon_loss'], label='Cross-recon')
+    axes[0, 3].set_title('Cross-Recon Quality Loss (want low)')
+    axes[0, 3].legend(); axes[0, 3].grid(True)
 
     axes[1, 0].plot(history['cycle_loss'], label='Cycle')
     axes[1, 0].set_title('Cycle Loss'); axes[1, 0].legend(); axes[1, 0].grid(True)
@@ -491,6 +543,8 @@ def plot_training_curves(history, epoch):
     axes[1, 2].plot(history['qual_cls_loss'], label='Quality cls')
     axes[1, 2].set_title('Quality Classification (want low)')
     axes[1, 2].legend(); axes[1, 2].grid(True)
+
+    axes[1, 3].axis('off')  # empty subplot
 
     plt.suptitle(f'VQVAE Exp 5 (WavLM) — Epoch {epoch}', fontsize=14)
     plt.tight_layout()

@@ -32,13 +32,14 @@ from .vqvae import (
 
 
 class ResBlock1d(nn.Module):
-    """Residual block for 1D feature maps."""
-    def __init__(self, channels):
+    """Residual block for 1D feature maps with dropout."""
+    def __init__(self, channels, dropout=0.1):
         super().__init__()
         self.block = nn.Sequential(
             nn.Conv1d(channels, channels, kernel_size=3, padding=1),
             nn.GroupNorm(min(8, channels), channels),
             nn.GELU(),
+            nn.Dropout(dropout),
             nn.Conv1d(channels, channels, kernel_size=3, padding=1),
             nn.GroupNorm(min(8, channels), channels),
         )
@@ -50,28 +51,29 @@ class ResBlock1d(nn.Module):
 class ContentEncoder1D(nn.Module):
     """
     Encodes WavLM features into content representation.
-    Downsamples time by 4x.
+    Downsamples time by 4x — tight bottleneck forces quality into quality vector.
 
     Input:  (B, 1024, T) WavLM features
     Output: (B, code_dim, T/4)
     """
-    def __init__(self, feat_dim=1024, code_dim=64):
+    def __init__(self, feat_dim=1024, code_dim=64, dropout=0.1):
         super().__init__()
         self.net = nn.Sequential(
-            # (B, 1024, T) → (B, 512, T/2)
-            nn.Conv1d(feat_dim, 512, kernel_size=4, stride=2, padding=1),
-            nn.GroupNorm(8, 512),
-            nn.GELU(),
-            ResBlock1d(512),
-
-            # (B, 512, T/2) → (B, 256, T/4)
-            nn.Conv1d(512, 256, kernel_size=4, stride=2, padding=1),
+            # (B, 1024, T) → (B, 256, T/2)
+            nn.Conv1d(feat_dim, 256, kernel_size=4, stride=2, padding=1),
             nn.GroupNorm(8, 256),
             nn.GELU(),
-            ResBlock1d(256),
+            nn.Dropout(dropout),
+            ResBlock1d(256, dropout),
 
-            # (B, 256, T/4) → (B, code_dim, T/4)
-            nn.Conv1d(256, code_dim, kernel_size=1),
+            # (B, 256, T/2) → (B, 128, T/4)
+            nn.Conv1d(256, 128, kernel_size=4, stride=2, padding=1),
+            nn.GroupNorm(8, 128),
+            nn.GELU(),
+            ResBlock1d(128, dropout),
+
+            # (B, 128, T/4) → (B, code_dim, T/4)
+            nn.Conv1d(128, code_dim, kernel_size=1),
         )
 
     def forward(self, x):
@@ -85,15 +87,17 @@ class VoiceQualityEncoder1D(nn.Module):
     Input:  (B, 1024, T) WavLM features
     Output: (B, quality_dim)
     """
-    def __init__(self, feat_dim=1024, quality_dim=32):
+    def __init__(self, feat_dim=1024, quality_dim=32, dropout=0.1):
         super().__init__()
         self.conv = nn.Sequential(
             nn.Conv1d(feat_dim, 256, kernel_size=3, padding=1),
             nn.GroupNorm(8, 256),
             nn.GELU(),
+            nn.Dropout(dropout),
             nn.Conv1d(256, 128, kernel_size=3, stride=2, padding=1),
             nn.GroupNorm(8, 128),
             nn.GELU(),
+            nn.Dropout(dropout),
             nn.Conv1d(128, 64, kernel_size=3, stride=2, padding=1),
             nn.GroupNorm(8, 64),
             nn.GELU(),
@@ -112,13 +116,13 @@ class VoiceQualityEncoder1D(nn.Module):
 class Decoder1D(nn.Module):
     """
     Reconstructs WavLM features from quantized content + voice quality.
-    Upsamples time by 4x.
+    Upsamples time by 4x (matching encoder's 4x downsampling).
 
     Input:  content (B, code_dim, T/4), quality (B, quality_dim)
     Output: (B, 1024, T) reconstructed WavLM features
     """
-    def __init__(self, feat_dim=1024, code_dim=64, quality_dim=32,
-                 quality_dropout_rate=0.3, content_noise_std=0.1):
+    def __init__(self, feat_dim=1024, code_dim=64, quality_dim=64,
+                 quality_dropout_rate=0.0, content_noise_std=0.2, dropout=0.1):
         super().__init__()
         self.quality_dropout_rate = quality_dropout_rate
         self.content_noise_std = content_noise_std
@@ -129,13 +133,14 @@ class Decoder1D(nn.Module):
             nn.Conv1d(input_dim, 256, kernel_size=3, padding=1),
             nn.GroupNorm(8, 256),
             nn.GELU(),
-            ResBlock1d(256),
+            nn.Dropout(dropout),
+            ResBlock1d(256, dropout),
 
             # (B, 256, T/4) → (B, 512, T/2)
             nn.ConvTranspose1d(256, 512, kernel_size=4, stride=2, padding=1),
             nn.GroupNorm(8, 512),
             nn.GELU(),
-            ResBlock1d(512),
+            ResBlock1d(512, dropout),
 
             # (B, 512, T/2) → (B, 1024, T)
             nn.ConvTranspose1d(512, feat_dim, kernel_size=4, stride=2, padding=1),
@@ -192,23 +197,26 @@ class VQVAEWavLM(nn.Module):
 
     Components:
       - content_encoder: WavLM → continuous content features (T/4 temporal resolution)
-      - vq: Product VQ (4 heads × 16 codes each)
-      - quality_encoder: WavLM → voice quality vector
+      - vq: Product VQ (4 heads × 32 codes each)
+      - quality_encoder: WavLM → voice quality vector (64-dim)
       - decoder: quantized content + quality → reconstructed WavLM features (4x upsample)
     """
-    def __init__(self, feat_dim=1024, code_dim=64, num_codes=16, num_heads=4,
-                 quality_dim=32, commitment_weight=0.25, ema_decay=0.95,
-                 entropy_weight=0.1):
+    def __init__(self, feat_dim=1024, code_dim=128, num_codes=32, num_heads=4,
+                 quality_dim=32, commitment_weight=0.25, ema_decay=0.99,
+                 entropy_weight=0.5, dropout=0.1,
+                 quality_dropout_rate=0.0, content_noise_std=0.2):
         super().__init__()
         self.feat_dim = feat_dim
-        self.content_encoder = ContentEncoder1D(feat_dim=feat_dim, code_dim=code_dim)
+        self.content_encoder = ContentEncoder1D(feat_dim=feat_dim, code_dim=code_dim, dropout=dropout)
         self.vq = ProductVectorQuantizer(
             num_codes=num_codes, code_dim=code_dim, num_heads=num_heads,
             commitment_weight=commitment_weight, ema_decay=ema_decay,
             entropy_weight=entropy_weight,
         )
-        self.quality_encoder = VoiceQualityEncoder1D(feat_dim=feat_dim, quality_dim=quality_dim)
-        self.decoder = Decoder1D(feat_dim=feat_dim, code_dim=code_dim, quality_dim=quality_dim)
+        self.quality_encoder = VoiceQualityEncoder1D(feat_dim=feat_dim, quality_dim=quality_dim, dropout=dropout)
+        self.decoder = Decoder1D(feat_dim=feat_dim, code_dim=code_dim, quality_dim=quality_dim,
+                                 dropout=dropout, quality_dropout_rate=quality_dropout_rate,
+                                 content_noise_std=content_noise_std)
 
     def forward(self, x):
         """

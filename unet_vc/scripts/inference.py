@@ -61,7 +61,7 @@ def main():
 
     # Load trained U-Net
     print(f"Loading checkpoint: {args.checkpoint}")
-    ckpt = torch.load(args.checkpoint, map_location=device, weights_only=True)
+    ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
     config = ckpt['config']
 
     model = ResUNet1D(

@@ -6,9 +6,9 @@ in WavLM feature space: f(x_pre) ≈ x_post.
 
 Training procedure:
 1. Extract WavLM features from all pre and post surgery audio
-2. Pair frames via cosine-similarity nearest neighbors
-3. Create overlapping windows (segments) for temporal context
-4. Train U-Net with MSE loss + multi-res spectral loss on features
+2. Pair frames per-utterance via cosine-similarity nearest neighbors
+3. Create overlapping windows (segments) per-utterance for temporal context
+4. Train U-Net with MSE + cosine similarity loss on features
 
 The residual design (output = input + alpha * network(input)) means the
 network only needs to learn the small delta between domains.
@@ -21,8 +21,10 @@ import argparse
 import os
 import sys
 import glob
+import random
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
@@ -34,16 +36,19 @@ from model.unet import ResUNet1D
 SAMPLE_RATE = 16000
 
 # Training config
-HIDDEN_DIM = 256
-N_LEVELS = 3
-DROPOUT = 0.1
+HIDDEN_DIM = 128
+N_LEVELS = 2
+DROPOUT = 0.25
 BATCH_SIZE = 32
 SEGMENT_LEN = 64       # frames per training segment (~1.3s at 50fps)
-SEGMENT_HOP = 32       # overlap for more training samples
-LR = 1e-4
-WEIGHT_DECAY = 1e-4
-EPOCHS = 200
-PATIENCE = 30           # early stopping patience
+SEGMENT_HOP = 16        # smaller hop = more training samples from limited data
+LR = 5e-4
+WEIGHT_DECAY = 1e-3
+EPOCHS = 300
+PATIENCE = 40           # early stopping patience
+COSINE_LOSS_WEIGHT = 0.5
+AUGMENT_NOISE_STD = 0.02
+AUGMENT_MASK_PROB = 0.1
 
 
 def extract_all_features(knn_vc, wav_dir):
@@ -65,8 +70,6 @@ def extract_all_features(knn_vc, wav_dir):
 
 def pair_frames_knn(X, Y):
     """Pair source frames (X) to target frames (Y) via cosine NN."""
-    print(f"  Pairing {X.shape[0]} -> {Y.shape[0]} frames...")
-
     X_norm = X / (X.norm(dim=1, keepdim=True) + 1e-8)
     Y_norm = Y / (Y.norm(dim=1, keepdim=True) + 1e-8)
 
@@ -80,25 +83,64 @@ def pair_frames_knn(X, Y):
     return X, Y[indices]
 
 
-class FeatureSegmentDataset(Dataset):
-    """Dataset of paired (source, target) feature segments."""
+def create_segments_per_utterance(pre_features_list, post_features_list,
+                                   segment_len, segment_hop):
+    """Create paired segments per-utterance, preserving temporal order."""
+    segments = []
 
-    def __init__(self, X_paired, Y_paired, segment_len=64, segment_hop=32):
-        self.segments = []
+    for pre_feat, post_feat in zip(pre_features_list, post_features_list):
+        # Pair frames within this utterance
+        X_paired, Y_paired = pair_frames_knn(pre_feat, post_feat)
+
         n_frames = X_paired.shape[0]
+        if n_frames < segment_len:
+            continue
+
         for start in range(0, n_frames - segment_len + 1, segment_hop):
             end = start + segment_len
-            self.segments.append((
+            segments.append((
                 X_paired[start:end].t(),   # (1024, seg_len)
                 Y_paired[start:end].t(),   # (1024, seg_len)
             ))
-        print(f"  Created {len(self.segments)} segments (len={segment_len}, hop={segment_hop})")
+
+    print(f"  Created {len(segments)} segments (len={segment_len}, hop={segment_hop})")
+    return segments
+
+
+class FeatureSegmentDataset(Dataset):
+    """Dataset of paired (source, target) feature segments with augmentation."""
+
+    def __init__(self, segments, augment=False, noise_std=0.02, mask_prob=0.1):
+        self.segments = segments
+        self.augment = augment
+        self.noise_std = noise_std
+        self.mask_prob = mask_prob
 
     def __len__(self):
         return len(self.segments)
 
     def __getitem__(self, idx):
-        return self.segments[idx]
+        x, y = self.segments[idx]
+
+        if self.augment:
+            # Gaussian noise on input features
+            x = x + torch.randn_like(x) * self.noise_std
+            # Random time-frame masking (zero out random frames)
+            mask = torch.rand(x.shape[-1]) > self.mask_prob
+            x = x * mask.unsqueeze(0)
+
+        return x, y
+
+
+def combined_loss(y_pred, y_target, cosine_weight=0.5):
+    """MSE + cosine similarity loss."""
+    mse = F.mse_loss(y_pred, y_target)
+
+    # Cosine similarity over the feature dimension (dim=1), averaged over batch and time
+    cos_sim = F.cosine_similarity(y_pred, y_target, dim=1).mean()
+    cosine_loss = 1.0 - cos_sim
+
+    return mse + cosine_weight * cosine_loss, mse.item(), cosine_loss.item()
 
 
 def main():
@@ -121,32 +163,53 @@ def main():
     print("Loading kNN-VC model...")
     knn_vc = torch.hub.load('bshall/knn-vc', 'knn_vc', prematched=True, device=device)
 
-    # Extract features
+    # Extract features per-utterance (keep separate for per-utterance pairing)
     print(f"\nExtracting pre-surgery features...")
     features_pre_list = extract_all_features(knn_vc, args.pre_dir)
-    features_pre = torch.cat(features_pre_list, dim=0)
 
     print(f"\nExtracting post-surgery features...")
     features_post_list = extract_all_features(knn_vc, args.post_dir)
-    features_post = torch.cat(features_post_list, dim=0)
 
-    # Pair frames
-    print(f"\nPairing frames (pre -> post)...")
-    X_paired, Y_paired = pair_frames_knn(features_pre, features_post)
+    assert len(features_pre_list) == len(features_post_list), \
+        f"Mismatch: {len(features_pre_list)} pre files vs {len(features_post_list)} post files"
 
-    # Create train/val split (90/10 by frames)
-    n = X_paired.shape[0]
-    n_train = int(0.9 * n)
+    # Create segments per-utterance (preserving temporal coherence)
+    print(f"\nCreating paired segments per-utterance...")
+    all_segments = create_segments_per_utterance(
+        features_pre_list, features_post_list, SEGMENT_LEN, SEGMENT_HOP
+    )
 
-    # Shuffle paired frames before splitting (but keep pairs together)
-    perm = torch.randperm(n)
-    X_paired = X_paired[perm]
-    Y_paired = Y_paired[perm]
+    # Split train/val by utterance index to avoid data leakage
+    n_utts = len(features_pre_list)
+    utt_indices = list(range(n_utts))
+    random.shuffle(utt_indices)
+    n_val_utts = max(1, int(0.15 * n_utts))  # ~15% utterances for val
+    val_utt_set = set(utt_indices[:n_val_utts])
+    train_utt_set = set(utt_indices[n_val_utts:])
 
-    train_dataset = FeatureSegmentDataset(X_paired[:n_train], Y_paired[:n_train],
-                                          SEGMENT_LEN, SEGMENT_HOP)
-    val_dataset = FeatureSegmentDataset(X_paired[n_train:], Y_paired[n_train:],
-                                        SEGMENT_LEN, SEGMENT_HOP)
+    print(f"  Train utterances: {len(train_utt_set)}, Val utterances: {len(val_utt_set)}")
+
+    # Rebuild segments split by utterance
+    train_segments = []
+    val_segments = []
+    seg_idx = 0
+    for utt_i, (pre_feat, post_feat) in enumerate(zip(features_pre_list, features_post_list)):
+        X_paired, Y_paired = pair_frames_knn(pre_feat, post_feat)
+        n_frames = X_paired.shape[0]
+        if n_frames < SEGMENT_LEN:
+            continue
+        for start in range(0, n_frames - SEGMENT_LEN + 1, SEGMENT_HOP):
+            end = start + SEGMENT_LEN
+            seg = (X_paired[start:end].t(), Y_paired[start:end].t())
+            if utt_i in val_utt_set:
+                val_segments.append(seg)
+            else:
+                train_segments.append(seg)
+
+    train_dataset = FeatureSegmentDataset(train_segments, augment=True,
+                                           noise_std=AUGMENT_NOISE_STD,
+                                           mask_prob=AUGMENT_MASK_PROB)
+    val_dataset = FeatureSegmentDataset(val_segments, augment=False)
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
                               num_workers=2, pin_memory=True)
@@ -163,9 +226,6 @@ def main():
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=WEIGHT_DECAY)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
-    # Loss: MSE on features
-    mse_loss = nn.MSELoss()
-
     # Training loop
     os.makedirs(args.output, exist_ok=True)
     best_val_loss = float('inf')
@@ -180,7 +240,7 @@ def main():
             y_batch = y_batch.to(device)
 
             y_pred = model(x_batch)
-            loss = mse_loss(y_pred, y_batch)
+            loss, mse_val, cos_val = combined_loss(y_pred, y_batch, COSINE_LOSS_WEIGHT)
 
             optimizer.zero_grad()
             loss.backward()
@@ -199,7 +259,7 @@ def main():
                 x_batch = x_batch.to(device)
                 y_batch = y_batch.to(device)
                 y_pred = model(x_batch)
-                loss = mse_loss(y_pred, y_batch)
+                loss, _, _ = combined_loss(y_pred, y_batch, COSINE_LOSS_WEIGHT)
                 val_losses.append(loss.item())
 
         train_loss = np.mean(train_losses)
