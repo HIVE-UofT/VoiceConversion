@@ -1,329 +1,204 @@
 # Voice Conversion for Pre/Post Tonsillectomy Speech
 
-Non-parallel voice conversion between pre-surgery and post-surgery (tonsillectomy) speech. The goal is to convert a pre-surgery voice to sound like the same speaker post-surgery, preserving linguistic content while transforming voice quality (resonance, nasality, vocal tract characteristics).
+Non-parallel voice conversion between pre-surgery and post-surgery (tonsillectomy) speech using the CUCO dataset. The goal is to convert a pre-surgery voice to sound like the same speaker post-surgery, preserving linguistic content while transforming voice quality (resonance, nasality, vocal tract characteristics).
+
+## Results
+
+All methods evaluated on the **Tonsill** subset (28 patients) using ECAPA-TDNN speaker cosine similarity — the primary metric measuring content-independent voice identity match between converted and real post-surgery audio.
+
+| Method | SpkSim (conv→post) | vs Baseline | Type | Training Required |
+|--------|:------------------:|:-----------:|------|:-----------------:|
+| **UNet-VC** | **0.792 ± 0.055** | **+19.8%** | Nonlinear feature transform | Yes (~2M params) |
+| kNN-VC | 0.710 ± 0.084 | +7.4% | Nearest-neighbor retrieval | No |
+| MKL-VC | 0.642 ± 0.097 | -2.9% | Optimal transport | No |
+| Mean-Shift | 0.638 ± 0.098 | -3.5% | Mean translation | No |
+| VQVAE Exp5 | 0.394 ± 0.119 | -40.4% | VQ disentanglement | Yes |
+| VQ-UNet (Exp6) | *pending* | — | VQ + U-Net + FiLM | Yes |
+| **AdaptVC** | *pending* | — | **Adapter + VQ + FiLM U-Net** | Yes |
+| LinearVC | *failed* | — | Linear projection | No |
+
+**Baseline** (pre vs post, same patient, no conversion): **0.661 ± 0.118**
+
+Higher SpkSim = converted voice sounds more like the post-surgery voice. The baseline is the floor — a good conversion should beat it. UNet-VC currently leads by a wide margin.
+
+### Baselines Across Surgery Types
+
+| Condition | Baseline SpkSim | n | Interpretation |
+|-----------|:---------------:|:-:|---------------|
+| Contr (control) | 0.886 ± 0.056 | 28 | No surgery — natural session variability |
+| Fess | 0.828 ± 0.076 | 27 | Mild surgery effect |
+| Sept | 0.828 ± 0.065 | 32 | Mild surgery effect |
+| **Tonsill** | **0.661 ± 0.118** | **28** | **Largest surgery effect — hardest to convert** |
 
 ## Dataset
 
 **CUCO Dataset** — Paired recordings from tonsillectomy patients:
 - **28 patients**, each recorded before (session 1) and after (session 2) surgery
-- Speech tasks: reading passages, sustained vowels, etc.
-- Raw audio: 44.1 kHz stereo WAV files
-- Processed: 80-band mel-spectrograms (SR=16kHz, n_fft=2048, hop_length=512), normalized to [0, 1]
-- Segmented into 5-second chunks: ~230 pre-surgery + ~235 post-surgery segments
-- Patient-level train/val/test split (70/15/15) to prevent data leakage
+- Speech tasks: reading passages, sustained vowels
+- 4 conditions: Tonsill, Fess, Sept, Contr (control)
+- Audio: resampled to 16kHz mono for processing
 
-**Data location:**
 ```
-/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/
-├── Audios/Tonsill/Speech/
-│   ├── 1/    # Pre-surgery WAV files (28 files)
-│   └── 2/    # Post-surgery WAV files (28 files)
-└── processed_data/
-    ├── train_dataset.pkl
-    ├── val_dataset.pkl
-    └── test_dataset.pkl
+CUCO/data_final/Audios/
+├── Tonsill/Speech/{1,2}/   # 28 pre + 28 post files
+├── Fess/Speech/{1,2}/      # 27 pre + 27 post files
+├── Sept/Speech/{1,2}/      # 32 pre + 32 post files
+└── Contr/Speech/{1,2}/     # 28 pre + 28 post files
 ```
 
 ## Methods
 
-Four approaches were explored, progressing from simple baselines to more sophisticated architectures:
+### Baselines (No/Minimal Training)
 
-### 1. VAE (Baseline)
+#### kNN-VC — Nearest-Neighbor Retrieval
+**Directory:** `knn_vc/` | [Baas et al., Interspeech 2023](https://arxiv.org/abs/2305.18975)
 
+Replaces each source WavLM frame with the mean of its k=4 nearest neighbors from the post-surgery matching set. No training — leverages frozen WavLM-Large + HiFi-GAN vocoder. Strong baseline (0.710).
+
+#### Mean-Shift — Domain Mean Translation
+**Directory:** `mean_shift/`
+
+`converted = source + (mean_post - mean_pre)` in WavLM space. Assumes surgery effect is a consistent direction in embedding space. Simple but limited (0.638).
+
+#### MKL-VC — Factorized Optimal Transport
+**Directory:** `mkl_vc/` | [MKL-VC, Interspeech 2025](https://arxiv.org/html/2506.09709)
+
+Models domains as Gaussians, computes Monge-Kantorovich transport map. Factorized into K=2 subgroups by variance. Generates new feature combinations (unlike kNN retrieval). Similar to Mean-Shift (0.642).
+
+#### LinearVC — Linear Projection
+**Directory:** `linear_vc/` | [LinearVC, 2025](https://arxiv.org/html/2506.01510)
+
+Learns `W @ features` via ridge regression on NN-paired frames. Failed due to torch.load compatibility issue — not yet evaluated.
+
+### Learned Methods
+
+#### UNet-VC — Residual U-Net Feature Transform (Current Best)
+**Directory:** `unet_vc/`
+
+Residual 1D U-Net learning the small delta between pre and post surgery domains in WavLM space. `output = input + α * network(input)` where α is learned (init 0.1). Skip connections preserve content; residual learning captures the subtle domain shift. ~2M params. **Best result: 0.792.**
+
+#### MaskCycleGAN-VC
+**Directory:** `mask_cyclegan/` | [Kaneko et al., 2021](https://arxiv.org/abs/2102.12841)
+
+CycleGAN with Filling-in-Frames masking on mel spectrograms. Failed — discriminator collapse due to subtle domain differences. Pre/post surgery domains are too similar for adversarial training to distinguish.
+
+#### VAE (Initial Baseline)
 **Directory:** `VAE/`
 
-Variational autoencoder with explicit content/surgery disentanglement. The first attempt at separating *what* is said from *how* it sounds.
+Variational autoencoder with content/surgery disentanglement on mel spectrograms. Established the disentanglement framework but limited by continuous latent space.
 
-- **Architecture:** Conv2D encoder → LSTM → two latent heads: content (512-dim, continuous) and surgery status (8-dim, continuous). Decoder reconstructs mel from both. Gradient reversal on content to prevent it from encoding surgery status.
-- **Losses:** Reconstruction (L1), KL divergence (content + surgery), adversarial (gradient reversal on content), surgery truth classification
-- **Status:** Initial baseline. Established the disentanglement framework but limited by continuous latent space — no discrete bottleneck to force true separation.
-
-### 2. MaskCycleGAN-VC
-
-**Directory:** `mask_cyclegan/`
-
-CycleGAN-based approach with Filling-in-Frames (FIF) masking, based on [Kaneko et al., 2021](https://arxiv.org/abs/2102.12841). Unpaired training — no need for aligned samples.
-
-- **Architecture:** 2-1-2D CNN generator (2D downsample → 1D residual blocks → 2D upsample) with GLU activations, PatchGAN discriminator
-- **Losses:** Adversarial (LSGAN), cycle-consistency (A→B→A), identity (low weight=0.5 for subtle domains), multi-resolution STFT
-- **FIF mechanism:** Random temporal masking forces generator to learn speech structure through cycle + adversarial loss on masked input
-- **Key fixes applied:** Removed broken FIF L1 loss (was comparing unpaired samples), added multi-res STFT, balanced D/G learning rates, reduced identity weight (5.0→0.5), added N_D_STEPS=2
-
-**Issues encountered:**
-- Discriminator collapse — pre/post surgery domains are too subtle for adversarial training
-- Near-identity conversions — generator learned to pass input through unchanged
-- CycleGAN fundamentally struggles with subtle domain differences where the two domains share most acoustic properties
-
-### 3. kNN-VC (Baseline Comparison)
-
-**Directory:** `knn_vc/`
-
-k-Nearest Neighbors Voice Conversion based on [Baas et al., Interspeech 2023](https://arxiv.org/abs/2305.18975). No training required — uses pre-trained self-supervised features.
-
-- **How it works:**
-  1. Extract WavLM-Large features from all post-surgery recordings → matching set (83,437 frames)
-  2. For each source (pre-surgery) frame, find k=4 nearest neighbors in the matching set
-  3. Replace source frame with the mean of its neighbors
-  4. Reconstruct audio with HiFi-GAN vocoder
-- **Advantages:** No training on small dataset, leverages WavLM pre-trained on thousands of hours of speech, simple and fast
-- **Status:** Inference complete (28 files converted), evaluation pending
-
-### 4. VQVAE with Feature Disentanglement (Main Method)
-
+#### VQVAE — VQ Disentanglement on WavLM Features
 **Directory:** `vqvae/`
 
-Vector-quantized VAE that explicitly disentangles voice into content (discrete VQ codes) and voice quality (continuous vector). The discrete bottleneck forces content through a fixed-size codebook, stripping quality information.
+Vector-quantized VAE operating on WavLM features with explicit content (VQ codes) + quality (continuous vector) disentanglement. Uses adversarial, quality classification, cycle consistency, and cross-reconstruction losses.
 
-- **Architecture:**
-  - ContentEncoder: mel → continuous features, T/8 temporal downsampling
-  - ProductVectorQuantizer: 4 heads × 16 codes × 16-dim each (65K effective combinations)
-  - VoiceQualityEncoder: mel → 32-dim quality vector (captures resonance/nasality)
-  - Decoder: quantized content + quality → mel (8x upsample with ResBlock2d)
-  - DomainClassifier: Bidirectional GRU adversarial classifier on content codes
+| Exp | Architecture | SpkSim | Issue |
+|-----|-------------|:------:|-------|
+| 1-4 | VQ on mel spectrograms | — | Codebook collapse, near-identity conversion |
+| 5 | VQ on WavLM features (1D conv) | 0.394 | Bottleneck destroys too much info |
+| 6 | VQ-UNet + FiLM skip connections | *pending* | Hybrid: U-Net skips + VQ bottleneck |
 
-- **Losses:**
-  | Loss | Purpose |
-  |------|---------|
-  | Reconstruction (L1) | Decoded output must match input mel |
-  | VQ commitment + entropy | Codebook usage: commitment keeps encoder near codes, entropy encourages uniform usage |
-  | Multi-resolution STFT | Preserves harmonic/spectral detail |
-  | Adversarial (gradient reversal) | Content must NOT predict pre/post surgery |
-  | Quality classification (BCE) | Quality vector MUST predict pre/post surgery |
-  | Cycle (cross-reconstruction) | Swap quality between domains, re-encode, verify content + quality preserved |
+Exp5 showed disentanglement works (adversarial loss ~0.693, quality classification converges) but the reconstruction quality is too poor for useful conversion.
 
-- **Conversion at inference:** Encode content from source → quantize → combine with average post-surgery quality vector from training set → decode
+### AdaptVC — Adapter + VQ + FiLM U-Net (Proposed Method)
+**Directory:** `adapt_vc/`
 
-**Experiments run (detailed in `vqvae/PROGRESS.md`):**
+Novel architecture inspired by [AdaptVC (ICASSP 2025)](https://arxiv.org/abs/2501.01347), combining learned WavLM layer selection with VQ disentanglement and FiLM-conditioned U-Net decoding. Designed for paired surgical voice conversion with minimal data.
 
-| Experiment | Key Changes | Perplexity | Val Recon | Main Issue |
-|------------|-------------|------------|-----------|------------|
-| 1 | Baseline (256 codes, no cycle) | 10/256 | 0.0390 | Codebook collapse, near-identity conversion |
-| 2 | + Cycle loss, dead code reset, quality dropout | 15/256 | 0.0337 | Still collapsed, steganography in code sequences |
-| 3 | + T/8 bottleneck, 64 codes, GRU classifier, content noise | 9/64 | 0.0433 | Collapse worse, reconstruction degraded |
-| 4 | + Product VQ (4×16), entropy regularization, lower commitment | *pending* | *pending* | — |
-| 5 | **WavLM features** instead of mel-specs, 1D convolutions, HiFi-GAN vocoder | 20-23/32 | 2.15 (train) / 2.71 (val) | SpkSim 0.394 vs 0.661 baseline — bottleneck destroys too much info |
-| 6 | **VQ-UNet**: U-Net skip connections + VQ bottleneck + FiLM quality modulation | *pending* | *pending* | — |
+**Architecture:**
+```
+Raw Audio → WavLM-Large (frozen) → 24 hidden states
+                │
+    ┌───────────┴───────────┐
+    │                       │
+Content Adapter         Quality Adapter
+(learned layer weights) (learned layer weights)
+    │                       │
+U-Net Encoder           Quality Encoder
+    │── skip1 → FiLM ──┐   │
+    │── skip2 → FiLM ──┤   └→ quality_vec (64-dim)
+    ↓                   │         │
+Content Proj → VQ ──────┴→ U-Net Decoder → WavLM layer 6 features
+(4×32 codes)                               → HiFi-GAN → Audio
+```
 
-**Key findings (Exp 1-4):**
-- Disentanglement works well across all experiments (adversarial loss stays at random chance ~0.693)
-- Quality encoder successfully separates pre/post surgery (BCE < 0.02)
-- Codebook collapse is the persistent blocker — only ~10 codes used regardless of codebook size or reset strategies
-- Product quantization + entropy regularization (Exp 4) targets this directly
+**Key innovations:**
+1. **Dual adapters** — learned softmax-weighted sum over WavLM's 24 layers. Content adapter learns which layers encode linguistics (expected: mid-to-late layers). Quality adapter learns which layers encode surgery-related voice quality (expected: early acoustic layers).
+2. **VQ + FiLM U-Net** — Product VQ at the bottleneck for content abstraction. Skip connections preserve detail. FiLM layers modulate skips based on quality vector.
+3. **Paired training** — unlike AdaptVC's self-reconstruction, directly supervises pre→post transformation with cross-reconstruction, cycle consistency, and adversarial losses.
+4. **On-the-fly WavLM extraction** — raw audio input, WavLM processes each batch live (no feature caching).
 
-**Experiment 5 — WavLM Feature Space (Novel Contribution):**
+**Losses:** Reconstruction (MSE vs layer 6 features), VQ commitment + entropy, adversarial (gradient reversal on content), quality classification (BCE), cycle consistency, cross-reconstruction quality check.
 
-Instead of operating on raw mel-spectrograms (Exp 1-4), Exp 5 operates on frozen WavLM-Large features (1024-dim, pretrained on 1000s of hours). The VQ only needs to disentangle content from quality in an already well-structured space. Uses 1D convolutions, HiFi-GAN vocoder from knn-vc for audio output. See `vqvae/scripts/train_exp5.py`.
-
-**Why this is novel** (based on exhaustive literature review of 25+ papers):
-
-The full pipeline — a learned VQ-VAE on SSL features with explicit dual-branch disentanglement (discrete content codes + continuous quality vector), decoding back to SSL feature space — has not been done before. The closest individual components come from different papers:
+**What makes this novel** (based on literature review of 30+ papers):
 
 | Component | Closest Prior Work | How We Differ |
 |---|---|---|
-| Learned VQ on SSL features | Vevo (ICLR 2025): VQ-VAE on HuBERT | Vevo has no explicit continuous quality branch; uses autoregressive + flow-matching decoders |
-| Dual branch (discrete + continuous) from SSL | QR-VC (2024): k-means on WavLM + residual decomposition | QR-VC uses k-means (not learned VQ); decomposes residual, not a separate encoder |
-| Decode back to SSL feature space | RepCodec (ACL 2024): VQ encoder-decoder for SSL features | RepCodec is purely a tokenizer — no speaker/quality disentanglement |
-| SSL-space HiFi-GAN vocoding | kNN-VC (Interspeech 2023) | kNN-VC has no VQ, no learned transform |
-| Adversarial disentanglement + VQ | VQMIVC (Interspeech 2021): VQ + MI minimization | VQMIVC operates on mel-specs (not SSL features), needs large datasets |
-| Medical/pathological VC with SSL | None | No prior work applies SSL-based VQ disentanglement to pathological voice conversion |
+| Learned layer adapters for VC | AdaptVC: adapters on HuBERT-Base | We use dual adapters (content + quality) on WavLM-Large; paired training, not self-reconstruction |
+| VQ + FiLM U-Net decoder in SSL space | None | No prior work combines VQ bottleneck + FiLM-conditioned U-Net operating in SSL feature space |
+| WavLM→WavLM U-Net mapping | None | All prior U-Net VC methods output mel-spectrograms, not SSL features |
+| Medical/pathological VC with adapters | None | No prior work applies SSL adapter-based VC to pathological voice |
 
-Additionally:
-- **Tonsillectomy voice conversion** has no prior work in deep learning
-- **Learned VQ-VC with ~28 files per domain** is unprecedented — all existing VQ-VC methods require hundreds to thousands of hours
-- The "quality vector" framing (pre/post surgery voice quality, not speaker identity) is distinct from standard speaker embeddings
+## Evaluation
 
-**Experiment 6 — VQ-UNet (Hybrid Architecture):**
+All methods use `shared_evaluate.py` with ECAPA-TDNN speaker similarity as the primary metric:
 
-Motivated by Exp5's failure (SpkSim dropped from 0.661 baseline to 0.394 — the pure VQVAE bottleneck destroyed too much information), Exp6 combines the best of both worlds:
-
-- **U-Net skip connections** (from UNet-VC) preserve fine-grained spectral detail around the bottleneck
-- **VQ bottleneck** (from VQVAE Exp5) at the deepest level forces content through discrete codes
-- **FiLM-conditioned skip connections** — Feature-wise Linear Modulation layers gate skip connection features based on the quality vector, preserving disentanglement while letting structural detail flow through
-
-Architecture:
-```
-WavLM (1024, T)
-  → EncBlock1 (1024→256, T) ─── skip1 → FiLM(quality) → DecBlock1 (512→1024, T)
-  → EncBlock2 (256→128, T/2) ── skip2 → FiLM(quality) → DecBlock2 (256→256, T/2)
-  → VQ bottleneck (128→64→VQ→64, T/4)
-  → quality vector (64-dim) ──────────→ FiLM layers + decoder concat
-```
-
-Key insight: during conversion, skip connections carry the source speaker's structural detail, but the FiLM layers modulate this detail based on the target quality vector — allowing quality-dependent features (resonance, nasality) to be transformed while content-dependent features (formant transitions, phoneme boundaries) pass through unchanged.
-
-Same losses as Exp5: reconstruction, VQ, adversarial, quality classification, cycle consistency, cross-reconstruction. See `vqvae/scripts/train_exp6.py`.
-
-### 5. Mean Shift VC (Domain-Level Feature Transform)
-
-**Directory:** `mean_shift/`
-
-The simplest possible domain transform: shift all WavLM features by the difference in domain means.
-
-- **How it works:** `converted = source_features + (mean_post - mean_pre)` in WavLM space, then vocode with HiFi-GAN
-- **Training:** Compute mean WavLM embedding for pre and post surgery domains (no neural network)
-- **Inference:** Apply fixed shift — no reference audio needed
-- **Rationale:** If pre/post surgery differences are captured as a consistent direction in WavLM embedding space, a simple translation should work
-
-### 6. LinearVC (Linear Domain Transform)
-
-**Directory:** `linear_vc/`
-
-Learns a linear projection matrix W in WavLM space, based on [LinearVC (2025)](https://arxiv.org/html/2506.01510).
-
-- **How it works:** `converted = source_features @ W` where W is a 1024x1024 matrix
-- **Training:** Pair pre/post surgery frames via nearest neighbors, solve ridge regression: `W = (X^T X + λI)^{-1} X^T Y`
-- **Inference:** Matrix multiply — no reference audio needed
-- **Key insight:** Content and speaker/quality information occupy orthogonal subspaces in WavLM. A linear map can rotate from one domain to another while preserving content.
-
-### 7. MKL-VC (Factorized Optimal Transport)
-
-**Directory:** `mkl_vc/`
-
-Optimal transport map between domain distributions in WavLM space, based on [MKL-VC (Interspeech 2025)](https://arxiv.org/html/2506.09709).
-
-- **How it works:** Models pre and post surgery WavLM features as multivariate Gaussians, computes the Monge-Kantorovich Linear transport map (closed-form solution)
-- **Factorization:** Splits 1024-dim features into K=2 dimensional subgroups sorted by variance, solves OT independently per subgroup. Prevents information loss from low-variance dimensions.
-- **Training:** Compute domain-level Gaussian statistics (mean + covariance per subgroup)
-- **Inference:** Apply analytical transform — no reference audio needed
-- **Advantage over kNN-VC:** Generates new feature combinations rather than retrieving existing frames
-
-### 8. UNet-VC (Nonlinear Feature Transform)
-
-**Directory:** `unet_vc/`
-
-Residual 1D U-Net that learns a nonlinear transform in WavLM feature space. Extends LinearVC by allowing nonlinear mappings while preserving content through skip connections and residual learning.
-
-- **Architecture:** Residual 1D U-Net: project 1024→256, 3-level encoder/decoder with skip connections, project back to 1024. Global residual: `output = input + α * network(input)` where α is learned (initialized at 0.1)
-- **Training:** NN-paired frames (same as LinearVC), segmented into overlapping 64-frame windows. MSE loss, AdamW with cosine schedule, early stopping
-- **Inference:** Forward pass through U-Net + HiFi-GAN vocoding — no reference audio needed
-- **Key design:** Residual learning means network only learns the small delta between domains. Skip connections preserve content structure. Lightweight (~2M params) to avoid overfitting on small dataset
+| Metric | What it Measures | Ideal |
+|--------|-----------------|-------|
+| **SpkSim (conv vs target)** | Does converted voice sound like post-surgery? | Higher (> baseline) |
+| SpkSim (conv vs source) | How much source identity remains? | Reference |
+| Baseline SpkSim | Pre vs post same patient (no conversion) | Floor to beat |
+| LSD | Log-spectral distance to target | Lower |
+| SED | Spectral envelope distance to target | Lower |
 
 ## Project Structure
 
 ```
 VoiceConversion/
 ├── README.md
-├── requirements.txt
-├── VAE/
-│   ├── model/model.py              # SurgeryVAE architecture
-│   ├── scripts/
-│   │   ├── dataset_processing.py   # Raw audio → mel-spectrogram pkl
-│   │   ├── train.py                # Training with disentanglement losses
-│   │   └── test.py                 # Testing/inference
+├── shared_evaluate.py          # Shared ECAPA-TDNN + spectral metrics
+├── compare_all_spksim.py       # Cross-method comparison script
+├── adapt_vc/                   # AdaptVC-inspired (proposed method)
+│   ├── model/adapt_vc.py       # Adapters + VQ + FiLM U-Net decoder
+│   ├── scripts/{train,inference,evaluate}.py
 │   └── submit.sh
-├── mask_cyclegan/
-│   ├── model/mask_cyclegan.py      # Generator + Discriminator + FIF masking
-│   ├── scripts/
-│   │   ├── train.py                # CycleGAN training loop
-│   │   ├── inference.py            # Single/batch conversion
-│   │   └── evaluate.py             # MCD, F0, cycle, identity metrics
+├── unet_vc/                    # Residual U-Net (current best)
+│   ├── model/unet.py
+│   ├── scripts/{train,inference,evaluate}.py
 │   └── submit.sh
-├── knn_vc/
-│   ├── scripts/
-│   │   ├── build_matching_set.py   # Extract WavLM features from post-surgery
-│   │   ├── inference.py            # kNN lookup + HiFi-GAN vocoding
-│   │   └── evaluate.py             # MCD, F0, content preservation metrics
-│   ├── matching_sets/              # Pre-computed WavLM feature tensors
-│   ├── knn_vc_converted/           # 28 converted WAV files
-│   ├── submit_build.sh
-│   ├── submit_inference.sh
-│   └── submit_evaluate.sh
-├── vqvae/
-│   ├── model/
-│   │   ├── vqvae.py                # VQVAE on mel-specs (Exp 1-4)
-│   │   ├── vqvae_wavlm.py          # VQVAE on WavLM features (Exp 5)
-│   │   ├── vqvae_unet.py           # VQ-UNet with FiLM skip connections (Exp 6)
-│   │   └── __init__.py
-│   ├── scripts/
-│   │   ├── train.py                # Training Exp 1-4 (mel-spectrogram)
-│   │   ├── train_exp5.py           # Training Exp 5 (WavLM features)
-│   │   ├── train_exp6.py           # Training Exp 6 (VQ-UNet + FiLM)
-│   │   ├── inference.py            # Inference Exp 1-4
-│   │   ├── inference_exp5.py       # Inference Exp 5 (WavLM + HiFi-GAN)
-│   │   ├── inference_exp6.py       # Inference Exp 6 (VQ-UNet + HiFi-GAN)
-│   │   ├── evaluate.py             # Evaluation Exp 1-4
-│   │   ├── evaluate_exp5.py        # Evaluation Exp 5
-│   │   └── evaluate_exp6.py        # Evaluation Exp 6
-│   ├── checkpoints/                # Exp 1-4 model weights
-│   ├── checkpoints_exp5/           # Exp 5 model weights
-│   ├── checkpoints_exp6/           # Exp 6 model weights
-│   ├── wavlm_cache/                # Cached WavLM features (auto-generated)
-│   ├── plots/                      # Training visualizations per epoch
-│   ├── PROGRESS.md                 # Detailed experiment log with analysis
-│   ├── submit.sh                   # Exp 1-4
-│   ├── submit_exp5.sh              # Exp 5
-│   └── submit_exp6.sh              # Exp 6
-├── mean_shift/
-│   ├── scripts/
-│   │   ├── train.py                # Compute domain mean vectors
-│   │   ├── inference.py            # Apply mean shift + vocode
-│   │   └── evaluate.py             # MCD, F0, content preservation
-│   ├── domain_stats.pt             # Saved mean vectors (after training)
-│   └── submit.sh
-├── linear_vc/
-│   ├── scripts/
-│   │   ├── train.py                # Learn linear projection W via ridge regression
-│   │   ├── inference.py            # Apply W @ features + vocode
-│   │   └── evaluate.py             # MCD, F0, content preservation
-│   ├── linear_transform.pt         # Saved W matrices (after training)
-│   └── submit.sh
-├── mkl_vc/
-│   ├── scripts/
-│   │   ├── train.py                # Compute factorized OT maps
-│   │   ├── inference.py            # Apply MKL transform + vocode
-│   │   └── evaluate.py             # MCD, F0, content preservation
-│   ├── mkl_transform.pt            # Saved OT parameters (after training)
-│   └── submit.sh
-└── unet_vc/
-    ├── model/
-    │   ├── unet.py                 # Residual 1D U-Net architecture
-    │   └── __init__.py
-    ├── scripts/
-    │   ├── train.py                # Train on NN-paired WavLM features
-    │   ├── inference.py            # Apply U-Net transform + vocode
-    │   └── evaluate.py             # MCD, F0, content preservation
-    ├── checkpoints/                # Saved model weights (after training)
-    └── submit.sh
+├── knn_vc/                     # kNN-VC baseline
+│   ├── scripts/{build_matching_set,inference,evaluate}.py
+│   └── submit_*.sh
+├── vqvae/                      # VQVAE experiments 1-6
+│   ├── model/{vqvae,vqvae_wavlm,vqvae_unet}.py
+│   ├── scripts/{train,train_exp5,train_exp6,inference_exp5,inference_exp6,...}.py
+│   └── submit_exp{5,6}.sh
+├── mkl_vc/                     # Factorized OT
+├── mean_shift/                 # Domain mean translation
+├── linear_vc/                  # Linear projection
+├── mask_cyclegan/              # CycleGAN (failed)
+└── VAE/                        # Initial VAE baseline
 ```
 
 ## Environment
 
-- **Compute:** Compute Canada (def-zshakeri), H100 GPU
+- **Compute:** Compute Canada (def-zshakeri), NVIDIA H100 GPU
 - **Python:** 3.10
-- **Key dependencies:** PyTorch, librosa, torchaudio, soundfile, scikit-learn
-- **SLURM:** All jobs submitted via `sbatch submit.sh` in each method directory
-
-## Evaluation Metrics
-
-All methods are evaluated using shared metrics via `shared_evaluate.py`:
-
-| Metric | What it measures | Ideal |
-|--------|-----------------|-------|
-| **Speaker Similarity (conv vs target)** | ECAPA-TDNN cosine similarity: does converted voice sound like post-surgery? | Higher (>baseline) |
-| Speaker Similarity (conv vs source) | ECAPA-TDNN: how much does converted voice still sound like pre-surgery? | Reference |
-| Baseline Speaker Similarity | ECAPA-TDNN: pre vs post same patient, no conversion | Floor to beat |
-| LSD to target | Log-spectral distance between converted and real post-surgery | Lower |
-| SED to target | Spectral envelope distance | Lower |
-| F0 Correlation | Pitch tracking: source vs converted | Higher |
-| Disentanglement (VQVAE only) | Can a classifier predict surgery status from content codes? | ~50% accuracy |
-| Quality classification (VQVAE only) | Can a classifier predict surgery status from quality vector? | ~100% accuracy |
-
-Speaker similarity is the **primary metric** — it measures content-independent voice identity using ECAPA-TDNN (SpeechBrain pretrained, 192-dim embeddings). A good conversion should push conv-vs-target similarity above the baseline (pre-vs-post same patient).
+- **Key dependencies:** PyTorch, torchaudio, librosa, speechbrain, transformers (for WavLM)
+- **SLURM:** `sbatch submit.sh` in each method directory
 
 ## References
 
-- [AutoVC (Qian et al., ICML 2019)](https://arxiv.org/abs/1905.05879) — Information bottleneck for VC
-- [VQVC+ (Wu et al., Interspeech 2020)](https://www.isca-archive.org/interspeech_2020/wu20p_interspeech.html) — VQ disentanglement for VC
-- [MaskCycleGAN-VC (Kaneko et al., 2021)](https://arxiv.org/abs/2102.12841) — CycleGAN with FIF masking
 - [kNN-VC (Baas et al., Interspeech 2023)](https://arxiv.org/abs/2305.18975) — Nearest neighbor VC with WavLM
-- [PQ-VAE (2024)](https://arxiv.org/html/2406.02940v1) — Product quantization for speech tokenization
-- [LinearVC (2025)](https://arxiv.org/html/2506.01510) — Linear transforms of SSL features for VC
+- [AdaptVC (Kim et al., ICASSP 2025)](https://arxiv.org/abs/2501.01347) — Adaptive learning with VQ on HuBERT
 - [MKL-VC (Interspeech 2025)](https://arxiv.org/html/2506.09709) — Training-free VC with factorized optimal transport
-- [VQMIVC (Wang et al., Interspeech 2021)](https://arxiv.org/abs/2106.10132) — VQ + mutual information disentanglement for VC
-- [Polyak et al. (Interspeech 2021)](https://arxiv.org/abs/2104.00355) — Speech resynthesis from discrete disentangled SSL representations
+- [LinearVC (2025)](https://arxiv.org/html/2506.01510) — Linear transforms of SSL features for VC
+- [Vevo (ICLR 2025)](https://arxiv.org/abs/2502.07243) — VQ-VAE tokenizer on HuBERT for controllable voice imitation
+- [MaskCycleGAN-VC (Kaneko et al., 2021)](https://arxiv.org/abs/2102.12841) — CycleGAN with FIF masking
 - [FreeVC (Li et al., ICASSP 2023)](https://arxiv.org/abs/2210.15418) — Text-free one-shot VC with WavLM bottleneck
+- [VQMIVC (Wang et al., Interspeech 2021)](https://arxiv.org/abs/2106.10132) — VQ + mutual information disentanglement
 - [RepCodec (ACL 2024)](https://arxiv.org/abs/2309.00169) — VQ codec for SSL speech representation
 - [QR-VC (2024)](https://arxiv.org/abs/2411.16147) — Quantization residuals from WavLM for VC
-- [AdaptVC (ICASSP 2025)](https://arxiv.org/abs/2501.01347) — Adaptive learning with VQ on HuBERT
-- [Vevo (ICLR 2025)](https://arxiv.org/abs/2502.07243) — VQ-VAE tokenizer on HuBERT for controllable voice imitation
-- [Deep Learning for Pathological Speech (2025)](https://arxiv.org/html/2501.03536v1) — Survey of DL methods for pathological speech
+- [AutoVC (Qian et al., ICML 2019)](https://arxiv.org/abs/1905.05879) — Information bottleneck for VC
+- [W2VC (EURASIP 2023)](https://link.springer.com/article/10.1186/s13636-023-00312-8) — WavLM representation-based VC
+- [Deep Learning for Pathological Speech (2025)](https://arxiv.org/html/2501.03536v1) — Survey
