@@ -1,0 +1,93 @@
+{
+  "surgery": "Tonsill",
+  "n_crops": 10,
+  "n_cv": 23,
+  "n_test": 5,
+  "split": {
+    "cv_pool": [
+      "Tonsill_ses1_speech_0007",
+      "Tonsill_ses1_speech_0011",
+      "Tonsill_ses1_speech_0026",
+      "Tonsill_ses1_speech_0042",
+      "Tonsill_ses1_speech_0045",
+      "Tonsill_ses1_speech_0062",
+      "Tonsill_ses1_speech_0063",
+      "Tonsill_ses1_speech_0078",
+      "Tonsill_ses1_speech_0080",
+      "Tonsill_ses1_speech_0081",
+      "Tonsill_ses1_speech_0087",
+      "Tonsill_ses1_speech_0089",
+      "Tonsill_ses1_speech_0092",
+      "Tonsill_ses1_speech_0099",
+      "Tonsill_ses1_speech_0108",
+      "Tonsill_ses1_speech_0110",
+      "Tonsill_ses1_speech_0112",
+      "Tonsill_ses1_speech_0122",
+      "Tonsill_ses1_speech_0129",
+      "Tonsill_ses1_speech_0132",
+      "Tonsill_ses1_speech_0137",
+      "Tonsill_ses1_speech_0144",
+      "Tonsill_ses1_speech_0145"
+    ],
+    "test": [
+      "Tonsill_ses1_speech_0085",
+      "Tonsill_ses1_speech_0109",
+      "Tonsill_ses1_speech_0111",
+      "Tonsill_ses1_speech_0125",
+      "Tonsill_ses1_speech_0147"
+    ]
+  },
+  "summary": {
+    "baseline": 0.7105976700782776,
+    "mean_shift": 0.7280577301979065,
+    "knn_ecapa": 0.5997740268707276,
+    "knn_librosa": 0.5612335205078125
+  },
+  "knn_ecapa": {
+    "best_k": 10,
+    "best_temp": 0.2,
+    "loo_sim": 0.5103759221408678
+  },
+  "knn_librosa": {
+    "best_k": 15,
+    "best_temp": 0.5,
+    "loo_sim": 0.4791276532670726
+  },
+  "per_patient_test": [
+    {
+      "name": "Tonsill_ses1_speech_0085",
+      "baseline": 0.6832249164581299,
+      "mean_shift": 0.7197809219360352,
+      "knn_ecapa": 0.6414483785629272,
+      "knn_librosa": 0.5856841802597046
+    },
+    {
+      "name": "Tonsill_ses1_speech_0109",
+      "baseline": 0.7604970932006836,
+      "mean_shift": 0.8080216646194458,
+      "knn_ecapa": 0.7521575093269348,
+      "knn_librosa": 0.7168300151824951
+    },
+    {
+      "name": "Tonsill_ses1_speech_0111",
+      "baseline": 0.5747816562652588,
+      "mean_shift": 0.6122241616249084,
+      "knn_ecapa": 0.5329585671424866,
+      "knn_librosa": 0.388988733291626
+    },
+    {
+      "name": "Tonsill_ses1_speech_0125",
+      "baseline": 0.7407001852989197,
+      "mean_shift": 0.7368954420089722,
+      "knn_ecapa": 0.5613497495651245,
+      "knn_librosa": 0.5641994476318359
+    },
+    {
+      "name": "Tonsill_ses1_speech_0147",
+      "baseline": 0.793784499168396,
+      "mean_shift": 0.7633664608001709,
+      "knn_ecapa": 0.5109559297561646,
+      "knn_librosa": 0.5504652261734009
+    }
+  ]
+}

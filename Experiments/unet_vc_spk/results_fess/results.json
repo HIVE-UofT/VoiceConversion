@@ -1,0 +1,136 @@
+{
+  "method": "UNet-VC Speaker-Conditioned",
+  "surgery": "Fess",
+  "test": [
+    {
+      "name": "FESS_ses1_speech_0055",
+      "sim_post": 0.8052901029586792,
+      "baseline": 0.9019870758056641
+    },
+    {
+      "name": "FESS_ses1_speech_0086",
+      "sim_post": 0.7614154815673828,
+      "baseline": 0.8071943521499634
+    },
+    {
+      "name": "FESS_ses1_speech_0107",
+      "sim_post": 0.7429932355880737,
+      "baseline": 0.7660462856292725
+    },
+    {
+      "name": "FESS_ses1_speech_0117",
+      "sim_post": 0.7939273118972778,
+      "baseline": 0.9039579629898071
+    },
+    {
+      "name": "FESS_ses1_speech_0130",
+      "sim_post": 0.7272443771362305,
+      "baseline": 0.8883234262466431
+    }
+  ],
+  "train": [
+    {
+      "name": "FESS_ses1_speech_0017",
+      "sim_post": 0.8454261422157288,
+      "baseline": 0.8217910528182983
+    },
+    {
+      "name": "FESS_ses1_speech_0029",
+      "sim_post": 0.866553783416748,
+      "baseline": 0.8732711672782898
+    },
+    {
+      "name": "FESS_ses1_speech_0030",
+      "sim_post": 0.8493159413337708,
+      "baseline": 0.5772556066513062
+    },
+    {
+      "name": "FESS_ses1_speech_0032",
+      "sim_post": 0.8490290641784668,
+      "baseline": 0.8150259852409363
+    },
+    {
+      "name": "FESS_ses1_speech_0036",
+      "sim_post": 0.8829302191734314,
+      "baseline": 0.9016563892364502
+    },
+    {
+      "name": "FESS_ses1_speech_0040",
+      "sim_post": 0.8499134182929993,
+      "baseline": 0.7722549438476562
+    },
+    {
+      "name": "FESS_ses1_speech_0043",
+      "sim_post": 0.8562666177749634,
+      "baseline": 0.8935298323631287
+    },
+    {
+      "name": "FESS_ses1_speech_0049",
+      "sim_post": 0.8642373085021973,
+      "baseline": 0.8777598738670349
+    },
+    {
+      "name": "FESS_ses1_speech_0057",
+      "sim_post": 0.7861364483833313,
+      "baseline": 0.7960712313652039
+    },
+    {
+      "name": "FESS_ses1_speech_0084",
+      "sim_post": 0.8340305089950562,
+      "baseline": 0.7646880745887756
+    },
+    {
+      "name": "FESS_ses1_speech_0088",
+      "sim_post": 0.8485586643218994,
+      "baseline": 0.8819437026977539
+    },
+    {
+      "name": "FESS_ses1_speech_0095",
+      "sim_post": 0.7611218690872192,
+      "baseline": 0.7690117359161377
+    },
+    {
+      "name": "FESS_ses1_speech_0096",
+      "sim_post": 0.9023367166519165,
+      "baseline": 0.832938015460968
+    },
+    {
+      "name": "FESS_ses1_speech_0115",
+      "sim_post": 0.8224161863327026,
+      "baseline": 0.8095542192459106
+    },
+    {
+      "name": "FESS_ses1_speech_0116",
+      "sim_post": 0.8845637440681458,
+      "baseline": 0.9534738063812256
+    },
+    {
+      "name": "FESS_ses1_speech_0118",
+      "sim_post": 0.876915454864502,
+      "baseline": 0.869499921798706
+    },
+    {
+      "name": "FESS_ses1_speech_0120",
+      "sim_post": 0.8757548332214355,
+      "baseline": 0.8067069053649902
+    },
+    {
+      "name": "FESS_ses1_speech_0123",
+      "sim_post": 0.8257893919944763,
+      "baseline": 0.7819096446037292
+    },
+    {
+      "name": "FESS_ses1_speech_0124",
+      "sim_post": 0.8204830884933472,
+      "baseline": 0.8864890336990356
+    }
+  ],
+  "test_summary": {
+    "baseline": 0.85350182056427,
+    "conv_post": 0.7661741018295288
+  },
+  "train_summary": {
+    "baseline": 0.8255174285487125,
+    "conv_post": 0.8474620737527546
+  }
+}

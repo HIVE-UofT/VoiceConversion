@@ -1,0 +1,16 @@
+{
+  "test_patients": [
+    "Sept_0023",
+    "Sept_0033",
+    "Sept_0044",
+    "Sept_0076",
+    "Sept_0077"
+  ],
+  "test_wav_files": [
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0023.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0033.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0044.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0076.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0077.wav"
+  ]
+}

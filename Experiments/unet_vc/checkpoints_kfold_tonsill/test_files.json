@@ -1,0 +1,16 @@
+{
+  "test_patients": [
+    "Tonsill_ses1_speech_0085",
+    "Tonsill_ses1_speech_0109",
+    "Tonsill_ses1_speech_0111",
+    "Tonsill_ses1_speech_0125",
+    "Tonsill_ses1_speech_0147"
+  ],
+  "test_wav_files": [
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0085.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav",
+    "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav"
+  ]
+}

@@ -16,10 +16,13 @@ CONDITIONS = {
 
 METHODS = {
     'kNN-VC': 'knn_vc/knn_vc_converted',
-    'Mean-Shift': 'mean_shift/converted',
-    'MKL-VC': 'mkl_vc/converted',
-    'VQVAE-WavLM (Exp5)': 'vqvae/converted_exp5',
+    # 'Mean-Shift': 'mean_shift/converted',
+    # 'MKL-VC': 'mkl_vc/converted',
+    # 'VQVAE-WavLM (Exp5)': 'vqvae/converted_exp5',
+    # 'VQVAE-WavLM (Exp6)': 'vqvae/converted_exp6',
     'UNet-VC': 'unet_vc/converted',
+    'UNet-ADV-VC': 'unet_adv_vc/converted',
+    # 'DLA-VC': 'dla_vc/converted',
 }
 
 BASE = os.path.dirname(os.path.abspath(__file__))

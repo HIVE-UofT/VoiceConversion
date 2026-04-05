@@ -1,0 +1,92 @@
+
+The following have been reloaded with a version change:
+  1) python/3.11.5 => python/3.10.13
+
+==========================================
+  ECAPA Mapper: pre -> post surgery
+==========================================
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+==================================================
+  ECAPA Mapper (mlp): pre -> post surgery
+==================================================
+
+Tonsill: 28 patients
+  CV pool (23): ['Tonsill_ses1_speech_0007', 'Tonsill_ses1_speech_0011', 'Tonsill_ses1_speech_0026', 'Tonsill_ses1_speech_0042', 'Tonsill_ses1_speech_0045', 'Tonsill_ses1_speech_0062', 'Tonsill_ses1_speech_0063', 'Tonsill_ses1_speech_0078', 'Tonsill_ses1_speech_0080', 'Tonsill_ses1_speech_0081', 'Tonsill_ses1_speech_0087', 'Tonsill_ses1_speech_0089', 'Tonsill_ses1_speech_0092', 'Tonsill_ses1_speech_0099', 'Tonsill_ses1_speech_0108', 'Tonsill_ses1_speech_0110', 'Tonsill_ses1_speech_0112', 'Tonsill_ses1_speech_0122', 'Tonsill_ses1_speech_0129', 'Tonsill_ses1_speech_0132', 'Tonsill_ses1_speech_0137', 'Tonsill_ses1_speech_0144', 'Tonsill_ses1_speech_0145']
+  Test   (5): ['Tonsill_ses1_speech_0085', 'Tonsill_ses1_speech_0109', 'Tonsill_ses1_speech_0111', 'Tonsill_ses1_speech_0125', 'Tonsill_ses1_speech_0147']
+
+Loading ECAPA-TDNN...
+
+Extracting ECAPA embeddings for all patients...
+  Tonsill_ses1_speech_0007: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0011: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0026: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0042: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0045: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0062: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0063: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0078: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0080: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0081: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0085: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0087: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0089: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0092: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0099: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0108: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0109: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0110: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0111: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0112: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0122: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0125: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0129: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0132: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0137: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0144: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0145: pre=torch.Size([192])  post=torch.Size([192])
+  Tonsill_ses1_speech_0147: pre=torch.Size([192])  post=torch.Size([192])
+
+Baseline cosine sim (no transform):
+  CV pool: 0.7191 ± 0.1176
+  Test:    0.7274 ± 0.1247
+
+K-fold CV (5 folds)  model=mlp  hidden_dim=64  n_blocks=1  dropout=0.5  weight_decay=0.1  noise=0.02  n_aug=3  mixup_alpha=0.2
+Model parameters: 33,408
+
+Training...
+    Fold 0: early stop at epoch 75
+  Fold 0: val_baseline=0.7868  val_sim=0.8289  delta=+0.0421  (19 train / 4 val)
+    Fold 1: early stop at epoch 61
+  Fold 1: val_baseline=0.7231  val_sim=0.7392  delta=+0.0161  (19 train / 4 val)
+    Fold 2: early stop at epoch 76
+  Fold 2: val_baseline=0.7019  val_sim=0.7716  delta=+0.0697  (19 train / 4 val)
+    Fold 3: early stop at epoch 73
+  Fold 3: val_baseline=0.6485  val_sim=0.7126  delta=+0.0641  (19 train / 4 val)
+    Fold 4: early stop at epoch 79
+  Fold 4: val_baseline=0.7281  val_sim=0.7512  delta=+0.0230  (16 train / 7 val)
+
+  CV mean val sim: 0.7607 ± 0.0391
+
+============================================================
+  Test Results (ensemble of 5 fold models)
+============================================================
+
+--- TEST ---
+  Tonsill_ses1_speech_0085                  baseline=0.7971  predicted=0.8590  delta=+0.0619
+  Tonsill_ses1_speech_0109                  baseline=0.8344  predicted=0.8466  delta=+0.0122
+  Tonsill_ses1_speech_0111                  baseline=0.4867  predicted=0.5903  delta=+0.1036
+  Tonsill_ses1_speech_0125                  baseline=0.7322  predicted=0.7371  delta=+0.0050
+  Tonsill_ses1_speech_0147                  baseline=0.7865  predicted=0.7356  delta=-0.0509
+  MEAN                                      baseline=0.7274  predicted=0.7537  delta=+0.0264
+
+============================================================
+  SUMMARY
+============================================================
+  CV val sim:  0.7607 ± 0.0391
+  Test  baseline=0.7274  predicted=0.7537  delta=+0.0264
+============================================================
+
+Results saved to /project/6086959/sepehr/VoiceConversion/ecapa_mapper/results_tonsill/results.json
+Done!
+Done!

@@ -1,0 +1,927 @@
+
+The following have been reloaded with a version change:
+  1) python/3.11.5 => python/3.10.13
+
+==========================================
+  UNet-VC v2 — Train/Test Split
+==========================================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/project/6086959/sepehr/VoiceConversion/.env/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Pairing: CROSS-PATIENT
+
+Tonsill: 28 patients
+  Test (5):  ['Tonsill_ses1_speech_0085', 'Tonsill_ses1_speech_0109', 'Tonsill_ses1_speech_0111', 'Tonsill_ses1_speech_0125', 'Tonsill_ses1_speech_0147']
+  Train (20): 20 patients
+  Val (3):   ['Tonsill_ses1_speech_0108', 'Tonsill_ses1_speech_0112', 'Tonsill_ses1_speech_0137']
+
+Loading kNN-VC...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+
+Extracting pre-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0007.wav
+  Tonsill_ses1_speech_0007.wav: 3451 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0011.wav
+  Tonsill_ses1_speech_0011.wav: 3599 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0026.wav
+  Tonsill_ses1_speech_0026.wav: 2523 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0042.wav
+  Tonsill_ses1_speech_0042.wav: 3453 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0045.wav
+  Tonsill_ses1_speech_0045.wav: 3337 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0062.wav
+  Tonsill_ses1_speech_0062.wav: 2833 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0063.wav
+  Tonsill_ses1_speech_0063.wav: 2979 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0078.wav
+  Tonsill_ses1_speech_0078.wav: 3655 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0080.wav
+  Tonsill_ses1_speech_0080.wav: 3016 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0081.wav
+  Tonsill_ses1_speech_0081.wav: 3294 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0085.wav
+  Tonsill_ses1_speech_0085.wav: 2332 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0087.wav
+  Tonsill_ses1_speech_0087.wav: 2925 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0089.wav
+  Tonsill_ses1_speech_0089.wav: 3014 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0092.wav
+  Tonsill_ses1_speech_0092.wav: 2986 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0099.wav
+  Tonsill_ses1_speech_0099.wav: 3317 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0108.wav
+  Tonsill_ses1_speech_0108.wav: 2847 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav
+  Tonsill_ses1_speech_0109.wav: 2793 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0110.wav
+  Tonsill_ses1_speech_0110.wav: 3019 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav
+  Tonsill_ses1_speech_0111.wav: 2323 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0112.wav
+  Tonsill_ses1_speech_0112.wav: 3224 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0122.wav
+  Tonsill_ses1_speech_0122.wav: 2757 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav
+  Tonsill_ses1_speech_0125.wav: 2766 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0129.wav
+  Tonsill_ses1_speech_0129.wav: 3088 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0132.wav
+  Tonsill_ses1_speech_0132.wav: 2495 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0137.wav
+  Tonsill_ses1_speech_0137.wav: 3020 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0144.wav
+  Tonsill_ses1_speech_0144.wav: 2969 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0145.wav
+  Tonsill_ses1_speech_0145.wav: 2871 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav
+  Tonsill_ses1_speech_0147.wav: 2845 frames
+
+Extracting post-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0007.wav
+  Tonsill_ses2_speech_0007.wav: 3179 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0011.wav
+  Tonsill_ses2_speech_0011.wav: 3266 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0026.wav
+  Tonsill_ses2_speech_0026.wav: 4785 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0042.wav
+  Tonsill_ses2_speech_0042.wav: 3055 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0045.wav
+  Tonsill_ses2_speech_0045.wav: 2791 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0062.wav
+  Tonsill_ses2_speech_0062.wav: 3244 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0063.wav
+  Tonsill_ses2_speech_0063.wav: 3156 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0078.wav
+  Tonsill_ses2_speech_0078.wav: 3148 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0080.wav
+  Tonsill_ses2_speech_0080.wav: 2861 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0081.wav
+  Tonsill_ses2_speech_0081.wav: 2526 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0085.wav
+  Tonsill_ses2_speech_0085.wav: 2790 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0087.wav
+  Tonsill_ses2_speech_0087.wav: 2950 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0089.wav
+  Tonsill_ses2_speech_0089.wav: 3094 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0092.wav
+  Tonsill_ses2_speech_0092.wav: 2445 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0099.wav
+  Tonsill_ses2_speech_0099.wav: 2771 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0108.wav
+  Tonsill_ses2_speech_0108.wav: 2591 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0109.wav
+  Tonsill_ses2_speech_0109.wav: 2581 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0110.wav
+  Tonsill_ses2_speech_0110.wav: 3037 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0111.wav
+  Tonsill_ses2_speech_0111.wav: 3989 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0112.wav
+  Tonsill_ses2_speech_0112.wav: 3058 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0122.wav
+  Tonsill_ses2_speech_0122.wav: 3004 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0125.wav
+  Tonsill_ses2_speech_0125.wav: 2975 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0129.wav
+  Tonsill_ses2_speech_0129.wav: 2974 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0132.wav
+  Tonsill_ses2_speech_0132.wav: 2877 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0137.wav
+  Tonsill_ses2_speech_0137.wav: 2954 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0144.wav
+  Tonsill_ses2_speech_0144.wav: 4204 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0145.wav
+  Tonsill_ses2_speech_0145.wav: 3215 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0147.wav
+  Tonsill_ses2_speech_0147.wav: 2883 frames
+
+Building training segments...
+    Post pool: 62582 frames from 20 patients
+    3778 segments
+Building validation segments...
+    557 segments (same-patient)
+
+Train: 3778 segs, Val: 557 segs
+Parameters: 1,164,673
+  Epoch   1  val=4.570653  alpha=0.1443
+  Epoch  20  val=4.555861  alpha=0.5784
+  Epoch  40  val=4.410873  alpha=0.7987
+  Epoch  60  val=4.373882  alpha=0.9988
+  Epoch  80  val=4.347838  alpha=1.1766
+  Epoch 100  val=4.344144  alpha=1.3297
+  Epoch 120  val=4.343836  alpha=1.4585
+  Epoch 140  val=4.336730  alpha=1.5673
+  Epoch 160  val=4.330917  alpha=1.6524
+  Epoch 180  val=4.336931  alpha=1.7197
+  Epoch 200  val=4.336372  alpha=1.7669
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Early stop at epoch 219
+  Best val: 4.326953
+
+======================================================================
+  Evaluating on 5 test patients
+======================================================================
+
+--- TEST set ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0085.wav
+  [TEST]  Tonsill_ses1_speech_0085: conv->post=0.698  baseline=0.724  delta=-0.026
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav
+  [TEST]  Tonsill_ses1_speech_0109: conv->post=0.754  baseline=0.761  delta=-0.007
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav
+  [TEST]  Tonsill_ses1_speech_0111: conv->post=0.635  baseline=0.598  delta=+0.038
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav
+  [TEST]  Tonsill_ses1_speech_0125: conv->post=0.689  baseline=0.755  delta=-0.066
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav
+  [TEST]  Tonsill_ses1_speech_0147: conv->post=0.651  baseline=0.802  delta=-0.152
+
+--- TRAIN set (overfitting check) ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0007.wav
+  [TRAIN] Tonsill_ses1_speech_0007: conv->post=0.623  baseline=0.613  delta=+0.010
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0011.wav
+  [TRAIN] Tonsill_ses1_speech_0011: conv->post=0.707  baseline=0.722  delta=-0.015
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0026.wav
+  [TRAIN] Tonsill_ses1_speech_0026: conv->post=0.656  baseline=0.690  delta=-0.034
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0042.wav
+  [TRAIN] Tonsill_ses1_speech_0042: conv->post=0.718  baseline=0.631  delta=+0.088
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0045.wav
+  [TRAIN] Tonsill_ses1_speech_0045: conv->post=0.783  baseline=0.730  delta=+0.053
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0062.wav
+  [TRAIN] Tonsill_ses1_speech_0062: conv->post=0.663  baseline=0.552  delta=+0.111
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0063.wav
+  [TRAIN] Tonsill_ses1_speech_0063: conv->post=0.702  baseline=0.703  delta=-0.001
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0078.wav
+  [TRAIN] Tonsill_ses1_speech_0078: conv->post=0.598  baseline=0.478  delta=+0.120
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0080.wav
+  [TRAIN] Tonsill_ses1_speech_0080: conv->post=0.500  baseline=0.454  delta=+0.046
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0081.wav
+  [TRAIN] Tonsill_ses1_speech_0081: conv->post=0.649  baseline=0.627  delta=+0.022
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0087.wav
+  [TRAIN] Tonsill_ses1_speech_0087: conv->post=0.815  baseline=0.741  delta=+0.074
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0089.wav
+  [TRAIN] Tonsill_ses1_speech_0089: conv->post=0.597  baseline=0.627  delta=-0.030
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0092.wav
+  [TRAIN] Tonsill_ses1_speech_0092: conv->post=0.706  baseline=0.765  delta=-0.058
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0099.wav
+  [TRAIN] Tonsill_ses1_speech_0099: conv->post=0.727  baseline=0.794  delta=-0.068
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0110.wav
+  [TRAIN] Tonsill_ses1_speech_0110: conv->post=0.759  baseline=0.651  delta=+0.108
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0122.wav
+  [TRAIN] Tonsill_ses1_speech_0122: conv->post=0.810  baseline=0.774  delta=+0.036
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0129.wav
+  [TRAIN] Tonsill_ses1_speech_0129: conv->post=0.835  baseline=0.786  delta=+0.050
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0132.wav
+  [TRAIN] Tonsill_ses1_speech_0132: conv->post=0.678  baseline=0.474  delta=+0.205
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0144.wav
+  [TRAIN] Tonsill_ses1_speech_0144: conv->post=0.642  baseline=0.674  delta=-0.033
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0145.wav
+  [TRAIN] Tonsill_ses1_speech_0145: conv->post=0.710  baseline=0.647  delta=+0.063
+
+======================================================================
+  UNet-VC v2 — Tonsill — SUMMARY
+  Pairing: CROSS-PATIENT
+======================================================================
+  TEST (5 patients):
+    Baseline:     0.728 +/- 0.070
+    Conv vs post: 0.685 +/- 0.041
+    Improvement:  -0.043
+  TRAIN (20 patients):
+    Baseline:     0.657 +/- 0.101
+    Conv vs post: 0.694 +/- 0.081
+    Improvement:  +0.037
+======================================================================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/project/6086959/sepehr/VoiceConversion/.env/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Pairing: SAME-PATIENT
+
+Tonsill: 28 patients
+  Test (5):  ['Tonsill_ses1_speech_0085', 'Tonsill_ses1_speech_0109', 'Tonsill_ses1_speech_0111', 'Tonsill_ses1_speech_0125', 'Tonsill_ses1_speech_0147']
+  Train (20): 20 patients
+  Val (3):   ['Tonsill_ses1_speech_0108', 'Tonsill_ses1_speech_0112', 'Tonsill_ses1_speech_0137']
+
+Loading kNN-VC...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+
+Extracting pre-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0007.wav
+  Tonsill_ses1_speech_0007.wav: 3451 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0011.wav
+  Tonsill_ses1_speech_0011.wav: 3599 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0026.wav
+  Tonsill_ses1_speech_0026.wav: 2523 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0042.wav
+  Tonsill_ses1_speech_0042.wav: 3453 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0045.wav
+  Tonsill_ses1_speech_0045.wav: 3337 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0062.wav
+  Tonsill_ses1_speech_0062.wav: 2833 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0063.wav
+  Tonsill_ses1_speech_0063.wav: 2979 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0078.wav
+  Tonsill_ses1_speech_0078.wav: 3655 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0080.wav
+  Tonsill_ses1_speech_0080.wav: 3016 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0081.wav
+  Tonsill_ses1_speech_0081.wav: 3294 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0085.wav
+  Tonsill_ses1_speech_0085.wav: 2332 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0087.wav
+  Tonsill_ses1_speech_0087.wav: 2925 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0089.wav
+  Tonsill_ses1_speech_0089.wav: 3014 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0092.wav
+  Tonsill_ses1_speech_0092.wav: 2986 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0099.wav
+  Tonsill_ses1_speech_0099.wav: 3317 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0108.wav
+  Tonsill_ses1_speech_0108.wav: 2847 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav
+  Tonsill_ses1_speech_0109.wav: 2793 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0110.wav
+  Tonsill_ses1_speech_0110.wav: 3019 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav
+  Tonsill_ses1_speech_0111.wav: 2323 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0112.wav
+  Tonsill_ses1_speech_0112.wav: 3224 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0122.wav
+  Tonsill_ses1_speech_0122.wav: 2757 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav
+  Tonsill_ses1_speech_0125.wav: 2766 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0129.wav
+  Tonsill_ses1_speech_0129.wav: 3088 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0132.wav
+  Tonsill_ses1_speech_0132.wav: 2495 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0137.wav
+  Tonsill_ses1_speech_0137.wav: 3020 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0144.wav
+  Tonsill_ses1_speech_0144.wav: 2969 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0145.wav
+  Tonsill_ses1_speech_0145.wav: 2871 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav
+  Tonsill_ses1_speech_0147.wav: 2845 frames
+
+Extracting post-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0007.wav
+  Tonsill_ses2_speech_0007.wav: 3179 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0011.wav
+  Tonsill_ses2_speech_0011.wav: 3266 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0026.wav
+  Tonsill_ses2_speech_0026.wav: 4785 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0042.wav
+  Tonsill_ses2_speech_0042.wav: 3055 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0045.wav
+  Tonsill_ses2_speech_0045.wav: 2791 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0062.wav
+  Tonsill_ses2_speech_0062.wav: 3244 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0063.wav
+  Tonsill_ses2_speech_0063.wav: 3156 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0078.wav
+  Tonsill_ses2_speech_0078.wav: 3148 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0080.wav
+  Tonsill_ses2_speech_0080.wav: 2861 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0081.wav
+  Tonsill_ses2_speech_0081.wav: 2526 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0085.wav
+  Tonsill_ses2_speech_0085.wav: 2790 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0087.wav
+  Tonsill_ses2_speech_0087.wav: 2950 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0089.wav
+  Tonsill_ses2_speech_0089.wav: 3094 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0092.wav
+  Tonsill_ses2_speech_0092.wav: 2445 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0099.wav
+  Tonsill_ses2_speech_0099.wav: 2771 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0108.wav
+  Tonsill_ses2_speech_0108.wav: 2591 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0109.wav
+  Tonsill_ses2_speech_0109.wav: 2581 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0110.wav
+  Tonsill_ses2_speech_0110.wav: 3037 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0111.wav
+  Tonsill_ses2_speech_0111.wav: 3989 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0112.wav
+  Tonsill_ses2_speech_0112.wav: 3058 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0122.wav
+  Tonsill_ses2_speech_0122.wav: 3004 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0125.wav
+  Tonsill_ses2_speech_0125.wav: 2975 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0129.wav
+  Tonsill_ses2_speech_0129.wav: 2974 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0132.wav
+  Tonsill_ses2_speech_0132.wav: 2877 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0137.wav
+  Tonsill_ses2_speech_0137.wav: 2954 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0144.wav
+  Tonsill_ses2_speech_0144.wav: 4204 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0145.wav
+  Tonsill_ses2_speech_0145.wav: 3215 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0147.wav
+  Tonsill_ses2_speech_0147.wav: 2883 frames
+
+Building training segments...
+    3778 segments (same-patient)
+Building validation segments...
+    557 segments (same-patient)
+
+Train: 3778 segs, Val: 557 segs
+Parameters: 1,164,673
+  Epoch   1  val=4.570261  alpha=0.1460
+  Epoch  20  val=4.599388  alpha=0.5884
+  Epoch  40  val=4.446562  alpha=0.8221
+  Epoch  60  val=4.399194  alpha=1.0208
+  Epoch  80  val=4.390812  alpha=1.1904
+  Epoch 100  val=4.388115  alpha=1.3280
+  Epoch 120  val=4.379690  alpha=1.4392
+  Epoch 140  val=4.386725  alpha=1.5329
+  Epoch 160  val=4.376656  alpha=1.6136
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Early stop at epoch 162
+  Best val: 4.372897
+
+======================================================================
+  Evaluating on 5 test patients
+======================================================================
+
+--- TEST set ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0085.wav
+  [TEST]  Tonsill_ses1_speech_0085: conv->post=0.753  baseline=0.724  delta=+0.029
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav
+  [TEST]  Tonsill_ses1_speech_0109: conv->post=0.747  baseline=0.761  delta=-0.015
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav
+  [TEST]  Tonsill_ses1_speech_0111: conv->post=0.696  baseline=0.598  delta=+0.098
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav
+  [TEST]  Tonsill_ses1_speech_0125: conv->post=0.750  baseline=0.755  delta=-0.005
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav
+  [TEST]  Tonsill_ses1_speech_0147: conv->post=0.678  baseline=0.802  delta=-0.124
+
+--- TRAIN set (overfitting check) ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0007.wav
+  [TRAIN] Tonsill_ses1_speech_0007: conv->post=0.698  baseline=0.613  delta=+0.084
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0011.wav
+  [TRAIN] Tonsill_ses1_speech_0011: conv->post=0.753  baseline=0.722  delta=+0.031
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0026.wav
+  [TRAIN] Tonsill_ses1_speech_0026: conv->post=0.690  baseline=0.690  delta=+0.000
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0042.wav
+  [TRAIN] Tonsill_ses1_speech_0042: conv->post=0.786  baseline=0.631  delta=+0.155
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0045.wav
+  [TRAIN] Tonsill_ses1_speech_0045: conv->post=0.802  baseline=0.730  delta=+0.072
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0062.wav
+  [TRAIN] Tonsill_ses1_speech_0062: conv->post=0.728  baseline=0.552  delta=+0.176
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0063.wav
+  [TRAIN] Tonsill_ses1_speech_0063: conv->post=0.732  baseline=0.703  delta=+0.028
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0078.wav
+  [TRAIN] Tonsill_ses1_speech_0078: conv->post=0.707  baseline=0.478  delta=+0.228
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0080.wav
+  [TRAIN] Tonsill_ses1_speech_0080: conv->post=0.746  baseline=0.454  delta=+0.292
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0081.wav
+  [TRAIN] Tonsill_ses1_speech_0081: conv->post=0.763  baseline=0.627  delta=+0.136
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0087.wav
+  [TRAIN] Tonsill_ses1_speech_0087: conv->post=0.845  baseline=0.741  delta=+0.105
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0089.wav
+  [TRAIN] Tonsill_ses1_speech_0089: conv->post=0.654  baseline=0.627  delta=+0.026
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0092.wav
+  [TRAIN] Tonsill_ses1_speech_0092: conv->post=0.758  baseline=0.765  delta=-0.007
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0099.wav
+  [TRAIN] Tonsill_ses1_speech_0099: conv->post=0.727  baseline=0.794  delta=-0.067
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0110.wav
+  [TRAIN] Tonsill_ses1_speech_0110: conv->post=0.816  baseline=0.651  delta=+0.165
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0122.wav
+  [TRAIN] Tonsill_ses1_speech_0122: conv->post=0.833  baseline=0.774  delta=+0.058
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0129.wav
+  [TRAIN] Tonsill_ses1_speech_0129: conv->post=0.869  baseline=0.786  delta=+0.083
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0132.wav
+  [TRAIN] Tonsill_ses1_speech_0132: conv->post=0.783  baseline=0.474  delta=+0.310
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0144.wav
+  [TRAIN] Tonsill_ses1_speech_0144: conv->post=0.771  baseline=0.674  delta=+0.097
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0145.wav
+  [TRAIN] Tonsill_ses1_speech_0145: conv->post=0.781  baseline=0.647  delta=+0.134
+
+======================================================================
+  UNet-VC v2 — Tonsill — SUMMARY
+  Pairing: SAME-PATIENT
+======================================================================
+  TEST (5 patients):
+    Baseline:     0.728 +/- 0.070
+    Conv vs post: 0.725 +/- 0.031
+    Improvement:  -0.003
+  TRAIN (20 patients):
+    Baseline:     0.657 +/- 0.101
+    Conv vs post: 0.762 +/- 0.053
+    Improvement:  +0.105
+======================================================================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/project/6086959/sepehr/VoiceConversion/.env/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Pairing: CROSS-PATIENT
+
+Fess: 27 patients
+  Test (5):  ['FESS_ses1_speech_0055', 'FESS_ses1_speech_0086', 'FESS_ses1_speech_0107', 'FESS_ses1_speech_0117', 'FESS_ses1_speech_0130']
+  Train (19): 19 patients
+  Val (3):   ['FESS_ses1_speech_0046', 'FESS_ses1_speech_0119', 'FESS_ses1_speech_0121']
+
+Loading kNN-VC...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+
+Extracting pre-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0017.wav
+  FESS_ses1_speech_0017.wav: 3541 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0029.wav
+  FESS_ses1_speech_0029.wav: 2228 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0030.wav
+  FESS_ses1_speech_0030.wav: 1900 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0032.wav
+  FESS_ses1_speech_0032.wav: 2880 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0036.wav
+  FESS_ses1_speech_0036.wav: 2884 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0040.wav
+  FESS_ses1_speech_0040.wav: 3073 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0043.wav
+  FESS_ses1_speech_0043.wav: 3667 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0046.wav
+  FESS_ses1_speech_0046.wav: 3390 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0049.wav
+  FESS_ses1_speech_0049.wav: 3255 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0055.wav
+  FESS_ses1_speech_0055.wav: 2752 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0057.wav
+  FESS_ses1_speech_0057.wav: 1855 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0084.wav
+  FESS_ses1_speech_0084.wav: 2884 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0086.wav
+  FESS_ses1_speech_0086.wav: 2647 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0088.wav
+  FESS_ses1_speech_0088.wav: 2841 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0095.wav
+  FESS_ses1_speech_0095.wav: 2998 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0096.wav
+  FESS_ses1_speech_0096.wav: 3002 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0107.wav
+  FESS_ses1_speech_0107.wav: 3075 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0115.wav
+  FESS_ses1_speech_0115.wav: 2525 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0116.wav
+  FESS_ses1_speech_0116.wav: 2782 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0117.wav
+  FESS_ses1_speech_0117.wav: 2771 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0118.wav
+  FESS_ses1_speech_0118.wav: 3101 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0119.wav
+  FESS_ses1_speech_0119.wav: 3391 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0120.wav
+  FESS_ses1_speech_0120.wav: 2699 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0121.wav
+  FESS_ses1_speech_0121.wav: 2938 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0123.wav
+  FESS_ses1_speech_0123.wav: 2628 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0124.wav
+  FESS_ses1_speech_0124.wav: 2345 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0130.wav
+  FESS_ses1_speech_0130.wav: 2972 frames
+
+Extracting post-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0017.wav
+  FESS_ses2_speech_0017.wav: 3271 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0029.wav
+  FESS_ses2_speech_0029.wav: 3391 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0030.wav
+  FESS_ses2_speech_0030.wav: 2326 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0032.wav
+  FESS_ses2_speech_0032.wav: 1132 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0036.wav
+  FESS_ses2_speech_0036.wav: 3109 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0040.wav
+  FESS_ses2_speech_0040.wav: 3318 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0043.wav
+  FESS_ses2_speech_0043.wav: 2993 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0046.wav
+  FESS_ses2_speech_0046.wav: 3017 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0049.wav
+  FESS_ses2_speech_0049.wav: 3255 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0055.wav
+  FESS_ses2_speech_0055.wav: 2974 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0057.wav
+  FESS_ses2_speech_0057.wav: 3720 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0084.wav
+  FESS_ses2_speech_0084.wav: 2997 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0086.wav
+  FESS_ses2_speech_0086.wav: 2880 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0088.wav
+  FESS_ses2_speech_0088.wav: 2901 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0095.wav
+  FESS_ses2_speech_0095.wav: 3351 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0096.wav
+  FESS_ses2_speech_0096.wav: 3072 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0107.wav
+  FESS_ses2_speech_0107.wav: 3027 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0115.wav
+  FESS_ses2_speech_0115.wav: 2892 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0116.wav
+  FESS_ses2_speech_0116.wav: 3142 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0117.wav
+  FESS_ses2_speech_0117.wav: 3066 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0118.wav
+  FESS_ses2_speech_0118.wav: 3181 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0119.wav
+  FESS_ses2_speech_0119.wav: 2968 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0120.wav
+  FESS_ses2_speech_0120.wav: 3071 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0121.wav
+  FESS_ses2_speech_0121.wav: 2845 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0123.wav
+  FESS_ses2_speech_0123.wav: 2823 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0124.wav
+  FESS_ses2_speech_0124.wav: 2836 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/2/FESS_ses2_speech_0130.wav
+  FESS_ses2_speech_0130.wav: 2541 frames
+
+Building training segments...
+    Post pool: 56781 frames from 19 patients
+    3252 segments
+Building validation segments...
+    596 segments (same-patient)
+
+Train: 3252 segs, Val: 596 segs
+Parameters: 1,164,673
+  Epoch   1  val=4.254567  alpha=0.1365
+  Epoch  20  val=4.352885  alpha=0.5405
+  Epoch  40  val=4.205628  alpha=0.7314
+  Epoch  60  val=4.177303  alpha=0.8975
+  Epoch  80  val=4.156178  alpha=1.0514
+  Epoch 100  val=4.146340  alpha=1.1858
+  Epoch 120  val=4.132929  alpha=1.2973
+  Epoch 140  val=4.131014  alpha=1.3838
+  Epoch 160  val=4.135994  alpha=1.4516
+  Epoch 180  val=4.139329  alpha=1.5034
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Early stop at epoch 189
+  Best val: 4.129316
+
+======================================================================
+  Evaluating on 5 test patients
+======================================================================
+
+--- TEST set ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0055.wav
+  [TEST]  FESS_ses1_speech_0055: conv->post=0.801  baseline=0.902  delta=-0.101
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0086.wav
+  [TEST]  FESS_ses1_speech_0086: conv->post=0.731  baseline=0.807  delta=-0.076
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0107.wav
+  [TEST]  FESS_ses1_speech_0107: conv->post=0.746  baseline=0.766  delta=-0.020
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0117.wav
+  [TEST]  FESS_ses1_speech_0117: conv->post=0.792  baseline=0.904  delta=-0.112
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0130.wav
+  [TEST]  FESS_ses1_speech_0130: conv->post=0.735  baseline=0.888  delta=-0.154
+
+--- TRAIN set (overfitting check) ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0017.wav
+  [TRAIN] FESS_ses1_speech_0017: conv->post=0.799  baseline=0.822  delta=-0.022
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0029.wav
+  [TRAIN] FESS_ses1_speech_0029: conv->post=0.796  baseline=0.873  delta=-0.077
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0030.wav
+  [TRAIN] FESS_ses1_speech_0030: conv->post=0.624  baseline=0.577  delta=+0.047
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0032.wav
+  [TRAIN] FESS_ses1_speech_0032: conv->post=0.773  baseline=0.815  delta=-0.042
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0036.wav
+  [TRAIN] FESS_ses1_speech_0036: conv->post=0.873  baseline=0.902  delta=-0.029
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0040.wav
+  [TRAIN] FESS_ses1_speech_0040: conv->post=0.760  baseline=0.772  delta=-0.012
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0043.wav
+  [TRAIN] FESS_ses1_speech_0043: conv->post=0.824  baseline=0.894  delta=-0.069
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0049.wav
+  [TRAIN] FESS_ses1_speech_0049: conv->post=0.810  baseline=0.878  delta=-0.068
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0057.wav
+  [TRAIN] FESS_ses1_speech_0057: conv->post=0.708  baseline=0.796  delta=-0.088
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0084.wav
+  [TRAIN] FESS_ses1_speech_0084: conv->post=0.713  baseline=0.765  delta=-0.051
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0088.wav
+  [TRAIN] FESS_ses1_speech_0088: conv->post=0.795  baseline=0.882  delta=-0.086
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0095.wav
+  [TRAIN] FESS_ses1_speech_0095: conv->post=0.723  baseline=0.769  delta=-0.046
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0096.wav
+  [TRAIN] FESS_ses1_speech_0096: conv->post=0.806  baseline=0.833  delta=-0.026
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0115.wav
+  [TRAIN] FESS_ses1_speech_0115: conv->post=0.785  baseline=0.810  delta=-0.025
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0116.wav
+  [TRAIN] FESS_ses1_speech_0116: conv->post=0.889  baseline=0.953  delta=-0.064
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0118.wav
+  [TRAIN] FESS_ses1_speech_0118: conv->post=0.848  baseline=0.869  delta=-0.021
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0120.wav
+  [TRAIN] FESS_ses1_speech_0120: conv->post=0.737  baseline=0.807  delta=-0.069
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0123.wav
+  [TRAIN] FESS_ses1_speech_0123: conv->post=0.773  baseline=0.782  delta=-0.009
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Fess/Speech/1/FESS_ses1_speech_0124.wav
+  [TRAIN] FESS_ses1_speech_0124: conv->post=0.792  baseline=0.886  delta=-0.094
+
+======================================================================
+  UNet-VC v2 — Fess — SUMMARY
+  Pairing: CROSS-PATIENT
+======================================================================
+  TEST (5 patients):
+    Baseline:     0.854 +/- 0.056
+    Conv vs post: 0.761 +/- 0.030
+    Improvement:  -0.093
+  TRAIN (19 patients):
+    Baseline:     0.826 +/- 0.078
+    Conv vs post: 0.781 +/- 0.060
+    Improvement:  -0.045
+======================================================================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/project/6086959/sepehr/VoiceConversion/.env/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Pairing: CROSS-PATIENT
+
+Sept: 32 patients
+  Test (5):  ['Sept_0023', 'Sept_0033', 'Sept_0044', 'Sept_0076', 'Sept_0077']
+  Train (23): 23 patients
+  Val (4):   ['Sept_0050', 'Sept_0064', 'Sept_0066', 'Sept_0075']
+
+Loading kNN-VC...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+
+Extracting pre-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0005.wav
+  Sept_0005.wav: 3260 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0008.wav
+  Sept_0008.wav: 3746 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0010.wav
+  Sept_0010.wav: 3824 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0016.wav
+  Sept_0016.wav: 2958 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0018.wav
+  Sept_0018.wav: 3194 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0023.wav
+  Sept_0023.wav: 2384 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0024.wav
+  Sept_0024.wav: 2466 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0025.wav
+  Sept_0025.wav: 3113 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0027.wav
+  Sept_0027.wav: 3148 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0031.wav
+  Sept_0031.wav: 2516 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0033.wav
+  Sept_0033.wav: 2731 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0034.wav
+  Sept_0034.wav: 3126 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0037.wav
+  Sept_0037.wav: 4463 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0038.wav
+  Sept_0038.wav: 2045 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0039.wav
+  Sept_0039.wav: 2913 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0044.wav
+  Sept_0044.wav: 2761 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0048.wav
+  Sept_0048.wav: 2609 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0050.wav
+  Sept_0050.wav: 2662 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0054.wav
+  Sept_0054.wav: 3078 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0061.wav
+  Sept_0061.wav: 2987 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0064.wav
+  Sept_0064.wav: 2288 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0066.wav
+  Sept_0066.wav: 2976 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0068.wav
+  Sept_0068.wav: 2450 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0074.wav
+  Sept_0074.wav: 2900 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0075.wav
+  Sept_0075.wav: 3052 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0076.wav
+  Sept_0076.wav: 2633 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0077.wav
+  Sept_0077.wav: 3014 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0079.wav
+  Sept_0079.wav: 3301 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0082.wav
+  Sept_0082.wav: 3029 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0083.wav
+  Sept_0083.wav: 2825 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0090.wav
+  Sept_0090.wav: 2507 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0091.wav
+  Sept_0091.wav: 2908 frames
+
+Extracting post-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0005.wav
+  Sept_0005.wav: 3277 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0008.wav
+  Sept_0008.wav: 3285 frames
+resample 8000 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0010.wav
+  Sept_0010.wav: 3347 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0016.wav
+  Sept_0016.wav: 3062 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0018.wav
+  Sept_0018.wav: 3387 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0023.wav
+  Sept_0023.wav: 3085 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0024.wav
+  Sept_0024.wav: 3077 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0025.wav
+  Sept_0025.wav: 3210 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0027.wav
+  Sept_0027.wav: 2524 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0031.wav
+  Sept_0031.wav: 3087 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0033.wav
+  Sept_0033.wav: 1933 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0034.wav
+  Sept_0034.wav: 3114 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0037.wav
+  Sept_0037.wav: 3103 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0038.wav
+  Sept_0038.wav: 2527 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0039.wav
+  Sept_0039.wav: 2992 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0044.wav
+  Sept_0044.wav: 2623 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0048.wav
+  Sept_0048.wav: 2760 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0050.wav
+  Sept_0050.wav: 3095 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0054.wav
+  Sept_0054.wav: 2901 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0061.wav
+  Sept_0061.wav: 2874 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0064.wav
+  Sept_0064.wav: 3219 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0066.wav
+  Sept_0066.wav: 2786 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0068.wav
+  Sept_0068.wav: 2900 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0074.wav
+  Sept_0074.wav: 2997 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0075.wav
+  Sept_0075.wav: 3225 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0076.wav
+  Sept_0076.wav: 3165 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0077.wav
+  Sept_0077.wav: 2907 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0079.wav
+  Sept_0079.wav: 3058 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0082.wav
+  Sept_0082.wav: 3041 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0083.wav
+  Sept_0083.wav: 2787 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0090.wav
+  Sept_0090.wav: 2346 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/2/Sept_0091.wav
+  Sept_0091.wav: 2790 frames
+
+Building training segments...
+    Post pool: 68446 frames from 23 patients
+    4256 segments
+Building validation segments...
+    673 segments (same-patient)
+
+Train: 4256 segs, Val: 673 segs
+Parameters: 1,164,673
+  Epoch   1  val=4.416044  alpha=0.1507
+  Epoch  20  val=4.363637  alpha=0.5949
+  Epoch  40  val=4.255976  alpha=0.8055
+  Epoch  60  val=4.221054  alpha=1.0053
+  Epoch  80  val=4.211455  alpha=1.1752
+  Epoch 100  val=4.208041  alpha=1.3148
+  Epoch 120  val=4.204234  alpha=1.4304
+  Epoch 140  val=4.207721  alpha=1.5267
+  Epoch 160  val=4.200581  alpha=1.6062
+  Epoch 180  val=4.206669  alpha=1.6653
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Early stop at epoch 196
+  Best val: 4.199198
+
+======================================================================
+  Evaluating on 5 test patients
+======================================================================
+
+--- TEST set ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0023.wav
+  [TEST]  Sept_0023: conv->post=0.823  baseline=0.869  delta=-0.046
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0033.wav
+  [TEST]  Sept_0033: conv->post=0.730  baseline=0.834  delta=-0.104
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0044.wav
+  [TEST]  Sept_0044: conv->post=0.694  baseline=0.755  delta=-0.061
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0076.wav
+  [TEST]  Sept_0076: conv->post=0.809  baseline=0.901  delta=-0.092
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0077.wav
+  [TEST]  Sept_0077: conv->post=0.741  baseline=0.845  delta=-0.104
+
+--- TRAIN set (overfitting check) ---
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0005.wav
+  [TRAIN] Sept_0005: conv->post=0.710  baseline=0.887  delta=-0.177
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0008.wav
+  [TRAIN] Sept_0008: conv->post=0.861  baseline=0.917  delta=-0.057
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0010.wav
+  [TRAIN] Sept_0010: conv->post=0.632  baseline=0.759  delta=-0.127
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0016.wav
+  [TRAIN] Sept_0016: conv->post=0.676  baseline=0.792  delta=-0.116
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0018.wav
+  [TRAIN] Sept_0018: conv->post=0.808  baseline=0.895  delta=-0.087
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0024.wav
+  [TRAIN] Sept_0024: conv->post=0.787  baseline=0.787  delta=+0.000
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0025.wav
+  [TRAIN] Sept_0025: conv->post=0.806  baseline=0.870  delta=-0.064
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0027.wav
+  [TRAIN] Sept_0027: conv->post=0.757  baseline=0.901  delta=-0.144
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0031.wav
+  [TRAIN] Sept_0031: conv->post=0.736  baseline=0.828  delta=-0.092
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0034.wav
+  [TRAIN] Sept_0034: conv->post=0.644  baseline=0.754  delta=-0.111
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0037.wav
+  [TRAIN] Sept_0037: conv->post=0.753  baseline=0.861  delta=-0.108
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0038.wav
+  [TRAIN] Sept_0038: conv->post=0.675  baseline=0.695  delta=-0.020
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0039.wav
+  [TRAIN] Sept_0039: conv->post=0.724  baseline=0.823  delta=-0.099
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0048.wav
+  [TRAIN] Sept_0048: conv->post=0.790  baseline=0.897  delta=-0.107
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0054.wav
+  [TRAIN] Sept_0054: conv->post=0.839  baseline=0.854  delta=-0.015
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0061.wav
+  [TRAIN] Sept_0061: conv->post=0.689  baseline=0.849  delta=-0.161
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0068.wav
+  [TRAIN] Sept_0068: conv->post=0.746  baseline=0.822  delta=-0.076
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0074.wav
+  [TRAIN] Sept_0074: conv->post=0.743  baseline=0.849  delta=-0.106
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0079.wav
+  [TRAIN] Sept_0079: conv->post=0.672  baseline=0.817  delta=-0.145
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0082.wav
+  [TRAIN] Sept_0082: conv->post=0.723  baseline=0.826  delta=-0.103
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0083.wav
+  [TRAIN] Sept_0083: conv->post=0.685  baseline=0.818  delta=-0.133
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0090.wav
+  [TRAIN] Sept_0090: conv->post=0.718  baseline=0.839  delta=-0.120
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Sept/Speech/1/Sept_0091.wav
+  [TRAIN] Sept_0091: conv->post=0.546  baseline=0.732  delta=-0.186
+
+======================================================================
+  UNet-VC v2 — Sept — SUMMARY
+  Pairing: CROSS-PATIENT
+======================================================================
+  TEST (5 patients):
+    Baseline:     0.841 +/- 0.049
+    Conv vs post: 0.759 +/- 0.049
+    Improvement:  -0.081
+  TRAIN (23 patients):
+    Baseline:     0.829 +/- 0.056
+    Conv vs post: 0.727 +/- 0.070
+    Improvement:  -0.102
+======================================================================
+Done!

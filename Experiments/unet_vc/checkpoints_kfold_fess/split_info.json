@@ -1,0 +1,36 @@
+{
+  "seed": 42,
+  "n_test": 5,
+  "k_folds": 5,
+  "test_patients": [
+    "FESS_ses1_speech_0055",
+    "FESS_ses1_speech_0086",
+    "FESS_ses1_speech_0107",
+    "FESS_ses1_speech_0117",
+    "FESS_ses1_speech_0130"
+  ],
+  "cv_patients": [
+    "FESS_ses1_speech_0017",
+    "FESS_ses1_speech_0029",
+    "FESS_ses1_speech_0030",
+    "FESS_ses1_speech_0032",
+    "FESS_ses1_speech_0036",
+    "FESS_ses1_speech_0040",
+    "FESS_ses1_speech_0043",
+    "FESS_ses1_speech_0046",
+    "FESS_ses1_speech_0049",
+    "FESS_ses1_speech_0057",
+    "FESS_ses1_speech_0084",
+    "FESS_ses1_speech_0088",
+    "FESS_ses1_speech_0095",
+    "FESS_ses1_speech_0096",
+    "FESS_ses1_speech_0115",
+    "FESS_ses1_speech_0116",
+    "FESS_ses1_speech_0118",
+    "FESS_ses1_speech_0119",
+    "FESS_ses1_speech_0120",
+    "FESS_ses1_speech_0121",
+    "FESS_ses1_speech_0123",
+    "FESS_ses1_speech_0124"
+  ]
+}

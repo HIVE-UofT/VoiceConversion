@@ -1,0 +1,158 @@
+{
+  "method": "DLA-VC",
+  "surgery": "Tonsill",
+  "test": [
+    {
+      "name": "Tonsill_ses1_speech_0085",
+      "sim_post": -0.042984627187252045,
+      "sim_pre": -0.07862382382154465,
+      "baseline": 0.7237553596496582
+    },
+    {
+      "name": "Tonsill_ses1_speech_0109",
+      "sim_post": 0.0962645411491394,
+      "sim_pre": 0.07726257294416428,
+      "baseline": 0.76124107837677
+    },
+    {
+      "name": "Tonsill_ses1_speech_0111",
+      "sim_post": 0.22318235039710999,
+      "sim_pre": 0.17072798311710358,
+      "baseline": 0.597865641117096
+    },
+    {
+      "name": "Tonsill_ses1_speech_0125",
+      "sim_post": -0.12305135279893875,
+      "sim_pre": -0.06903723627328873,
+      "baseline": 0.7551054954528809
+    },
+    {
+      "name": "Tonsill_ses1_speech_0147",
+      "sim_post": 0.0897081047296524,
+      "sim_pre": 0.03322408348321915,
+      "baseline": 0.8024938106536865
+    }
+  ],
+  "train": [
+    {
+      "name": "Tonsill_ses1_speech_0007",
+      "sim_post": -0.08314762264490128,
+      "sim_pre": -0.044242098927497864,
+      "baseline": 0.613291323184967
+    },
+    {
+      "name": "Tonsill_ses1_speech_0011",
+      "sim_post": 0.04656728357076645,
+      "sim_pre": 0.07453353703022003,
+      "baseline": 0.7221626043319702
+    },
+    {
+      "name": "Tonsill_ses1_speech_0026",
+      "sim_post": 0.18843790888786316,
+      "sim_pre": 0.08999917656183243,
+      "baseline": 0.690130352973938
+    },
+    {
+      "name": "Tonsill_ses1_speech_0042",
+      "sim_post": 0.023771051317453384,
+      "sim_pre": 0.03947243094444275,
+      "baseline": 0.6307337880134583
+    },
+    {
+      "name": "Tonsill_ses1_speech_0045",
+      "sim_post": -0.014841321855783463,
+      "sim_pre": 0.04738693684339523,
+      "baseline": 0.7303003668785095
+    },
+    {
+      "name": "Tonsill_ses1_speech_0062",
+      "sim_post": -0.012912617065012455,
+      "sim_pre": -0.035446811467409134,
+      "baseline": 0.5517405867576599
+    },
+    {
+      "name": "Tonsill_ses1_speech_0063",
+      "sim_post": -0.15447479486465454,
+      "sim_pre": -0.1090102419257164,
+      "baseline": 0.7034389972686768
+    },
+    {
+      "name": "Tonsill_ses1_speech_0078",
+      "sim_post": -0.005729790776968002,
+      "sim_pre": 0.061145126819610596,
+      "baseline": 0.4783281087875366
+    },
+    {
+      "name": "Tonsill_ses1_speech_0080",
+      "sim_post": 0.09906918555498123,
+      "sim_pre": 0.00831274688243866,
+      "baseline": 0.4543571472167969
+    },
+    {
+      "name": "Tonsill_ses1_speech_0081",
+      "sim_post": 0.0870322734117508,
+      "sim_pre": 0.08983990550041199,
+      "baseline": 0.6270655393600464
+    },
+    {
+      "name": "Tonsill_ses1_speech_0087",
+      "sim_post": -0.07356365025043488,
+      "sim_pre": -0.04842277988791466,
+      "baseline": 0.740527868270874
+    },
+    {
+      "name": "Tonsill_ses1_speech_0089",
+      "sim_post": 0.008008764125406742,
+      "sim_pre": -0.024761248379945755,
+      "baseline": 0.6270269155502319
+    },
+    {
+      "name": "Tonsill_ses1_speech_0092",
+      "sim_post": 0.04926132410764694,
+      "sim_pre": 0.09220878779888153,
+      "baseline": 0.7645057439804077
+    },
+    {
+      "name": "Tonsill_ses1_speech_0099",
+      "sim_post": 0.1573970913887024,
+      "sim_pre": 0.14894849061965942,
+      "baseline": 0.794417142868042
+    },
+    {
+      "name": "Tonsill_ses1_speech_0110",
+      "sim_post": 0.0700041875243187,
+      "sim_pre": 0.11971443891525269,
+      "baseline": 0.6513228416442871
+    },
+    {
+      "name": "Tonsill_ses1_speech_0122",
+      "sim_post": 0.09362554550170898,
+      "sim_pre": 0.07863637059926987,
+      "baseline": 0.7743295431137085
+    },
+    {
+      "name": "Tonsill_ses1_speech_0129",
+      "sim_post": -0.035822298377752304,
+      "sim_pre": -0.03343229740858078,
+      "baseline": 0.785525918006897
+    },
+    {
+      "name": "Tonsill_ses1_speech_0132",
+      "sim_post": 0.04406563937664032,
+      "sim_pre": 0.13931895792484283,
+      "baseline": 0.4736168384552002
+    },
+    {
+      "name": "Tonsill_ses1_speech_0144",
+      "sim_post": 0.03865627571940422,
+      "sim_pre": 0.035850122570991516,
+      "baseline": 0.6744455099105835
+    },
+    {
+      "name": "Tonsill_ses1_speech_0145",
+      "sim_post": 0.0305293221026659,
+      "sim_pre": -0.0030872877687215805,
+      "baseline": 0.6467340588569641
+    }
+  ]
+}

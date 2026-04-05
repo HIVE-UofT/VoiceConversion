@@ -1,0 +1,160 @@
+{
+  "method": "UNet-VC v2 (same)",
+  "surgery": "Fess",
+  "test": [
+    {
+      "name": "FESS_ses1_speech_0055",
+      "sim_post": 0.7894115447998047,
+      "sim_pre": 0.8438082337379456,
+      "baseline": 0.9019870758056641
+    },
+    {
+      "name": "FESS_ses1_speech_0086",
+      "sim_post": 0.7541277408599854,
+      "sim_pre": 0.8164020776748657,
+      "baseline": 0.8071943521499634
+    },
+    {
+      "name": "FESS_ses1_speech_0107",
+      "sim_post": 0.7524553537368774,
+      "sim_pre": 0.8717179298400879,
+      "baseline": 0.7660462856292725
+    },
+    {
+      "name": "FESS_ses1_speech_0117",
+      "sim_post": 0.7855998277664185,
+      "sim_pre": 0.8857830762863159,
+      "baseline": 0.9039579629898071
+    },
+    {
+      "name": "FESS_ses1_speech_0130",
+      "sim_post": 0.720126748085022,
+      "sim_pre": 0.8348087072372437,
+      "baseline": 0.8883234262466431
+    }
+  ],
+  "train": [
+    {
+      "name": "FESS_ses1_speech_0017",
+      "sim_post": 0.8330656290054321,
+      "sim_pre": 0.8779454827308655,
+      "baseline": 0.8217910528182983
+    },
+    {
+      "name": "FESS_ses1_speech_0029",
+      "sim_post": 0.8545264005661011,
+      "sim_pre": 0.8915404677391052,
+      "baseline": 0.8732711672782898
+    },
+    {
+      "name": "FESS_ses1_speech_0030",
+      "sim_post": 0.7385270595550537,
+      "sim_pre": 0.7573977708816528,
+      "baseline": 0.5772556066513062
+    },
+    {
+      "name": "FESS_ses1_speech_0032",
+      "sim_post": 0.8377941846847534,
+      "sim_pre": 0.8561817407608032,
+      "baseline": 0.8150259852409363
+    },
+    {
+      "name": "FESS_ses1_speech_0036",
+      "sim_post": 0.8819693326950073,
+      "sim_pre": 0.8922103643417358,
+      "baseline": 0.9016563892364502
+    },
+    {
+      "name": "FESS_ses1_speech_0040",
+      "sim_post": 0.7898382544517517,
+      "sim_pre": 0.8765721917152405,
+      "baseline": 0.7722549438476562
+    },
+    {
+      "name": "FESS_ses1_speech_0043",
+      "sim_post": 0.8476806879043579,
+      "sim_pre": 0.861879825592041,
+      "baseline": 0.8935298323631287
+    },
+    {
+      "name": "FESS_ses1_speech_0049",
+      "sim_post": 0.871377170085907,
+      "sim_pre": 0.9109825491905212,
+      "baseline": 0.8777598738670349
+    },
+    {
+      "name": "FESS_ses1_speech_0057",
+      "sim_post": 0.7660739421844482,
+      "sim_pre": 0.8047468662261963,
+      "baseline": 0.7960712313652039
+    },
+    {
+      "name": "FESS_ses1_speech_0084",
+      "sim_post": 0.8250604867935181,
+      "sim_pre": 0.7315356731414795,
+      "baseline": 0.7646880745887756
+    },
+    {
+      "name": "FESS_ses1_speech_0088",
+      "sim_post": 0.8436235189437866,
+      "sim_pre": 0.8679808378219604,
+      "baseline": 0.8819437026977539
+    },
+    {
+      "name": "FESS_ses1_speech_0095",
+      "sim_post": 0.7769185900688171,
+      "sim_pre": 0.9272620677947998,
+      "baseline": 0.7690117359161377
+    },
+    {
+      "name": "FESS_ses1_speech_0096",
+      "sim_post": 0.876854658126831,
+      "sim_pre": 0.8919632434844971,
+      "baseline": 0.832938015460968
+    },
+    {
+      "name": "FESS_ses1_speech_0115",
+      "sim_post": 0.803290605545044,
+      "sim_pre": 0.8273519277572632,
+      "baseline": 0.8095542192459106
+    },
+    {
+      "name": "FESS_ses1_speech_0116",
+      "sim_post": 0.8760964274406433,
+      "sim_pre": 0.9064549207687378,
+      "baseline": 0.9534738063812256
+    },
+    {
+      "name": "FESS_ses1_speech_0118",
+      "sim_post": 0.8624314069747925,
+      "sim_pre": 0.8825175166130066,
+      "baseline": 0.869499921798706
+    },
+    {
+      "name": "FESS_ses1_speech_0120",
+      "sim_post": 0.8549450039863586,
+      "sim_pre": 0.8811744451522827,
+      "baseline": 0.8067069053649902
+    },
+    {
+      "name": "FESS_ses1_speech_0123",
+      "sim_post": 0.8080200552940369,
+      "sim_pre": 0.7925142049789429,
+      "baseline": 0.7819096446037292
+    },
+    {
+      "name": "FESS_ses1_speech_0124",
+      "sim_post": 0.8299141526222229,
+      "sim_pre": 0.855047345161438,
+      "baseline": 0.8864890336990356
+    }
+  ],
+  "test_summary": {
+    "baseline": 0.85350182056427,
+    "conv_post": 0.7603442430496216
+  },
+  "train_summary": {
+    "baseline": 0.8255174285487125,
+    "conv_post": 0.8304214508909928
+  }
+}

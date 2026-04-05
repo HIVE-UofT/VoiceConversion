@@ -1,0 +1,10 @@
+==========================================
+  ECAPA-TDNN Content Invariance Analysis
+==========================================
+/project/6086959/sepehr/VoiceConversion/.env/lib/python3.11/site-packages/torch/_subclasses/functional_tensor.py:279: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /tmp/build_wheels_tmp.5164/python-3.11/torch/torch/csrc/utils/tensor_numpy.cpp:84.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+Traceback (most recent call last):
+  File "/project/6086959/sepehr/VoiceConversion/Experiments/wavlm_quality_mapper/scripts/analyze_ecapa.py", line 23, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+Done!
