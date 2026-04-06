@@ -1,0 +1,6 @@
+/localscratch/spool/slurmd/job58904765/slurm_script: line 12: ../../.env/bin/activate: No such file or directory
+Traceback (most recent call last):
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/hifigan_finetune/finetune.py", line 18, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'
+Done!

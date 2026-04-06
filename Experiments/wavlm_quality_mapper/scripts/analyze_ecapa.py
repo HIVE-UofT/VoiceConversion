@@ -27,7 +27,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios"
+CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios"
 SAMPLE_RATE = 16000
 PLOT_DIR = os.path.join(os.path.dirname(__file__), '..', 'plots', 'analysis')
 
@@ -96,6 +96,7 @@ def main():
     print("Loading ECAPA-TDNN...")
     ecapa = EncoderClassifier.from_hparams(
         source="speechbrain/spkrec-ecapa-voxceleb",
+        savedir="/lustre06/project/6086959/sepharfi/pretrained_models/ecapa-voxceleb",
         run_opts={"device": str(device)})
 
     base = os.path.join(CUCO_BASE, args.surgery)

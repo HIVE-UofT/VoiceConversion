@@ -1,0 +1,138 @@
+
+The following have been reloaded with a version change:
+  1) python/3.11.5 => python/3.10.13
+
+
+The following have been reloaded with a version change:
+  1) python/3.10.13 => python/3.11.5
+
+==========================================
+  ECAPA-TDNN Content Invariance Analysis
+==========================================
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+Device: cuda
+Chunk duration: 5.0s
+Loading ECAPA-TDNN...
+Patients with pre: 28
+Patients with post: 28
+Patients with both: 28
+
+Segmenting and extracting ECAPA embeddings...
+  Patient 0007: pre 69.0s (13 chunks), post 63.6s (12 chunks)
+  Patient 0011: pre 72.0s (14 chunks), post 65.3s (13 chunks)
+  Patient 0026: pre 50.5s (10 chunks), post 95.7s (19 chunks)
+  Patient 0042: pre 69.1s (13 chunks), post 61.1s (12 chunks)
+  Patient 0045: pre 66.8s (13 chunks), post 55.8s (11 chunks)
+  Patient 0062: pre 56.7s (11 chunks), post 64.9s (12 chunks)
+  Patient 0063: pre 59.6s (11 chunks), post 63.1s (12 chunks)
+  Patient 0078: pre 73.1s (14 chunks), post 63.0s (12 chunks)
+  Patient 0080: pre 60.3s (12 chunks), post 57.2s (11 chunks)
+  Patient 0081: pre 65.9s (13 chunks), post 50.5s (10 chunks)
+  Patient 0085: pre 46.6s (9 chunks), post 55.8s (11 chunks)
+  Patient 0087: pre 58.5s (11 chunks), post 59.0s (11 chunks)
+  Patient 0089: pre 60.3s (12 chunks), post 61.9s (12 chunks)
+  Patient 0092: pre 59.7s (11 chunks), post 48.9s (9 chunks)
+  Patient 0099: pre 66.3s (13 chunks), post 55.4s (11 chunks)
+  Patient 0108: pre 57.0s (11 chunks), post 51.8s (10 chunks)
+  Patient 0109: pre 55.9s (11 chunks), post 51.6s (10 chunks)
+  Patient 0110: pre 60.4s (12 chunks), post 60.7s (12 chunks)
+  Patient 0111: pre 46.5s (9 chunks), post 79.8s (15 chunks)
+  Patient 0112: pre 64.5s (12 chunks), post 61.2s (12 chunks)
+  Patient 0122: pre 55.2s (11 chunks), post 60.1s (12 chunks)
+  Patient 0125: pre 55.3s (11 chunks), post 59.5s (11 chunks)
+  Patient 0129: pre 61.8s (12 chunks), post 59.5s (11 chunks)
+  Patient 0132: pre 49.9s (9 chunks), post 57.6s (11 chunks)
+  Patient 0137: pre 60.4s (12 chunks), post 59.1s (11 chunks)
+  Patient 0144: pre 59.4s (11 chunks), post 84.1s (16 chunks)
+  Patient 0145: pre 57.4s (11 chunks), post 64.3s (12 chunks)
+  Patient 0147: pre 56.9s (11 chunks), post 57.7s (11 chunks)
+
+============================================================
+  Pre vs Pre (same speaker baseline, within-recording)
+============================================================
+  Patient 0007: 0.7105 +/- 0.0973 (78 pairs)
+  Patient 0011: 0.8415 +/- 0.0336 (91 pairs)
+  Patient 0026: 0.7805 +/- 0.0424 (45 pairs)
+  Patient 0042: 0.7972 +/- 0.0459 (78 pairs)
+  Patient 0045: 0.7651 +/- 0.0649 (78 pairs)
+  Patient 0062: 0.7769 +/- 0.0537 (55 pairs)
+  Patient 0063: 0.7859 +/- 0.0526 (55 pairs)
+  Patient 0078: 0.8306 +/- 0.0325 (91 pairs)
+  Patient 0080: 0.7276 +/- 0.0916 (66 pairs)
+  Patient 0081: 0.8381 +/- 0.0375 (78 pairs)
+  Patient 0085: 0.7343 +/- 0.0886 (36 pairs)
+  Patient 0087: 0.8259 +/- 0.0396 (55 pairs)
+  Patient 0089: 0.7627 +/- 0.0477 (66 pairs)
+  Patient 0092: 0.8314 +/- 0.0326 (55 pairs)
+  Patient 0099: 0.7761 +/- 0.0495 (78 pairs)
+  Patient 0108: 0.7972 +/- 0.0534 (55 pairs)
+  Patient 0109: 0.8354 +/- 0.0299 (55 pairs)
+  Patient 0110: 0.6656 +/- 0.1427 (66 pairs)
+  Patient 0111: 0.7755 +/- 0.0932 (36 pairs)
+  Patient 0112: 0.7649 +/- 0.0732 (66 pairs)
+  Patient 0122: 0.8335 +/- 0.0314 (55 pairs)
+  Patient 0125: 0.6535 +/- 0.0945 (55 pairs)
+  Patient 0129: 0.7773 +/- 0.0372 (66 pairs)
+  Patient 0132: 0.7677 +/- 0.0531 (36 pairs)
+  Patient 0137: 0.7387 +/- 0.0613 (66 pairs)
+  Patient 0144: 0.7690 +/- 0.0554 (55 pairs)
+  Patient 0145: 0.8188 +/- 0.0428 (55 pairs)
+  Patient 0147: 0.8106 +/- 0.0306 (55 pairs)
+
+  Overall pre vs pre: 0.7798 +/- 0.0796
+
+============================================================
+  Pre vs Post (same patient, surgery effect)
+============================================================
+  Patient 0007: 0.4619 +/- 0.0808 (156 pairs)
+  Patient 0011: 0.6177 +/- 0.0525 (182 pairs)
+  Patient 0026: 0.5317 +/- 0.0669 (190 pairs)
+  Patient 0042: 0.5202 +/- 0.0619 (156 pairs)
+  Patient 0045: 0.5938 +/- 0.0565 (143 pairs)
+  Patient 0062: 0.4583 +/- 0.0659 (132 pairs)
+  Patient 0063: 0.5597 +/- 0.0600 (132 pairs)
+  Patient 0078: 0.4085 +/- 0.0472 (168 pairs)
+  Patient 0080: 0.3381 +/- 0.0674 (132 pairs)
+  Patient 0081: 0.5426 +/- 0.0580 (130 pairs)
+  Patient 0085: 0.5348 +/- 0.0915 (99 pairs)
+  Patient 0087: 0.6157 +/- 0.0508 (121 pairs)
+  Patient 0089: 0.4899 +/- 0.0683 (144 pairs)
+  Patient 0092: 0.6346 +/- 0.0592 (99 pairs)
+  Patient 0099: 0.6275 +/- 0.0752 (143 pairs)
+  Patient 0108: 0.2283 +/- 0.0552 (110 pairs)
+  Patient 0109: 0.6528 +/- 0.0395 (110 pairs)
+  Patient 0110: 0.4871 +/- 0.0850 (144 pairs)
+  Patient 0111: 0.4816 +/- 0.0785 (135 pairs)
+  Patient 0112: 0.5590 +/- 0.0831 (144 pairs)
+  Patient 0122: 0.6439 +/- 0.0601 (132 pairs)
+  Patient 0125: 0.5212 +/- 0.0732 (121 pairs)
+  Patient 0129: 0.6345 +/- 0.0496 (132 pairs)
+  Patient 0132: 0.3904 +/- 0.0635 (99 pairs)
+  Patient 0137: 0.5193 +/- 0.0639 (132 pairs)
+  Patient 0144: 0.5408 +/- 0.0414 (176 pairs)
+  Patient 0145: 0.5370 +/- 0.0636 (132 pairs)
+  Patient 0147: 0.6517 +/- 0.0573 (121 pairs)
+
+  Overall pre vs post: 0.5286 +/- 0.1140
+
+============================================================
+  Between-Speaker (different patients, pre-surgery)
+============================================================
+  Between-speaker similarity: 0.1958 +/- 0.1169
+
+============================================================
+  ECAPA Summary (Speech, 5s chunks)
+============================================================
+  Pre vs Pre   (same speaker baseline): 0.7798
+  Pre vs Post  (surgery effect):        0.5286
+  Between-speaker (diff person):        0.1958
+  Voice change  (pre_pre - pre_post):   +0.2511
+  Speaker discr (pre_post - between):   +0.3328
+
+============================================================
+  Generating Plots
+============================================================
+  Saved ecapa_analysis.png
+
+Done!
+Done!

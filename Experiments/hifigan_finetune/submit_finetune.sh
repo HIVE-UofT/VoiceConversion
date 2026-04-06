@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=hifigan_finetune
 #SBATCH --account=def-zshakeri
-#SBATCH --gres=gpu:h100:1
+#SBATCH --gres=gpu:a100_4g.20gb:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
 #SBATCH --time=03:00:00
