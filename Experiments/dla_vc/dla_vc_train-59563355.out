@@ -1,0 +1,41 @@
+==============================
+  DLA-VC — Training
+==============================
+Device: cuda
+
+Tonsill: 23 train/val patients, 282 total files
+  Train: 20 patients, 243 files
+  Val:   3 patients, 39 files
+  Test:  held out: ['0045', '0085', '0110', '0122', '0132']
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 38222.60it/s]
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Train: 1114 same-patient (pre, post) segment pairs
+  Val: 99 + 129 segments
+DLA-VC params: 6,598,064
+Loading kNN-VC vocoder...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+Loading ECAPA-TDNN...
+Pre-computing post-surgery ECAPA embeddings...
+Epoch 1 [WARMUP] | Recon: 7.3459 | Conv: 0.0000 | VQ: 1.4641 | Perp: 2/32 | ECAPA_l: 0.0000 | Cycle: 0.0022 | ECAPA_val: nan
+Epoch 10 [WARMUP] | Recon: 3.2959 | Conv: 0.0000 | VQ: 1.1185 | Perp: 4/32 | ECAPA_l: 0.0000 | Cycle: 0.0002 | ECAPA_val: nan
+Epoch 20 [WARMUP] | Recon: 2.6445 | Conv: 0.0000 | VQ: 0.6556 | Perp: 11/32 | ECAPA_l: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan
+Epoch 30 [WARMUP] | Recon: 2.0918 | Conv: 0.0000 | VQ: 0.5157 | Perp: 16/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+Epoch 40 [WARMUP] | Recon: 1.9834 | Conv: 0.0000 | VQ: 0.4430 | Perp: 19/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+Epoch 50 [WARMUP] | Recon: 1.9996 | Conv: 0.0000 | VQ: 0.4164 | Perp: 20/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+Epoch 60 [WARMUP] | Recon: 1.9298 | Conv: 0.0000 | VQ: 0.4038 | Perp: 21/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+  -> Saved (epoch 61, ECAPA_val=0.7464)
+  -> Saved (epoch 62, ECAPA_val=0.6542)
+  -> Saved (epoch 63, ECAPA_val=0.6501)
+  -> Saved (epoch 64, ECAPA_val=0.6364)
+  -> Saved (epoch 68, ECAPA_val=0.6295)
+Epoch 70 | Recon: 3.0503 | Conv: 3.4759 | VQ: 0.2146 | Perp: 23/32 | ECAPA_l: 0.5567 | Cycle: 0.0000 | ECAPA_val: 0.7523
+  -> Saved (epoch 77, ECAPA_val=0.6276)
+Epoch 80 | Recon: 2.9592 | Conv: 3.0614 | VQ: 0.1473 | Perp: 25/32 | ECAPA_l: 0.5256 | Cycle: 0.0000 | ECAPA_val: 0.6349
+Epoch 90 | Recon: 3.3740 | Conv: 3.6330 | VQ: 0.1404 | Perp: 26/32 | ECAPA_l: 0.5195 | Cycle: 0.0000 | ECAPA_val: 0.7199
+slurmstepd: error: *** JOB 59563355 ON ng20503 CANCELLED AT 2026-04-18T17:25:38 ***

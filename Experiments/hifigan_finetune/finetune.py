@@ -56,6 +56,10 @@ def load_pretrained_generator(device):
 
 def compute_mel_loss(y, y_hat, h):
     """L1 mel-spectrogram reconstruction loss."""
+    if y.dim() == 3:
+        y = y.squeeze(1)
+    if y_hat.dim() == 3:
+        y_hat = y_hat.squeeze(1)
     mel_y = mel_spectrogram(
         y, h.n_fft, h.num_mels, h.sampling_rate, h.hop_size, h.win_size, h.fmin, h.fmax_for_loss
     )
@@ -88,6 +92,11 @@ def main():
     parser = argparse.ArgumentParser(description="Fine-tune HiFi-GAN on post-surgery speech")
     parser.add_argument("--data_dir", type=str, required=True,
                         help="Path to CUCO Audios dir (contains Tonsill/, Fess/, etc.)")
+    parser.add_argument("--surgery", type=str, default="Tonsill",
+                        help="Surgery subdirectory to use for fine-tuning (default: Tonsill)")
+    parser.add_argument("--exclude_patients", type=str,
+                        default="0085,0110,0122,0132,0045",
+                        help="Comma-separated patient IDs to exclude (held-out test set)")
     parser.add_argument("--out_dir", type=str, default="./output",
                         help="Output directory for checkpoints")
     parser.add_argument("--steps", type=int, default=10000,
@@ -100,6 +109,8 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
+    exclude_patients = [p.strip() for p in args.exclude_patients.split(",") if p.strip()]
+
     random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -109,9 +120,15 @@ def main():
     os.makedirs(args.out_dir, exist_ok=True)
 
     # --- Collect data ---
-    wav_paths = collect_wav_paths(args.data_dir)
-    print(f"Found {len(wav_paths)} post-surgery wav files")
-    assert len(wav_paths) > 0, f"No wav files found under {args.data_dir}/**/Speech/2/"
+    print(f"Surgery type: {args.surgery}")
+    print(f"Excluding test patients: {exclude_patients}")
+    wav_paths = collect_wav_paths(args.data_dir, surgery=args.surgery,
+                                  exclude_patients=exclude_patients)
+    print(f"Found {len(wav_paths)} post-surgery wav files after exclusions")
+    assert len(wav_paths) > 0, (
+        f"No wav files found under {args.data_dir}/{args.surgery}/Speech/2/ "
+        f"(after excluding {exclude_patients})"
+    )
 
     random.shuffle(wav_paths)
     split = int(0.9 * len(wav_paths))

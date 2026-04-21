@@ -27,37 +27,50 @@ from torch.utils.data import Dataset, DataLoader, ConcatDataset
 
 from model.dla_vc import DLAVCModel
 
-CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios"
+CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios"
 WAVLM_LAYER_FOR_VOCODER = 6
 SAMPLE_RATE = 16000
 
 FEAT_DIM = 1024
-CODE_DIM = 64
+CODE_DIM = 128             # bumped 64→128 (16-d per head × 8 heads)
 NUM_CODES = 32
-NUM_HEADS = 4
-QUALITY_DIM = 64
+NUM_HEADS = 8              # bumped 4→8 (effective codebook = 32^8)
+QUALITY_DIM = 192          # bumped 64→192 (match ECAPA speaker embedding dim)
 COMMITMENT_WEIGHT = 0.25
 EMA_DECAY = 0.99
 ENTROPY_WEIGHT = 0.5
 DROPOUT = 0.15
 CONTENT_NOISE = 0.1
 
-BATCH_SIZE = 8
+BATCH_SIZE = 4             # dropped 8→4 to reduce memory pressure (avoids OOM at later epochs)
 EPOCHS = 400
-LR = 1e-4
+LR = 3e-4                  # bumped 1e-4→3e-4 (matches working UNet-VC baselines)
 SEGMENT_SAMPLES = 40000
 SEGMENT_HOP_SAMPLES = 20000
-WARMUP_EPOCHS = 30
+WARMUP_EPOCHS = 60         # bumped 30→60 (more time for pure recon before conversion pressure)
 PATIENCE = 40
 
-LAMBDA_RECON = 10.0        # Direct WavLM feature MSE (high during warmup)
-LAMBDA_RECON_PHASE2 = 2.0  # Reduced recon weight after warmup (so ECAPA can work)
+LAMBDA_RECON = 10.0        # Direct WavLM feature MSE+cos (high during warmup)
+LAMBDA_RECON_PHASE2 = 5.0  # Keep recon strong after warmup (don't let conversion
+                           # pull decoder away from the WavLM manifold)
+LAMBDA_CONTENT_CYCLE = 1.0 # Content-code cycle consistency weight
 LAMBDA_VQ = 1.0
 LAMBDA_CYCLE = 2.0
-ECAPA_EVERY = 3            # ECAPA loss every N training steps
-LAMBDA_ECAPA = 3.0         # ECAPA speaker similarity weight
+LAMBDA_CONV = 5.0          # Direct conversion (kNN-paired pre->post feature MSE+cos)
+LAMBDA_Q_SHIFT = 2.0       # Pre->post quality mapping loss (enables per-patient
+                           # post-style prediction at inference)
+ECAPA_EVERY = 999999       # ECAPA loss disabled (was 3) — short-crop gradients were
+                           # noisy and fighting the Conv signal; let Conv loss drive
+                           # the VC objective since it has stable per-frame targets.
+LAMBDA_ECAPA = 3.0         # ECAPA speaker similarity weight (unused while EVERY=999999)
 ECAPA_STOP_THRESH = 0.25   # Don't early-stop until ECAPA loss drops below this
 MIN_EPOCHS = 150           # Minimum epochs before early stopping is allowed
+STYLE_CROP_LEN = 128       # WavLM frames fed to HiFiGAN for ECAPA loss (~0.8 s)
+                           # Full utterances OOM on 20GB — all HiFiGAN activations
+                           # must be kept for backprop when input requires_grad=True.
+MAX_WAVLM_SAMPLES = 48000  # Audio samples fed to WavLM for ECAPA loss (3 s).
+                           # Longer recordings OOM in WavLM attention layers even
+                           # under no_grad, because attention is O(T^2) in memory.
 
 
 class WavLMFeatureExtractor:
@@ -80,6 +93,7 @@ class WavLMFeatureExtractor:
 
 
 class AudioSegmentDatasetFromFiles(Dataset):
+    """Single-domain segment dataset (used for val set only)."""
     def __init__(self, wav_files, label, segment_samples=40000,
                  hop_samples=20000, augment=False):
         self.segments = []
@@ -108,30 +122,69 @@ class AudioSegmentDatasetFromFiles(Dataset):
         return audio, torch.tensor(self.label, dtype=torch.float32)
 
 
-class PairedDomainLoader:
-    def __init__(self, loader_a, loader_b):
-        self.loader_a = loader_a
-        self.loader_b = loader_b
+class PatientPairedSegmentDataset(Dataset):
+    """Same-patient (pre, post) segment pairs — same file index, same utterance.
+    Each item returns (pre_segment, post_segment) from the same file pair, so
+    both come from the same patient saying the same thing. Time alignment within
+    segments is approximate (not DTW-aligned); kNN frame-pairing in the training
+    loop handles fine-grained alignment."""
+    def __init__(self, pre_files, post_files, segment_samples=40000,
+                 hop_samples=20000, augment=False):
+        assert len(pre_files) == len(post_files)
+        self.items = []
+        self.augment = augment
+        for pre_path, post_path in zip(pre_files, post_files):
+            pre_audio, sr = torchaudio.load(pre_path)
+            if sr != SAMPLE_RATE:
+                pre_audio = torchaudio.functional.resample(pre_audio, sr, SAMPLE_RATE)
+            pre_audio = pre_audio[0]
+            post_audio, sr = torchaudio.load(post_path)
+            if sr != SAMPLE_RATE:
+                post_audio = torchaudio.functional.resample(post_audio, sr, SAMPLE_RATE)
+            post_audio = post_audio[0]
 
-    def __iter__(self):
-        iter_a = iter(self.loader_a)
-        iter_b = iter(self.loader_b)
-        for _ in range(max(len(self.loader_a), len(self.loader_b))):
-            try:
-                a = next(iter_a)
-            except StopIteration:
-                iter_a = iter(self.loader_a)
-                a = next(iter_a)
-            try:
-                b = next(iter_b)
-            except StopIteration:
-                iter_b = iter(self.loader_b)
-                b = next(iter_b)
-            min_bs = min(a[0].shape[0], b[0].shape[0])
-            yield a[0][:min_bs], a[1][:min_bs], b[0][:min_bs], b[1][:min_bs]
+            if pre_audio.shape[0] < segment_samples:
+                pre_audio = F.pad(pre_audio, (0, segment_samples - pre_audio.shape[0]))
+            if post_audio.shape[0] < segment_samples:
+                post_audio = F.pad(post_audio, (0, segment_samples - post_audio.shape[0]))
+
+            pre_segs = [pre_audio[s:s + segment_samples]
+                        for s in range(0, pre_audio.shape[0] - segment_samples + 1, hop_samples)]
+            post_segs = [post_audio[s:s + segment_samples]
+                         for s in range(0, post_audio.shape[0] - segment_samples + 1, hop_samples)]
+            if not pre_segs:
+                pre_segs = [pre_audio[:segment_samples]]
+            if not post_segs:
+                post_segs = [post_audio[:segment_samples]]
+            # Pair segment i of pre with segment i of post (same file, roughly
+            # same time window — kNN frame-pairing handles finer misalignment).
+            n_pairs = min(len(pre_segs), len(post_segs))
+            for k in range(n_pairs):
+                self.items.append((pre_segs[k], post_segs[k]))
 
     def __len__(self):
-        return max(len(self.loader_a), len(self.loader_b))
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        pre, post = self.items[idx]
+        if self.augment:
+            if torch.rand(1).item() > 0.5:
+                pre = pre + torch.randn_like(pre) * 0.002
+            if torch.rand(1).item() > 0.5:
+                post = post + torch.randn_like(post) * 0.002
+        return pre, post
+
+
+def knn_pair_frames(X, Y):
+    """For each frame of X, find nearest frame of Y by cosine (same batch item).
+    X, Y: (B, C, T). Returns Y_paired (B, C, T) where Y_paired[b, :, t] is the
+    frame of Y[b] closest to X[b, :, t]."""
+    X_norm = F.normalize(X, dim=1)
+    Y_norm = F.normalize(Y, dim=1)
+    sim = torch.einsum('bct,bcs->bts', X_norm, Y_norm)  # (B, T_X, T_Y)
+    idx = sim.argmax(dim=-1)                            # (B, T_X)
+    idx_expanded = idx.unsqueeze(1).expand(-1, Y.shape[1], -1)  # (B, C, T_X)
+    return torch.gather(Y, 2, idx_expanded)
 
 
 def compute_avg_quality_from_files(model, wavlm, wav_files, device):
@@ -141,12 +194,49 @@ def compute_avg_quality_from_files(model, wavlm, wav_files, device):
         audio, sr = torchaudio.load(wf)
         if sr != SAMPLE_RATE:
             audio = torchaudio.functional.resample(audio, sr, SAMPLE_RATE)
-        audio = audio[0].unsqueeze(0).to(device)
+        audio = audio[0].unsqueeze(0)
+        if audio.shape[-1] > MAX_WAVLM_SAMPLES:
+            audio = audio[:, :MAX_WAVLM_SAMPLES]
+        audio = audio.to(device)
         with torch.no_grad():
             hidden, _ = wavlm.extract(audio)
             q = model.encode_quality(hidden)
         qualities.append(q.cpu())
     return torch.cat(qualities, dim=0).mean(dim=0)
+
+
+def compute_ecapa_val(model, wavlm, vocoder, ecapa, pre_files, val_idx,
+                      post_ecapa_embs, avg_q_post, device):
+    """Validation by ECAPA similarity: convert val pre files and compare ECAPA
+    embedding to corresponding val post audio.
+    Uses q_shift(encode_quality(pre)) for per-patient post quality prediction
+    (falls back to avg_q_post if q_shift isn't trained yet).
+    Returns 1 - mean cosine similarity (lower = better)."""
+    model.eval()
+    sims = []
+    with torch.no_grad():
+        for i in val_idx:
+            audio, sr = torchaudio.load(pre_files[i])
+            if sr != SAMPLE_RATE:
+                audio = torchaudio.functional.resample(audio, sr, SAMPLE_RATE)
+            audio = audio[0].unsqueeze(0)
+            if audio.shape[-1] > MAX_WAVLM_SAMPLES:
+                audio = audio[:, :MAX_WAVLM_SAMPLES]
+            audio = audio.to(device)
+            hidden, _ = wavlm.extract(audio)
+            # Predict this patient's post quality from their pre audio
+            q_post_pred = model.predict_post_quality(hidden)   # (1, Q)
+            converted = model.convert(hidden, q_post_pred)     # (1, 1024, T)
+            audio_conv = vocoder(converted.transpose(1, 2)).squeeze(1)
+            wav_lens = torch.ones(1, device=device)
+            feats = ecapa.mods.compute_features(audio_conv)
+            feats = ecapa.mods.mean_var_norm(feats, wav_lens)
+            emb = ecapa.mods.embedding_model(feats, wav_lens).squeeze()
+            target_emb = post_ecapa_embs[i]
+            sim = F.cosine_similarity(emb.unsqueeze(0),
+                                       target_emb.unsqueeze(0)).item()
+            sims.append(sim)
+    return 1.0 - float(np.mean(sims))
 
 
 def ecapa_embed_differentiable(ecapa, wav):
@@ -167,6 +257,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--surgery', type=str, default='Tonsill')
     parser.add_argument('--n_test', type=int, default=5)
+    parser.add_argument('--test_patients', type=str,
+                        default="0085,0110,0122,0132,0045",
+                        help='Comma-separated fixed test patient IDs (overrides --n_test)')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--output', type=str, default=None)
     args = parser.parse_args()
@@ -178,53 +271,62 @@ def main():
     print(f"Device: {device}")
     os.makedirs(args.output, exist_ok=True)
 
-    pre_dir = os.path.join(CUCO_BASE, args.surgery, "Speech", "1")
-    post_dir = os.path.join(CUCO_BASE, args.surgery, "Speech", "3")
-    pre_files = sorted(glob.glob(os.path.join(pre_dir, "*.wav")))
-    post_files = sorted(glob.glob(os.path.join(post_dir, "*.wav")))
-    assert len(pre_files) == len(post_files)
-    n = len(pre_files)
-    names = [Path(f).stem for f in pre_files]
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+    from utils import get_all_audio_pairs
 
-    # Split
+    fixed_ids = set(p.strip() for p in args.test_patients.split(',') if p.strip()) \
+                if args.test_patients else set()
+
+    # Collect all audio types (Speech + TDU + Vowels + Sustained vowels), excluding test patients
+    patient_pairs = get_all_audio_pairs(args.surgery, exclude=fixed_ids)
+    all_pids = sorted(patient_pairs.keys())
+
     random.seed(args.seed)
-    indices = list(range(n))
-    random.shuffle(indices)
-    test_idx = sorted(indices[:args.n_test])
-    cv_idx = sorted(indices[args.n_test:])
-    random.shuffle(cv_idx)
-    n_val = max(1, int(0.15 * len(cv_idx)))
-    val_idx = sorted(cv_idx[:n_val])
-    train_idx = sorted(cv_idx[n_val:])
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+    shuffled_pids = all_pids.copy()
+    random.shuffle(shuffled_pids)
+    n_val_pids = max(1, int(0.15 * len(shuffled_pids)))
+    val_pids   = set(shuffled_pids[:n_val_pids])
+    train_pids = set(shuffled_pids[n_val_pids:])
 
-    test_names = [names[i] for i in test_idx]
-    print(f"\n{args.surgery}: {n} patients | train={len(train_idx)}, val={len(val_idx)}, test={len(test_idx)}")
-    print(f"Test: {test_names}")
+    # Flatten to paired file lists (all audio types, all train/val patients)
+    pid_of_file = [pid for pid in sorted(all_pids) for _ in patient_pairs[pid]]
+    pre_files   = [pre  for pid in sorted(all_pids) for pre,  _   in patient_pairs[pid]]
+    post_files  = [post for pid in sorted(all_pids) for _,    post in patient_pairs[pid]]
+    n = len(pre_files)
+    train_idx = [i for i, pid in enumerate(pid_of_file) if pid in train_pids]
+    val_idx   = [i for i, pid in enumerate(pid_of_file) if pid in val_pids]
+
+    print(f"\n{args.surgery}: {len(all_pids)} train/val patients, {n} total files")
+    print(f"  Train: {len(train_pids)} patients, {len(train_idx)} files")
+    print(f"  Val:   {len(val_pids)} patients, {len(val_idx)} files")
+    print(f"  Test:  held out: {sorted(fixed_ids)}")
 
     with open(os.path.join(args.output, 'split_info.json'), 'w') as f:
-        json.dump({'test': test_names, 'train': [names[i] for i in train_idx],
-                   'val': [names[i] for i in val_idx], 'seed': args.seed}, f, indent=2)
+        json.dump({'test': sorted(fixed_ids), 'train': sorted(train_pids),
+                   'val': sorted(val_pids), 'n_files': n,
+                   'seed': args.seed}, f, indent=2)
 
     # WavLM
     wavlm = WavLMFeatureExtractor(device)
 
     # Datasets — train only on train patients
-    train_pre = [pre_files[i] for i in train_idx]
+    train_pre  = [pre_files[i] for i in train_idx]
     train_post = [post_files[i] for i in train_idx]
-    val_pre = [pre_files[i] for i in val_idx]
-    val_post = [post_files[i] for i in val_idx]
+    val_pre    = [pre_files[i] for i in val_idx]
+    val_post   = [post_files[i] for i in val_idx]
 
-    ds_pre = AudioSegmentDatasetFromFiles(train_pre, label=0,
+    # Patient-paired segments: each batch item is (pre_seg, post_seg) from the
+    # SAME file (same patient, same utterance). Enables direct conversion loss.
+    paired_ds = PatientPairedSegmentDataset(train_pre, train_post,
         segment_samples=SEGMENT_SAMPLES, hop_samples=SEGMENT_HOP_SAMPLES, augment=True)
-    ds_post = AudioSegmentDatasetFromFiles(train_post, label=1,
-        segment_samples=SEGMENT_SAMPLES, hop_samples=SEGMENT_HOP_SAMPLES, augment=True)
-    print(f"  Train: {len(ds_pre)} pre + {len(ds_post)} post segments")
+    print(f"  Train: {len(paired_ds)} same-patient (pre, post) segment pairs")
 
-    loader_pre = DataLoader(ds_pre, batch_size=BATCH_SIZE, shuffle=True,
-                            drop_last=True, num_workers=2, pin_memory=True)
-    loader_post = DataLoader(ds_post, batch_size=BATCH_SIZE, shuffle=True,
-                             drop_last=True, num_workers=2, pin_memory=True)
-    paired_loader = PairedDomainLoader(loader_pre, loader_post)
+    paired_loader = DataLoader(paired_ds, batch_size=BATCH_SIZE, shuffle=True,
+                               drop_last=True, num_workers=2, pin_memory=True)
 
     ds_val_pre = AudioSegmentDatasetFromFiles(val_pre, label=0,
         segment_samples=SEGMENT_SAMPLES, hop_samples=SEGMENT_SAMPLES, augment=False)
@@ -286,20 +388,31 @@ def main():
     for epoch in range(EPOCHS):
         model.train()
         ecapa_losses = []
+        torch.cuda.empty_cache()  # defragment before each epoch's training
 
-        for audio_pre, _, audio_post, _ in paired_loader:
+        for audio_pre, audio_post in paired_loader:
+            # audio_pre[b] and audio_post[b] are from the SAME patient/file.
             audio_all = torch.cat([audio_pre, audio_post], dim=0).to(device)
             B_half = audio_pre.shape[0]
             hidden_all, target_all = wavlm.extract(audio_all)
 
             loss_cycle = torch.tensor(0.0, device=device)
+            loss_conv = torch.tensor(0.0, device=device)
+            loss_q_shift = torch.tensor(0.0, device=device)
 
             opt_model.zero_grad()
             recon, vq_loss, perp, content_z, quality = model(hidden_all, target_all)
-            # Content consistency: re-extract content from output, compare to input content
+
+            # Direct feature reconstruction: decoder output must match WavLM layer-6
+            # features, otherwise HiFi-GAN (which expects that distribution) produces garbage.
+            loss_feat_mse = F.mse_loss(recon, target_all)
+            loss_feat_cos = 1.0 - F.cosine_similarity(recon, target_all, dim=1).mean()
+            loss_recon = loss_feat_mse + 0.5 * loss_feat_cos
+
+            # Content cycle consistency: re-extract content from output, compare
             recon_enc_out, _ = model.unet_encoder(recon)
             recon_content = model.content_proj(recon_enc_out)
-            loss_recon = F.mse_loss(recon_content, content_z.detach())
+            loss_content_cycle = F.mse_loss(recon_content, content_z.detach())
 
             if epoch >= WARMUP_EPOCHS:
                 h_pre, h_post = hidden_all[:B_half], hidden_all[B_half:]
@@ -312,6 +425,22 @@ def main():
                 x_a2b = model._match_time(model.unet_decoder(cq_pre, q_post, sk_pre), t_pre)
                 x_b2a = model._match_time(model.unet_decoder(cq_post, q_pre, sk_post), t_post)
 
+                # Direct conversion supervision: pre→post output should match the
+                # real post features of the same patient. pre/post aren't temporally
+                # aligned, so kNN-pair each pre frame to its content-matched post
+                # frame by WavLM cosine (this is the same trick UNet-VC uses).
+                # Pairing on the INPUT features (not the model output) gives a
+                # stable content-driven target that doesn't depend on current
+                # model quality.
+                with torch.no_grad():
+                    t_post_paired = knn_pair_frames(t_pre,  t_post)
+                    t_pre_paired  = knn_pair_frames(t_post, t_pre)
+                loss_conv_a2b = (F.mse_loss(x_a2b, t_post_paired) + 0.5 *
+                                 (1.0 - F.cosine_similarity(x_a2b, t_post_paired, dim=1).mean()))
+                loss_conv_b2a = (F.mse_loss(x_b2a, t_pre_paired) + 0.5 *
+                                 (1.0 - F.cosine_similarity(x_b2a, t_pre_paired, dim=1).mean()))
+                loss_conv = 0.5 * (loss_conv_a2b + loss_conv_b2a)
+
                 re_a2b, _ = model.unet_encoder(x_a2b)
                 re_cq_a2b, _, _ = model.vq(model.content_proj(re_a2b))
                 re_b2a, _ = model.unet_encoder(x_b2a)
@@ -320,11 +449,31 @@ def main():
                 loss_cycle = (F.l1_loss(re_cq_a2b, cq_pre.detach()) +
                               F.l1_loss(re_cq_b2a, cq_post.detach()))
 
+                # Pre → post quality mapping: q_shift(q_pre) should predict q_post.
+                # Target is detached so only q_shift (and encoder via q_pre) get
+                # gradients; post encoder isn't pulled toward the predicted direction.
+                q_post_pred = model.q_shift(q_pre)
+                loss_q_shift = (F.mse_loss(q_post_pred, q_post.detach()) + 0.5 *
+                                (1.0 - F.cosine_similarity(q_post_pred,
+                                                            q_post.detach(), dim=-1).mean()))
+
+            # Ramp VQ weight from 0.01 to LAMBDA_VQ over warmup so the encoder
+            # can learn unconstrained reconstruction first, then gradually force
+            # quantization. Prevents VQ from dominating gradients early on.
+            vq_weight = (LAMBDA_VQ * min(1.0, 0.01 + 0.99 * (epoch / WARMUP_EPOCHS))
+                         if epoch < WARMUP_EPOCHS else LAMBDA_VQ)
+
             if epoch < WARMUP_EPOCHS:
-                loss = LAMBDA_RECON * loss_recon + LAMBDA_VQ * vq_loss
+                loss = (LAMBDA_RECON * loss_recon
+                        + LAMBDA_CONTENT_CYCLE * loss_content_cycle
+                        + vq_weight * vq_loss)
             else:
-                loss = (LAMBDA_RECON_PHASE2 * loss_recon + LAMBDA_VQ * vq_loss +
-                        LAMBDA_CYCLE * loss_cycle)
+                loss = (LAMBDA_RECON_PHASE2 * loss_recon
+                        + LAMBDA_CONTENT_CYCLE * loss_content_cycle
+                        + vq_weight * vq_loss
+                        + LAMBDA_CYCLE * loss_cycle
+                        + LAMBDA_CONV * loss_conv
+                        + LAMBDA_Q_SHIFT * loss_q_shift)
 
             # ECAPA speaker loss on full utterance (every N steps, after warmup)
             global_step += 1
@@ -334,11 +483,17 @@ def main():
                 if utt_sr != SAMPLE_RATE:
                     utt_audio = torchaudio.functional.resample(utt_audio, utt_sr, SAMPLE_RATE)
                 utt_audio = utt_audio[0].unsqueeze(0).to(device)  # (1, T)
+                if utt_audio.shape[-1] > MAX_WAVLM_SAMPLES:
+                    s = random.randint(0, utt_audio.shape[-1] - MAX_WAVLM_SAMPLES)
+                    utt_audio = utt_audio[:, s:s + MAX_WAVLM_SAMPLES]
 
                 utt_post_audio, utt_sr2 = torchaudio.load(post_files[utt_idx])
                 if utt_sr2 != SAMPLE_RATE:
                     utt_post_audio = torchaudio.functional.resample(utt_post_audio, utt_sr2, SAMPLE_RATE)
                 utt_post_audio = utt_post_audio[0].unsqueeze(0).to(device)
+                if utt_post_audio.shape[-1] > MAX_WAVLM_SAMPLES:
+                    s2 = random.randint(0, utt_post_audio.shape[-1] - MAX_WAVLM_SAMPLES)
+                    utt_post_audio = utt_post_audio[:, s2:s2 + MAX_WAVLM_SAMPLES]
 
                 with torch.no_grad():
                     h_pre_utt, _ = wavlm.extract(utt_audio)
@@ -349,8 +504,17 @@ def main():
                 conv_feats = model.unet_decoder(cq_utt, q_post_utt, sk_utt)
                 conv_feats = conv_feats[:, :, :h_pre_utt.shape[-1]]  # match time
 
+                # Crop to STYLE_CROP_LEN frames before vocoding.
+                # Full utterances (~3000 WavLM frames) OOM on 20GB GPU because
+                # all HiFiGAN conv activations are stored for backprop.
+                # 128 frames → 128×320 = 40,960 audio samples — fits fine.
+                T_cf = conv_feats.shape[-1]
+                crop_len = min(T_cf, STYLE_CROP_LEN)
+                c_start = random.randint(0, max(0, T_cf - crop_len))
+                conv_feats_crop = conv_feats[:, :, c_start:c_start + crop_len]
+
                 # Vocode (differentiable) and get ECAPA embedding
-                audio_conv = vocode_differentiable(vocoder, conv_feats.transpose(1, 2))
+                audio_conv = vocode_differentiable(vocoder, conv_feats_crop.transpose(1, 2))
                 emb_conv = ecapa_embed_differentiable(ecapa, audio_conv).squeeze()
                 target_emb = post_ecapa_embs[utt_idx]
                 ecapa_l = 1.0 - F.cosine_similarity(
@@ -363,8 +527,9 @@ def main():
             opt_model.step()
 
         sched.step()
+        torch.cuda.empty_cache()  # reclaim fragmented allocator blocks before val
 
-        # Validate (content-code consistency)
+        # Validate (content-code consistency — cheap, monitor only)
         model.eval()
         vr = 0; nv = 0
         with torch.no_grad():
@@ -374,50 +539,57 @@ def main():
                 rv_enc_out, _ = model.unet_encoder(rv)
                 rv_content = model.content_proj(rv_enc_out)
                 vr += F.mse_loss(rv_content, cz_v).item(); nv += 1
-        avg_val = vr / max(nv, 1)
+        cycle_val = vr / max(nv, 1)
 
-        # Reset early stopping when warmup ends so the best-val from
-        # the trivially-easy warmup phase doesn't block real training
-        if epoch == WARMUP_EPOCHS:
-            best_val = float('inf')
-            patience_counter = 0
+        # ECAPA-based VC quality on val patients (drives save decisions after warmup).
+        # Recompute avg quality each epoch since model is changing.
+        avg_q_pre = avg_q_post = None
+        ecapa_val = float('nan')
+        if epoch >= WARMUP_EPOCHS:
+            avg_q_pre  = compute_avg_quality_from_files(model, wavlm, train_pre,  device)
+            avg_q_post = compute_avg_quality_from_files(model, wavlm, train_post, device)
+            avg_q_post_eval = avg_q_post.unsqueeze(0).to(device) if avg_q_post.dim() == 1 else avg_q_post.to(device)
+            ecapa_val = compute_ecapa_val(model, wavlm, vocoder, ecapa,
+                                          pre_files, val_idx, post_ecapa_embs,
+                                          avg_q_post_eval, device)
+            save_metric = ecapa_val
+        else:
+            save_metric = float('inf')  # don't save during warmup
 
         warmup = " [WARMUP]" if epoch < WARMUP_EPOCHS else ""
         avg_ecapa = np.mean(ecapa_losses) if ecapa_losses else 0.0
         ecapa_losses = []
         if (epoch + 1) % 10 == 0 or epoch == 0:
+            conv_val = loss_conv.item() if torch.is_tensor(loss_conv) else float(loss_conv)
+            qshift_val = loss_q_shift.item() if torch.is_tensor(loss_q_shift) else float(loss_q_shift)
             print(f"Epoch {epoch+1}{warmup} | Recon: {loss_recon.item():.4f} | "
+                  f"Conv: {conv_val:.4f} | Qshift: {qshift_val:.4f} | "
                   f"VQ: {vq_loss.item():.4f} | Perp: {perp.item():.0f}/{NUM_CODES} | "
-                  f"ECAPA_l: {avg_ecapa:.4f} | Val: {avg_val:.4f}")
+                  f"Cycle: {cycle_val:.4f} | ECAPA_val: {ecapa_val:.4f}")
 
-        if avg_val < best_val:
-            best_val = avg_val
+        if save_metric < best_val:
+            best_val = save_metric
             patience_counter = 0
-            avg_q_pre = compute_avg_quality_from_files(model, wavlm, train_pre, device)
-            avg_q_post = compute_avg_quality_from_files(model, wavlm, train_post, device)
             torch.save({
                 'epoch': epoch, 'model': model.state_dict(),
                 'avg_quality_pre': avg_q_pre, 'avg_quality_post': avg_q_post,
                 'adapter_weights': model.get_adapter_weights(),
-                'val_loss': avg_val,
+                'val_loss': save_metric,
+                'cycle_val': cycle_val,
+                'ecapa_val': ecapa_val,
                 'config': {'feat_dim': FEAT_DIM, 'code_dim': CODE_DIM,
                            'num_codes': NUM_CODES, 'num_heads': NUM_HEADS,
                            'quality_dim': QUALITY_DIM, 'num_wavlm_layers': wavlm.num_layers},
             }, ckpt_path)
-        else:
+            print(f"  -> Saved (epoch {epoch+1}, ECAPA_val={ecapa_val:.4f})")
+        elif epoch >= WARMUP_EPOCHS:
             patience_counter += 1
-            ecapa_ok = avg_ecapa < ECAPA_STOP_THRESH
             past_min = (epoch + 1) >= MIN_EPOCHS
-            if patience_counter >= PATIENCE and ecapa_ok and past_min:
+            if patience_counter >= PATIENCE and past_min:
                 print(f"Early stop at epoch {epoch+1}")
                 break
-            elif patience_counter >= PATIENCE and not (ecapa_ok and past_min):
-                reason = []
-                if not ecapa_ok:
-                    reason.append(f"ECAPA={avg_ecapa:.3f}>{ECAPA_STOP_THRESH}")
-                if not past_min:
-                    reason.append(f"epoch {epoch+1}<{MIN_EPOCHS}")
-                print(f"  Patience exhausted but continuing ({', '.join(reason)})")
+            elif patience_counter >= PATIENCE and not past_min:
+                print(f"  Patience exhausted but continuing (epoch {epoch+1}<{MIN_EPOCHS})")
                 patience_counter = 0  # reset to keep training
 
     print(f"\nBest val: {best_val:.4f}")

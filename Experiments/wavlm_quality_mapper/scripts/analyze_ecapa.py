@@ -2,11 +2,13 @@
 ECAPA-TDNN Speaker Analysis (Speech segments only)
 
 Segments each speech recording into chunks and compares:
-  - Pre vs Pre: chunks within same pre-surgery recording (same-speaker baseline)
-  - Pre vs Post: chunks from pre vs post recordings (surgery effect)
+  - Pre vs Pre:   chunks within same pre-surgery recording (same-speaker baseline)
+  - Post vs Post: chunks within same post-surgery recording (same-speaker baseline, post)
+  - Pre vs Post:  chunks from pre vs post recordings (surgery effect)
   - Between-speaker: chunks from different patients (different-speaker reference)
 
 The gap between pre-vs-pre and pre-vs-post quantifies the voice change from surgery.
+Post-vs-Post shows whether intra-speaker consistency is preserved after surgery.
 
 Usage:
     python scripts/analyze_ecapa.py
@@ -152,10 +154,30 @@ def main():
     print(f"\n  Overall pre vs pre: {pre_pre_mean:.4f} +/- {np.std(all_pre_pre):.4f}")
 
     # ══════════════════════════════════════════════
-    #  Analysis 2: Pre vs Post (surgery effect)
+    #  Analysis 2: Post vs Post (same-speaker baseline, post-surgery)
     # ══════════════════════════════════════════════
     print("\n" + "=" * 60)
-    print("  Pre vs Post (same patient, surgery effect)")
+    print("  Post vs Post (same speaker baseline, within-post-recording)")
+    print("=" * 60)
+
+    post_post_per_patient = {}
+    all_post_post = []
+
+    for pid in patients_with_both:
+        sims = within_cosine_sims(post_chunk_embs[pid])
+        if sims:
+            post_post_per_patient[pid] = sims
+            all_post_post.extend(sims)
+            print(f"  Patient {pid}: {np.mean(sims):.4f} +/- {np.std(sims):.4f} ({len(sims)} pairs)")
+
+    post_post_mean = np.mean(all_post_post)
+    print(f"\n  Overall post vs post: {post_post_mean:.4f} +/- {np.std(all_post_post):.4f}")
+
+    # ══════════════════════════════════════════════
+    #  Analysis 3: Pre vs Post (surgery effect)
+    # ══════════════════════════════════════════════
+    print("\n" + "=" * 60)
+    print("  Pre vs Post (same patient, cross-session surgery effect)")
     print("=" * 60)
 
     pre_post_per_patient = {}
@@ -172,7 +194,7 @@ def main():
     print(f"\n  Overall pre vs post: {pre_post_mean:.4f} +/- {np.std(all_pre_post):.4f}")
 
     # ══════════════════════════════════════════════
-    #  Analysis 3: Between-speaker (different patients, pre chunks)
+    #  Analysis 4: Between-speaker (different patients, pre chunks)
     # ══════════════════════════════════════════════
     print("\n" + "=" * 60)
     print("  Between-Speaker (different patients, pre-surgery)")
@@ -194,11 +216,13 @@ def main():
     print("\n" + "=" * 60)
     print("  ECAPA Summary (Speech, {:.0f}s chunks)".format(args.chunk_sec))
     print("=" * 60)
-    print(f"  Pre vs Pre   (same speaker baseline): {pre_pre_mean:.4f}")
-    print(f"  Pre vs Post  (surgery effect):        {pre_post_mean:.4f}")
-    print(f"  Between-speaker (diff person):        {between_mean:.4f}")
-    print(f"  Voice change  (pre_pre - pre_post):   {pre_pre_mean - pre_post_mean:+.4f}")
-    print(f"  Speaker discr (pre_post - between):   {pre_post_mean - between_mean:+.4f}")
+    print(f"  Pre vs Pre    (same speaker, pre):     {pre_pre_mean:.4f} +/- {np.std(all_pre_pre):.4f}")
+    print(f"  Post vs Post  (same speaker, post):   {post_post_mean:.4f} +/- {np.std(all_post_post):.4f}")
+    print(f"  Pre vs Post   (surgery effect):       {pre_post_mean:.4f} +/- {np.std(all_pre_post):.4f}")
+    print(f"  Between-speaker (diff person):        {between_mean:.4f} +/- {np.std(all_between):.4f}")
+    print(f"  Voice change   (pre_pre - pre_post):  {pre_pre_mean - pre_post_mean:+.4f}")
+    print(f"  Post stability (post_post - pre_post):{post_post_mean - pre_post_mean:+.4f}")
+    print(f"  Speaker discr  (pre_post - between):  {pre_post_mean - between_mean:+.4f}")
 
     # ══════════════════════════════════════════════
     #  Plots
@@ -209,37 +233,39 @@ def main():
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Plot 1: Three-way boxplot
+    # Plot 1: Four-way boxplot
     ax = axes[0]
-    data = [all_pre_pre, all_pre_post, all_between]
-    labels_box = ['Pre vs Pre\n(baseline)', 'Pre vs Post\n(surgery)', 'Between\nspeakers']
-    colors = ['steelblue', 'seagreen', 'coral']
+    data = [all_pre_pre, all_post_post, all_pre_post, all_between]
+    labels_box = ['Pre vs Pre\n(pre baseline)', 'Post vs Post\n(post baseline)',
+                  'Pre vs Post\n(surgery)', 'Between\nspeakers']
+    colors = ['steelblue', 'mediumpurple', 'seagreen', 'coral']
     bp = ax.boxplot(data, patch_artist=True, showfliers=False)
     for patch, color in zip(bp['boxes'], colors):
         patch.set_facecolor(color)
-    ax.set_xticklabels(labels_box)
+    ax.set_xticklabels(labels_box, fontsize=8)
     ax.set_ylabel("Cosine Similarity")
     ax.set_title(f"ECAPA-TDNN Speaker Similarity (Speech, {args.chunk_sec}s chunks)")
     for i, d in enumerate(data):
         ax.text(i + 1, np.median(d) + 0.01, f"μ={np.mean(d):.3f}", ha='center', fontsize=9)
 
-    # Plot 2: Per-patient comparison (pre-pre vs pre-post)
+    # Plot 2: Per-patient comparison (pre-pre, post-post, pre-post)
     ax = axes[1]
-    patient_pre_pre_means = [np.mean(pre_pre_per_patient[pid]) for pid in patients_with_both
-                             if pid in pre_pre_per_patient]
-    patient_pre_post_means = [np.mean(pre_post_per_patient[pid]) for pid in patients_with_both
-                              if pid in pre_post_per_patient]
     pids_plot = [pid for pid in patients_with_both
-                 if pid in pre_pre_per_patient and pid in pre_post_per_patient]
+                 if pid in pre_pre_per_patient and pid in post_post_per_patient
+                 and pid in pre_post_per_patient]
+    patient_pre_pre_means  = [np.mean(pre_pre_per_patient[pid])  for pid in pids_plot]
+    patient_post_post_means = [np.mean(post_post_per_patient[pid]) for pid in pids_plot]
+    patient_pre_post_means = [np.mean(pre_post_per_patient[pid]) for pid in pids_plot]
 
     y = np.arange(len(pids_plot))
-    height = 0.35
-    ax.barh(y - height / 2, patient_pre_pre_means, height, color='steelblue', alpha=0.7, label='Pre vs Pre')
-    ax.barh(y + height / 2, patient_pre_post_means, height, color='seagreen', alpha=0.7, label='Pre vs Post')
+    height = 0.25
+    ax.barh(y - height, patient_pre_pre_means,   height, color='steelblue',    alpha=0.8, label='Pre vs Pre')
+    ax.barh(y,          patient_post_post_means,  height, color='mediumpurple', alpha=0.8, label='Post vs Post')
+    ax.barh(y + height, patient_pre_post_means,  height, color='seagreen',     alpha=0.8, label='Pre vs Post')
     ax.set_yticks(y)
     ax.set_yticklabels([f"P{pid}" for pid in pids_plot], fontsize=7)
     ax.set_xlabel("Cosine Similarity")
-    ax.set_title("Per-Patient: Baseline vs Surgery Effect")
+    ax.set_title("Per-Patient: Intra-Session vs Surgery Effect")
     ax.axvline(x=between_mean, color='coral', linestyle='--', label=f'Between-spk ({between_mean:.3f})')
     ax.legend(fontsize=8)
 

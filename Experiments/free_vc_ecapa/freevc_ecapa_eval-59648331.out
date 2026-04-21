@@ -1,0 +1,604 @@
+================================================
+  FreeVC + ECAPA shift + bridge — Eval (4 strategies)
+================================================
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Loading frozen FreeVC synthesizer...
+INFO:root:Loaded checkpoint '/home/sepharfi/projects/def-zshakeri/sepharfi/VoiceConversion/Experiments/free_vc/checkpoints/freevc.pth' (iteration 1372)
+Loading frozen WavLM content encoder...
+INFO:wavlm.WavLM:WavLM Config: {'extractor_mode': 'layer_norm', 'encoder_layers': 24, 'encoder_embed_dim': 1024, 'encoder_ffn_embed_dim': 4096, 'encoder_attention_heads': 16, 'activation_fn': 'gelu', 'layer_norm_first': True, 'conv_feature_layers': '[(512,10,5)] + [(512,3,2)] * 4 + [(512,2,2)] * 2', 'conv_bias': False, 'feature_grad_mult': 1.0, 'normalize': True, 'dropout': 0.0, 'attention_dropout': 0.0, 'activation_dropout': 0.0, 'encoder_layerdrop': 0.0, 'dropout_input': 0.0, 'dropout_features': 0.0, 'mask_length': 10, 'mask_prob': 0.8, 'mask_selection': 'static', 'mask_other': 0.0, 'no_mask_overlap': False, 'mask_min_space': 1, 'mask_channel_length': 10, 'mask_channel_prob': 0.0, 'mask_channel_selection': 'static', 'mask_channel_other': 0.0, 'no_mask_channel_overlap': False, 'mask_channel_min_space': 1, 'conv_pos': 128, 'conv_pos_groups': 16, 'relative_position_embedding': True, 'num_buckets': 320, 'max_distance': 800, 'gru_rel_pos': True}
+Loading frozen FreeVC speaker encoder (for reference only)...
+Loaded the voice encoder model on cuda in 0.45 seconds.
+Loading frozen ECAPA-TDNN (metric + input to our shift)...
+INFO:speechbrain.utils.quirks:Applied quirks (see `speechbrain.utils.quirks`): [allow_tf32, disable_jit_profiling]
+INFO:speechbrain.utils.quirks:Excluded quirks specified by the `SB_DISABLE_QUIRKS` environment (comma-separated list): []
+INFO:speechbrain.utils.fetching:Fetch hyperparams.yaml: Fetching from HuggingFace Hub 'speechbrain/spkrec-ecapa-voxceleb' if not cached
+INFO:speechbrain.utils.fetching:Fetch embedding_model.ckpt: Fetching from HuggingFace Hub 'speechbrain/spkrec-ecapa-voxceleb' if not cached
+INFO:speechbrain.utils.fetching:Fetch mean_var_norm_emb.ckpt: Fetching from HuggingFace Hub 'speechbrain/spkrec-ecapa-voxceleb' if not cached
+INFO:speechbrain.utils.fetching:Fetch classifier.ckpt: Fetching from HuggingFace Hub 'speechbrain/spkrec-ecapa-voxceleb' if not cached
+INFO:speechbrain.utils.fetching:Fetch label_encoder.txt: Fetching from HuggingFace Hub 'speechbrain/spkrec-ecapa-voxceleb' if not cached
+INFO:speechbrain.utils.parameter_transfer:Loading pretrained files for: embedding_model, mean_var_norm_emb, classifier, label_encoder
+WARNING:speechbrain.inference.interfaces:Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+Loading learned bridge (ECAPA → FreeVC_spk)...
+  bridge CV val_loss: 0.0823
+Loading learned shift_ecapa (pre → post in ECAPA space)...
+  shift CV val_loss: 0.2369
+DEBUG:numba.core.byteflow:bytecode dump:
+>          0	NOP(arg=None, lineno=1137)
+           2	RESUME(arg=0, lineno=1137)
+           4	LOAD_FAST(arg=0, lineno=1140)
+           6	LOAD_CONST(arg=1, lineno=1140)
+           8	BINARY_SUBSCR(arg=None, lineno=1140)
+          18	STORE_FAST(arg=3, lineno=1140)
+          20	LOAD_FAST(arg=1, lineno=1141)
+          22	UNARY_NEGATIVE(arg=None, lineno=1141)
+          24	LOAD_FAST(arg=3, lineno=1141)
+          26	SWAP(arg=2, lineno=1141)
+          28	COPY(arg=2, lineno=1141)
+          30	COMPARE_OP(arg=1, lineno=1141)
+          36	POP_JUMP_FORWARD_IF_FALSE(arg=6, lineno=1141)
+          38	LOAD_FAST(arg=1, lineno=1141)
+          40	COMPARE_OP(arg=1, lineno=1141)
+          46	POP_JUMP_FORWARD_IF_FALSE(arg=5, lineno=1141)
+          48	JUMP_FORWARD(arg=2, lineno=1141)
+>         50	POP_TOP(arg=None, lineno=1141)
+          52	JUMP_FORWARD(arg=2, lineno=1141)
+>         54	LOAD_CONST(arg=1, lineno=1142)
+          56	STORE_FAST(arg=3, lineno=1142)
+>         58	LOAD_FAST(arg=0, lineno=1144)
+          60	LOAD_CONST(arg=2, lineno=1144)
+          62	BINARY_SUBSCR(arg=None, lineno=1144)
+          72	STORE_FAST(arg=4, lineno=1144)
+          74	LOAD_FAST(arg=1, lineno=1145)
+          76	UNARY_NEGATIVE(arg=None, lineno=1145)
+          78	LOAD_FAST(arg=4, lineno=1145)
+          80	SWAP(arg=2, lineno=1145)
+          82	COPY(arg=2, lineno=1145)
+          84	COMPARE_OP(arg=1, lineno=1145)
+          90	POP_JUMP_FORWARD_IF_FALSE(arg=6, lineno=1145)
+          92	LOAD_FAST(arg=1, lineno=1145)
+          94	COMPARE_OP(arg=1, lineno=1145)
+         100	POP_JUMP_FORWARD_IF_FALSE(arg=5, lineno=1145)
+         102	JUMP_FORWARD(arg=2, lineno=1145)
+>        104	POP_TOP(arg=None, lineno=1145)
+         106	JUMP_FORWARD(arg=2, lineno=1145)
+>        108	LOAD_CONST(arg=1, lineno=1146)
+         110	STORE_FAST(arg=4, lineno=1146)
+>        112	LOAD_FAST(arg=2, lineno=1148)
+         114	POP_JUMP_FORWARD_IF_FALSE(arg=42, lineno=1148)
+         116	LOAD_GLOBAL(arg=1, lineno=1149)
+         128	LOAD_ATTR(arg=1, lineno=1149)
+         138	LOAD_FAST(arg=3, lineno=1149)
+         140	PRECALL(arg=1, lineno=1149)
+         144	CALL(arg=1, lineno=1149)
+         154	LOAD_GLOBAL(arg=1, lineno=1149)
+         166	LOAD_ATTR(arg=1, lineno=1149)
+         176	LOAD_FAST(arg=4, lineno=1149)
+         178	PRECALL(arg=1, lineno=1149)
+         182	CALL(arg=1, lineno=1149)
+         192	COMPARE_OP(arg=3, lineno=1149)
+         198	RETURN_VALUE(arg=None, lineno=1149)
+>        200	LOAD_GLOBAL(arg=1, lineno=1151)
+         212	LOAD_ATTR(arg=2, lineno=1151)
+         222	LOAD_FAST(arg=3, lineno=1151)
+         224	PRECALL(arg=1, lineno=1151)
+         228	CALL(arg=1, lineno=1151)
+         238	LOAD_GLOBAL(arg=1, lineno=1151)
+         250	LOAD_ATTR(arg=2, lineno=1151)
+         260	LOAD_FAST(arg=4, lineno=1151)
+         262	PRECALL(arg=1, lineno=1151)
+         266	CALL(arg=1, lineno=1151)
+         276	COMPARE_OP(arg=3, lineno=1151)
+         282	RETURN_VALUE(arg=None, lineno=1151)
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=0 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=0 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=0, inst=NOP(arg=None, lineno=1137)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=2, inst=RESUME(arg=0, lineno=1137)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=4, inst=LOAD_FAST(arg=0, lineno=1140)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=6, inst=LOAD_CONST(arg=1, lineno=1140)
+DEBUG:numba.core.byteflow:stack ['$x4.0']
+DEBUG:numba.core.byteflow:dispatch pc=8, inst=BINARY_SUBSCR(arg=None, lineno=1140)
+DEBUG:numba.core.byteflow:stack ['$x4.0', '$const6.1.1']
+DEBUG:numba.core.byteflow:dispatch pc=18, inst=STORE_FAST(arg=3, lineno=1140)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2']
+DEBUG:numba.core.byteflow:dispatch pc=20, inst=LOAD_FAST(arg=1, lineno=1141)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=22, inst=UNARY_NEGATIVE(arg=None, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$threshold20.3']
+DEBUG:numba.core.byteflow:dispatch pc=24, inst=LOAD_FAST(arg=3, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$22unary_negative.4']
+DEBUG:numba.core.byteflow:dispatch pc=26, inst=SWAP(arg=2, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$22unary_negative.4', '$x024.5']
+DEBUG:numba.core.byteflow:dispatch pc=28, inst=COPY(arg=2, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$x024.5', '$22unary_negative.4']
+DEBUG:numba.core.byteflow:dispatch pc=30, inst=COMPARE_OP(arg=1, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$x024.5', '$22unary_negative.4', '$x024.5']
+DEBUG:numba.core.byteflow:dispatch pc=36, inst=POP_JUMP_FORWARD_IF_FALSE(arg=6, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$x024.5', '$30compare_op.6']
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=38, stack=('$x024.5',), blockstack=(), npush=0), Edge(pc=50, stack=('$x024.5',), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=38 nstack_initial=1), State(pc_initial=50 nstack_initial=1)])
+DEBUG:numba.core.byteflow:stack: ['$phi38.0']
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=38 nstack_initial=1)
+DEBUG:numba.core.byteflow:dispatch pc=38, inst=LOAD_FAST(arg=1, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$phi38.0']
+DEBUG:numba.core.byteflow:dispatch pc=40, inst=COMPARE_OP(arg=1, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$phi38.0', '$threshold38.1']
+DEBUG:numba.core.byteflow:dispatch pc=46, inst=POP_JUMP_FORWARD_IF_FALSE(arg=5, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$40compare_op.2']
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=48, stack=(), blockstack=(), npush=0), Edge(pc=58, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=50 nstack_initial=1), State(pc_initial=48 nstack_initial=0), State(pc_initial=58 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: ['$phi50.0']
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=50 nstack_initial=1)
+DEBUG:numba.core.byteflow:dispatch pc=50, inst=POP_TOP(arg=None, lineno=1141)
+DEBUG:numba.core.byteflow:stack ['$phi50.0']
+DEBUG:numba.core.byteflow:dispatch pc=52, inst=JUMP_FORWARD(arg=2, lineno=1141)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=58, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=48 nstack_initial=0), State(pc_initial=58 nstack_initial=0), State(pc_initial=58 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=48 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=48, inst=JUMP_FORWARD(arg=2, lineno=1141)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=54, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=58 nstack_initial=0), State(pc_initial=58 nstack_initial=0), State(pc_initial=54 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=58 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=58, inst=LOAD_FAST(arg=0, lineno=1144)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=60, inst=LOAD_CONST(arg=2, lineno=1144)
+DEBUG:numba.core.byteflow:stack ['$x58.0']
+DEBUG:numba.core.byteflow:dispatch pc=62, inst=BINARY_SUBSCR(arg=None, lineno=1144)
+DEBUG:numba.core.byteflow:stack ['$x58.0', '$const60.1.2']
+DEBUG:numba.core.byteflow:dispatch pc=72, inst=STORE_FAST(arg=4, lineno=1144)
+DEBUG:numba.core.byteflow:stack ['$62binary_subscr.2']
+DEBUG:numba.core.byteflow:dispatch pc=74, inst=LOAD_FAST(arg=1, lineno=1145)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=76, inst=UNARY_NEGATIVE(arg=None, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$threshold74.3']
+DEBUG:numba.core.byteflow:dispatch pc=78, inst=LOAD_FAST(arg=4, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$76unary_negative.4']
+DEBUG:numba.core.byteflow:dispatch pc=80, inst=SWAP(arg=2, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$76unary_negative.4', '$x178.5']
+DEBUG:numba.core.byteflow:dispatch pc=82, inst=COPY(arg=2, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$x178.5', '$76unary_negative.4']
+DEBUG:numba.core.byteflow:dispatch pc=84, inst=COMPARE_OP(arg=1, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$x178.5', '$76unary_negative.4', '$x178.5']
+DEBUG:numba.core.byteflow:dispatch pc=90, inst=POP_JUMP_FORWARD_IF_FALSE(arg=6, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$x178.5', '$84compare_op.6']
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=92, stack=('$x178.5',), blockstack=(), npush=0), Edge(pc=104, stack=('$x178.5',), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=58 nstack_initial=0), State(pc_initial=54 nstack_initial=0), State(pc_initial=92 nstack_initial=1), State(pc_initial=104 nstack_initial=1)])
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=54 nstack_initial=0), State(pc_initial=92 nstack_initial=1), State(pc_initial=104 nstack_initial=1)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=54 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=54, inst=LOAD_CONST(arg=1, lineno=1142)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=56, inst=STORE_FAST(arg=3, lineno=1142)
+DEBUG:numba.core.byteflow:stack ['$const54.0.1']
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=58, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=92 nstack_initial=1), State(pc_initial=104 nstack_initial=1), State(pc_initial=58 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: ['$phi92.0']
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=92 nstack_initial=1)
+DEBUG:numba.core.byteflow:dispatch pc=92, inst=LOAD_FAST(arg=1, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$phi92.0']
+DEBUG:numba.core.byteflow:dispatch pc=94, inst=COMPARE_OP(arg=1, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$phi92.0', '$threshold92.1']
+DEBUG:numba.core.byteflow:dispatch pc=100, inst=POP_JUMP_FORWARD_IF_FALSE(arg=5, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$94compare_op.2']
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=102, stack=(), blockstack=(), npush=0), Edge(pc=112, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=104 nstack_initial=1), State(pc_initial=58 nstack_initial=0), State(pc_initial=102 nstack_initial=0), State(pc_initial=112 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: ['$phi104.0']
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=104 nstack_initial=1)
+DEBUG:numba.core.byteflow:dispatch pc=104, inst=POP_TOP(arg=None, lineno=1145)
+DEBUG:numba.core.byteflow:stack ['$phi104.0']
+DEBUG:numba.core.byteflow:dispatch pc=106, inst=JUMP_FORWARD(arg=2, lineno=1145)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=112, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=58 nstack_initial=0), State(pc_initial=102 nstack_initial=0), State(pc_initial=112 nstack_initial=0), State(pc_initial=112 nstack_initial=0)])
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=102 nstack_initial=0), State(pc_initial=112 nstack_initial=0), State(pc_initial=112 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=102 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=102, inst=JUMP_FORWARD(arg=2, lineno=1145)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=108, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=112 nstack_initial=0), State(pc_initial=112 nstack_initial=0), State(pc_initial=108 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=112 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=112, inst=LOAD_FAST(arg=2, lineno=1148)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=114, inst=POP_JUMP_FORWARD_IF_FALSE(arg=42, lineno=1148)
+DEBUG:numba.core.byteflow:stack ['$zero_pos112.0']
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=116, stack=(), blockstack=(), npush=0), Edge(pc=200, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=112 nstack_initial=0), State(pc_initial=108 nstack_initial=0), State(pc_initial=116 nstack_initial=0), State(pc_initial=200 nstack_initial=0)])
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=108 nstack_initial=0), State(pc_initial=116 nstack_initial=0), State(pc_initial=200 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=108 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=108, inst=LOAD_CONST(arg=1, lineno=1146)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=110, inst=STORE_FAST(arg=4, lineno=1146)
+DEBUG:numba.core.byteflow:stack ['$const108.0.1']
+DEBUG:numba.core.byteflow:end state. edges=[Edge(pc=112, stack=(), blockstack=(), npush=0)]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=116 nstack_initial=0), State(pc_initial=200 nstack_initial=0), State(pc_initial=112 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=116 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=116, inst=LOAD_GLOBAL(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=128, inst=LOAD_ATTR(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$null$116.1', '$116load_global.0']
+DEBUG:numba.core.byteflow:dispatch pc=138, inst=LOAD_FAST(arg=3, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$null$116.1', '$128load_attr.2']
+DEBUG:numba.core.byteflow:dispatch pc=140, inst=PRECALL(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$null$116.1', '$128load_attr.2', '$x0138.3']
+DEBUG:numba.core.byteflow:dispatch pc=144, inst=CALL(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$null$116.1', '$128load_attr.2', '$x0138.3']
+DEBUG:numba.core.byteflow:dispatch pc=154, inst=LOAD_GLOBAL(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$144call.4']
+DEBUG:numba.core.byteflow:dispatch pc=166, inst=LOAD_ATTR(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$144call.4', '$null$154.6', '$154load_global.5']
+DEBUG:numba.core.byteflow:dispatch pc=176, inst=LOAD_FAST(arg=4, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$144call.4', '$null$154.6', '$166load_attr.7']
+DEBUG:numba.core.byteflow:dispatch pc=178, inst=PRECALL(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$144call.4', '$null$154.6', '$166load_attr.7', '$x1176.8']
+DEBUG:numba.core.byteflow:dispatch pc=182, inst=CALL(arg=1, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$144call.4', '$null$154.6', '$166load_attr.7', '$x1176.8']
+DEBUG:numba.core.byteflow:dispatch pc=192, inst=COMPARE_OP(arg=3, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$144call.4', '$182call.9']
+DEBUG:numba.core.byteflow:dispatch pc=198, inst=RETURN_VALUE(arg=None, lineno=1149)
+DEBUG:numba.core.byteflow:stack ['$192compare_op.10']
+DEBUG:numba.core.byteflow:end state. edges=[]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=200 nstack_initial=0), State(pc_initial=112 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=200 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=200, inst=LOAD_GLOBAL(arg=1, lineno=1151)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=212, inst=LOAD_ATTR(arg=2, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$null$200.1', '$200load_global.0']
+DEBUG:numba.core.byteflow:dispatch pc=222, inst=LOAD_FAST(arg=3, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$null$200.1', '$212load_attr.2']
+DEBUG:numba.core.byteflow:dispatch pc=224, inst=PRECALL(arg=1, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$null$200.1', '$212load_attr.2', '$x0222.3']
+DEBUG:numba.core.byteflow:dispatch pc=228, inst=CALL(arg=1, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$null$200.1', '$212load_attr.2', '$x0222.3']
+DEBUG:numba.core.byteflow:dispatch pc=238, inst=LOAD_GLOBAL(arg=1, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$228call.4']
+DEBUG:numba.core.byteflow:dispatch pc=250, inst=LOAD_ATTR(arg=2, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$228call.4', '$null$238.6', '$238load_global.5']
+DEBUG:numba.core.byteflow:dispatch pc=260, inst=LOAD_FAST(arg=4, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$228call.4', '$null$238.6', '$250load_attr.7']
+DEBUG:numba.core.byteflow:dispatch pc=262, inst=PRECALL(arg=1, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$228call.4', '$null$238.6', '$250load_attr.7', '$x1260.8']
+DEBUG:numba.core.byteflow:dispatch pc=266, inst=CALL(arg=1, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$228call.4', '$null$238.6', '$250load_attr.7', '$x1260.8']
+DEBUG:numba.core.byteflow:dispatch pc=276, inst=COMPARE_OP(arg=3, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$228call.4', '$266call.9']
+DEBUG:numba.core.byteflow:dispatch pc=282, inst=RETURN_VALUE(arg=None, lineno=1151)
+DEBUG:numba.core.byteflow:stack ['$276compare_op.10']
+DEBUG:numba.core.byteflow:end state. edges=[]
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=112 nstack_initial=0)])
+DEBUG:numba.core.byteflow:-------------------------Prune PHIs-------------------------
+DEBUG:numba.core.byteflow:Used_phis: defaultdict(<class 'set'>,
+            {State(pc_initial=0 nstack_initial=0): set(),
+             State(pc_initial=38 nstack_initial=1): {'$phi38.0'},
+             State(pc_initial=48 nstack_initial=0): set(),
+             State(pc_initial=50 nstack_initial=1): set(),
+             State(pc_initial=54 nstack_initial=0): set(),
+             State(pc_initial=58 nstack_initial=0): set(),
+             State(pc_initial=92 nstack_initial=1): {'$phi92.0'},
+             State(pc_initial=102 nstack_initial=0): set(),
+             State(pc_initial=104 nstack_initial=1): set(),
+             State(pc_initial=108 nstack_initial=0): set(),
+             State(pc_initial=112 nstack_initial=0): set(),
+             State(pc_initial=116 nstack_initial=0): set(),
+             State(pc_initial=200 nstack_initial=0): set()})
+DEBUG:numba.core.byteflow:defmap: {'$phi104.0': State(pc_initial=58 nstack_initial=0),
+ '$phi38.0': State(pc_initial=0 nstack_initial=0),
+ '$phi50.0': State(pc_initial=0 nstack_initial=0),
+ '$phi92.0': State(pc_initial=58 nstack_initial=0)}
+DEBUG:numba.core.byteflow:phismap: defaultdict(<class 'set'>,
+            {'$phi104.0': {('$x178.5', State(pc_initial=58 nstack_initial=0))},
+             '$phi38.0': {('$x024.5', State(pc_initial=0 nstack_initial=0))},
+             '$phi50.0': {('$x024.5', State(pc_initial=0 nstack_initial=0))},
+             '$phi92.0': {('$x178.5', State(pc_initial=58 nstack_initial=0))}})
+DEBUG:numba.core.byteflow:changing phismap: defaultdict(<class 'set'>,
+            {'$phi104.0': {('$x178.5', State(pc_initial=58 nstack_initial=0))},
+             '$phi38.0': {('$x024.5', State(pc_initial=0 nstack_initial=0))},
+             '$phi50.0': {('$x024.5', State(pc_initial=0 nstack_initial=0))},
+             '$phi92.0': {('$x178.5', State(pc_initial=58 nstack_initial=0))}})
+DEBUG:numba.core.byteflow:keep phismap: {'$phi38.0': {('$x024.5', State(pc_initial=0 nstack_initial=0))},
+ '$phi92.0': {('$x178.5', State(pc_initial=58 nstack_initial=0))}}
+DEBUG:numba.core.byteflow:new_out: defaultdict(<class 'dict'>,
+            {State(pc_initial=0 nstack_initial=0): {'$phi38.0': '$x024.5'},
+             State(pc_initial=58 nstack_initial=0): {'$phi92.0': '$x178.5'}})
+DEBUG:numba.core.byteflow:----------------------DONE Prune PHIs-----------------------
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=0 nstack_initial=0):
+AdaptBlockInfo(insts=((0, {}), (2, {}), (4, {'res': '$x4.0'}), (6, {'res': '$const6.1.1'}), (8, {'index': '$const6.1.1', 'target': '$x4.0', 'res': '$8binary_subscr.2'}), (10, {}), (12, {}), (14, {}), (16, {}), (18, {'value': '$8binary_subscr.2'}), (20, {'res': '$threshold20.3'}), (22, {'value': '$threshold20.3', 'res': '$22unary_negative.4'}), (24, {'res': '$x024.5'}), (30, {'lhs': '$22unary_negative.4', 'rhs': '$x024.5', 'res': '$30compare_op.6'}), (32, {}), (34, {}), (36, {'pred': '$30compare_op.6'})), outgoing_phis={'$phi38.0': '$x024.5'}, blockstack=(), active_try_block=None, outgoing_edgepushed={38: ('$x024.5',), 50: ('$x024.5',)})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=38 nstack_initial=1):
+AdaptBlockInfo(insts=((38, {'res': '$threshold38.1'}), (40, {'lhs': '$phi38.0', 'rhs': '$threshold38.1', 'res': '$40compare_op.2'}), (42, {}), (44, {}), (46, {'pred': '$40compare_op.2'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={48: (), 58: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=48 nstack_initial=0):
+AdaptBlockInfo(insts=((48, {}),), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={54: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=50 nstack_initial=1):
+AdaptBlockInfo(insts=((52, {}),), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={58: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=54 nstack_initial=0):
+AdaptBlockInfo(insts=((54, {'res': '$const54.0.1'}), (56, {'value': '$const54.0.1'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={58: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=58 nstack_initial=0):
+AdaptBlockInfo(insts=((58, {'res': '$x58.0'}), (60, {'res': '$const60.1.2'}), (62, {'index': '$const60.1.2', 'target': '$x58.0', 'res': '$62binary_subscr.2'}), (64, {}), (66, {}), (68, {}), (70, {}), (72, {'value': '$62binary_subscr.2'}), (74, {'res': '$threshold74.3'}), (76, {'value': '$threshold74.3', 'res': '$76unary_negative.4'}), (78, {'res': '$x178.5'}), (84, {'lhs': '$76unary_negative.4', 'rhs': '$x178.5', 'res': '$84compare_op.6'}), (86, {}), (88, {}), (90, {'pred': '$84compare_op.6'})), outgoing_phis={'$phi92.0': '$x178.5'}, blockstack=(), active_try_block=None, outgoing_edgepushed={92: ('$x178.5',), 104: ('$x178.5',)})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=92 nstack_initial=1):
+AdaptBlockInfo(insts=((92, {'res': '$threshold92.1'}), (94, {'lhs': '$phi92.0', 'rhs': '$threshold92.1', 'res': '$94compare_op.2'}), (96, {}), (98, {}), (100, {'pred': '$94compare_op.2'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={102: (), 112: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=102 nstack_initial=0):
+AdaptBlockInfo(insts=((102, {}),), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={108: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=104 nstack_initial=1):
+AdaptBlockInfo(insts=((106, {}),), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={112: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=108 nstack_initial=0):
+AdaptBlockInfo(insts=((108, {'res': '$const108.0.1'}), (110, {'value': '$const108.0.1'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={112: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=112 nstack_initial=0):
+AdaptBlockInfo(insts=((112, {'res': '$zero_pos112.0'}), (114, {'pred': '$zero_pos112.0'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={116: (), 200: ()})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=116 nstack_initial=0):
+AdaptBlockInfo(insts=((116, {'idx': 0, 'res': '$116load_global.0'}), (118, {}), (120, {}), (122, {}), (124, {}), (126, {}), (128, {'item': '$116load_global.0', 'res': '$128load_attr.2'}), (130, {}), (132, {}), (134, {}), (136, {}), (138, {'res': '$x0138.3'}), (140, {}), (142, {}), (144, {'func': '$128load_attr.2', 'args': ['$x0138.3'], 'kw_names': None, 'res': '$144call.4'}), (146, {}), (148, {}), (150, {}), (152, {}), (154, {'idx': 0, 'res': '$154load_global.5'}), (156, {}), (158, {}), (160, {}), (162, {}), (164, {}), (166, {'item': '$154load_global.5', 'res': '$166load_attr.7'}), (168, {}), (170, {}), (172, {}), (174, {}), (176, {'res': '$x1176.8'}), (178, {}), (180, {}), (182, {'func': '$166load_attr.7', 'args': ['$x1176.8'], 'kw_names': None, 'res': '$182call.9'}), (184, {}), (186, {}), (188, {}), (190, {}), (192, {'lhs': '$144call.4', 'rhs': '$182call.9', 'res': '$192compare_op.10'}), (194, {}), (196, {}), (198, {'retval': '$192compare_op.10', 'castval': '$198return_value.11'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={})
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=200 nstack_initial=0):
+AdaptBlockInfo(insts=((200, {'idx': 0, 'res': '$200load_global.0'}), (202, {}), (204, {}), (206, {}), (208, {}), (210, {}), (212, {'item': '$200load_global.0', 'res': '$212load_attr.2'}), (214, {}), (216, {}), (218, {}), (220, {}), (222, {'res': '$x0222.3'}), (224, {}), (226, {}), (228, {'func': '$212load_attr.2', 'args': ['$x0222.3'], 'kw_names': None, 'res': '$228call.4'}), (230, {}), (232, {}), (234, {}), (236, {}), (238, {'idx': 0, 'res': '$238load_global.5'}), (240, {}), (242, {}), (244, {}), (246, {}), (248, {}), (250, {'item': '$238load_global.5', 'res': '$250load_attr.7'}), (252, {}), (254, {}), (256, {}), (258, {}), (260, {'res': '$x1260.8'}), (262, {}), (264, {}), (266, {'func': '$250load_attr.7', 'args': ['$x1260.8'], 'kw_names': None, 'res': '$266call.9'}), (268, {}), (270, {}), (272, {}), (274, {}), (276, {'lhs': '$228call.4', 'rhs': '$266call.9', 'res': '$276compare_op.10'}), (278, {}), (280, {}), (282, {'retval': '$276compare_op.10', 'castval': '$282return_value.11'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={})
+DEBUG:numba.core.interpreter:label 0:
+    x = arg(0, name=x)                       ['x']
+    threshold = arg(1, name=threshold)       ['threshold']
+    zero_pos = arg(2, name=zero_pos)         ['zero_pos']
+    $const6.1.1 = const(int, 0)              ['$const6.1.1']
+    x0 = getitem(value=x, index=$const6.1.1, fn=<built-in function getitem>) ['$const6.1.1', 'x', 'x0']
+    $22unary_negative.4 = unary(fn=<built-in function neg>, value=threshold) ['$22unary_negative.4', 'threshold']
+    $30compare_op.6 = $22unary_negative.4 <= x0 ['$22unary_negative.4', '$30compare_op.6', 'x0']
+    $bool36 = global(bool: <class 'bool'>)   ['$bool36']
+    $36pred = call $bool36($30compare_op.6, func=$bool36, args=(Var($30compare_op.6, audio.py:1141),), kws=(), vararg=None, varkwarg=None, target=None) ['$30compare_op.6', '$36pred', '$bool36']
+    $phi38.0 = x0                            ['$phi38.0', 'x0']
+    branch $36pred, 38, 50                   ['$36pred']
+label 38:
+    $40compare_op.2 = $phi38.0 <= threshold  ['$40compare_op.2', '$phi38.0', 'threshold']
+    $bool46 = global(bool: <class 'bool'>)   ['$bool46']
+    $46pred = call $bool46($40compare_op.2, func=$bool46, args=(Var($40compare_op.2, audio.py:1141),), kws=(), vararg=None, varkwarg=None, target=None) ['$40compare_op.2', '$46pred', '$bool46']
+    branch $46pred, 48, 58                   ['$46pred']
+label 48:
+    jump 54                                  []
+label 50:
+    jump 58                                  []
+label 54:
+    x0 = const(int, 0)                       ['x0']
+    jump 58                                  []
+label 58:
+    $const60.1.2 = const(int, -1)            ['$const60.1.2']
+    x1 = getitem(value=x, index=$const60.1.2, fn=<built-in function getitem>) ['$const60.1.2', 'x', 'x1']
+    $76unary_negative.4 = unary(fn=<built-in function neg>, value=threshold) ['$76unary_negative.4', 'threshold']
+    $84compare_op.6 = $76unary_negative.4 <= x1 ['$76unary_negative.4', '$84compare_op.6', 'x1']
+    $bool90 = global(bool: <class 'bool'>)   ['$bool90']
+    $90pred = call $bool90($84compare_op.6, func=$bool90, args=(Var($84compare_op.6, audio.py:1145),), kws=(), vararg=None, varkwarg=None, target=None) ['$84compare_op.6', '$90pred', '$bool90']
+    $phi92.0 = x1                            ['$phi92.0', 'x1']
+    branch $90pred, 92, 104                  ['$90pred']
+label 92:
+    $94compare_op.2 = $phi92.0 <= threshold  ['$94compare_op.2', '$phi92.0', 'threshold']
+    $bool100 = global(bool: <class 'bool'>)  ['$bool100']
+    $100pred = call $bool100($94compare_op.2, func=$bool100, args=(Var($94compare_op.2, audio.py:1145),), kws=(), vararg=None, varkwarg=None, target=None) ['$100pred', '$94compare_op.2', '$bool100']
+    branch $100pred, 102, 112                ['$100pred']
+label 102:
+    jump 108                                 []
+label 104:
+    jump 112                                 []
+label 108:
+    x1 = const(int, 0)                       ['x1']
+    jump 112                                 []
+label 112:
+    $bool114 = global(bool: <class 'bool'>)  ['$bool114']
+    $114pred = call $bool114(zero_pos, func=$bool114, args=(Var(zero_pos, audio.py:1137),), kws=(), vararg=None, varkwarg=None, target=None) ['$114pred', '$bool114', 'zero_pos']
+    branch $114pred, 116, 200                ['$114pred']
+label 116:
+    $116load_global.0 = global(np: <module 'numpy' from '/home/sepharfi/envs/myenv/lib/python3.11/site-packages/numpy/__init__.py'>) ['$116load_global.0']
+    $128load_attr.2 = getattr(value=$116load_global.0, attr=signbit) ['$116load_global.0', '$128load_attr.2']
+    $144call.4 = call $128load_attr.2(x0, func=$128load_attr.2, args=[Var(x0, audio.py:1140)], kws=(), vararg=None, varkwarg=None, target=None) ['$128load_attr.2', '$144call.4', 'x0']
+    $154load_global.5 = global(np: <module 'numpy' from '/home/sepharfi/envs/myenv/lib/python3.11/site-packages/numpy/__init__.py'>) ['$154load_global.5']
+    $166load_attr.7 = getattr(value=$154load_global.5, attr=signbit) ['$154load_global.5', '$166load_attr.7']
+    $182call.9 = call $166load_attr.7(x1, func=$166load_attr.7, args=[Var(x1, audio.py:1144)], kws=(), vararg=None, varkwarg=None, target=None) ['$166load_attr.7', '$182call.9', 'x1']
+    $192compare_op.10 = $144call.4 != $182call.9 ['$144call.4', '$182call.9', '$192compare_op.10']
+    $198return_value.11 = cast(value=$192compare_op.10) ['$192compare_op.10', '$198return_value.11']
+    return $198return_value.11               ['$198return_value.11']
+label 200:
+    $200load_global.0 = global(np: <module 'numpy' from '/home/sepharfi/envs/myenv/lib/python3.11/site-packages/numpy/__init__.py'>) ['$200load_global.0']
+    $212load_attr.2 = getattr(value=$200load_global.0, attr=sign) ['$200load_global.0', '$212load_attr.2']
+    $228call.4 = call $212load_attr.2(x0, func=$212load_attr.2, args=[Var(x0, audio.py:1140)], kws=(), vararg=None, varkwarg=None, target=None) ['$212load_attr.2', '$228call.4', 'x0']
+    $238load_global.5 = global(np: <module 'numpy' from '/home/sepharfi/envs/myenv/lib/python3.11/site-packages/numpy/__init__.py'>) ['$238load_global.5']
+    $250load_attr.7 = getattr(value=$238load_global.5, attr=sign) ['$238load_global.5', '$250load_attr.7']
+    $266call.9 = call $250load_attr.7(x1, func=$250load_attr.7, args=[Var(x1, audio.py:1144)], kws=(), vararg=None, varkwarg=None, target=None) ['$250load_attr.7', '$266call.9', 'x1']
+    $276compare_op.10 = $228call.4 != $266call.9 ['$228call.4', '$266call.9', '$276compare_op.10']
+    $282return_value.11 = cast(value=$276compare_op.10) ['$276compare_op.10', '$282return_value.11']
+    return $282return_value.11               ['$282return_value.11']
+
+DEBUG:numba.core.byteflow:bytecode dump:
+>          0	NOP(arg=None, lineno=1023)
+           2	RESUME(arg=0, lineno=1023)
+           4	LOAD_FAST(arg=0, lineno=1026)
+           6	LOAD_CONST(arg=1, lineno=1026)
+           8	BINARY_SUBSCR(arg=None, lineno=1026)
+          18	LOAD_FAST(arg=0, lineno=1026)
+          20	LOAD_CONST(arg=2, lineno=1026)
+          22	BINARY_SUBSCR(arg=None, lineno=1026)
+          32	COMPARE_OP(arg=4, lineno=1026)
+          38	LOAD_FAST(arg=0, lineno=1026)
+          40	LOAD_CONST(arg=1, lineno=1026)
+          42	BINARY_SUBSCR(arg=None, lineno=1026)
+          52	LOAD_FAST(arg=0, lineno=1026)
+          54	LOAD_CONST(arg=3, lineno=1026)
+          56	BINARY_SUBSCR(arg=None, lineno=1026)
+          66	COMPARE_OP(arg=5, lineno=1026)
+          72	BINARY_OP(arg=1, lineno=1026)
+          76	RETURN_VALUE(arg=None, lineno=1026)
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=0 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=0 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=0, inst=NOP(arg=None, lineno=1023)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=2, inst=RESUME(arg=0, lineno=1023)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=4, inst=LOAD_FAST(arg=0, lineno=1026)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=6, inst=LOAD_CONST(arg=1, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$x4.0']
+DEBUG:numba.core.byteflow:dispatch pc=8, inst=BINARY_SUBSCR(arg=None, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$x4.0', '$const6.1.1']
+DEBUG:numba.core.byteflow:dispatch pc=18, inst=LOAD_FAST(arg=0, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2']
+DEBUG:numba.core.byteflow:dispatch pc=20, inst=LOAD_CONST(arg=2, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2', '$x18.3']
+DEBUG:numba.core.byteflow:dispatch pc=22, inst=BINARY_SUBSCR(arg=None, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2', '$x18.3', '$const20.4.2']
+DEBUG:numba.core.byteflow:dispatch pc=32, inst=COMPARE_OP(arg=4, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2', '$22binary_subscr.5']
+DEBUG:numba.core.byteflow:dispatch pc=38, inst=LOAD_FAST(arg=0, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6']
+DEBUG:numba.core.byteflow:dispatch pc=40, inst=LOAD_CONST(arg=1, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$x38.7']
+DEBUG:numba.core.byteflow:dispatch pc=42, inst=BINARY_SUBSCR(arg=None, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$x38.7', '$const40.8.1']
+DEBUG:numba.core.byteflow:dispatch pc=52, inst=LOAD_FAST(arg=0, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9']
+DEBUG:numba.core.byteflow:dispatch pc=54, inst=LOAD_CONST(arg=3, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9', '$x52.10']
+DEBUG:numba.core.byteflow:dispatch pc=56, inst=BINARY_SUBSCR(arg=None, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9', '$x52.10', '$const54.11.3']
+DEBUG:numba.core.byteflow:dispatch pc=66, inst=COMPARE_OP(arg=5, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9', '$56binary_subscr.12']
+DEBUG:numba.core.byteflow:dispatch pc=72, inst=BINARY_OP(arg=1, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$66compare_op.13']
+DEBUG:numba.core.byteflow:dispatch pc=76, inst=RETURN_VALUE(arg=None, lineno=1026)
+DEBUG:numba.core.byteflow:stack ['$binop_and_72.14']
+DEBUG:numba.core.byteflow:end state. edges=[]
+DEBUG:numba.core.byteflow:-------------------------Prune PHIs-------------------------
+DEBUG:numba.core.byteflow:Used_phis: defaultdict(<class 'set'>, {State(pc_initial=0 nstack_initial=0): set()})
+DEBUG:numba.core.byteflow:defmap: {}
+DEBUG:numba.core.byteflow:phismap: defaultdict(<class 'set'>, {})
+DEBUG:numba.core.byteflow:changing phismap: defaultdict(<class 'set'>, {})
+DEBUG:numba.core.byteflow:keep phismap: {}
+DEBUG:numba.core.byteflow:new_out: defaultdict(<class 'dict'>, {})
+DEBUG:numba.core.byteflow:----------------------DONE Prune PHIs-----------------------
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=0 nstack_initial=0):
+AdaptBlockInfo(insts=((0, {}), (2, {}), (4, {'res': '$x4.0'}), (6, {'res': '$const6.1.1'}), (8, {'index': '$const6.1.1', 'target': '$x4.0', 'res': '$8binary_subscr.2'}), (10, {}), (12, {}), (14, {}), (16, {}), (18, {'res': '$x18.3'}), (20, {'res': '$const20.4.2'}), (22, {'index': '$const20.4.2', 'target': '$x18.3', 'res': '$22binary_subscr.5'}), (24, {}), (26, {}), (28, {}), (30, {}), (32, {'lhs': '$8binary_subscr.2', 'rhs': '$22binary_subscr.5', 'res': '$32compare_op.6'}), (34, {}), (36, {}), (38, {'res': '$x38.7'}), (40, {'res': '$const40.8.1'}), (42, {'index': '$const40.8.1', 'target': '$x38.7', 'res': '$42binary_subscr.9'}), (44, {}), (46, {}), (48, {}), (50, {}), (52, {'res': '$x52.10'}), (54, {'res': '$const54.11.3'}), (56, {'index': '$const54.11.3', 'target': '$x52.10', 'res': '$56binary_subscr.12'}), (58, {}), (60, {}), (62, {}), (64, {}), (66, {'lhs': '$42binary_subscr.9', 'rhs': '$56binary_subscr.12', 'res': '$66compare_op.13'}), (68, {}), (70, {}), (72, {'op': '&', 'lhs': '$32compare_op.6', 'rhs': '$66compare_op.13', 'res': '$binop_and_72.14'}), (74, {}), (76, {'retval': '$binop_and_72.14', 'castval': '$76return_value.15'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={})
+DEBUG:numba.core.interpreter:label 0:
+    x = arg(0, name=x)                       ['x']
+    $const6.1.1 = const(int, 0)              ['$const6.1.1']
+    $8binary_subscr.2 = getitem(value=x, index=$const6.1.1, fn=<built-in function getitem>) ['$8binary_subscr.2', '$const6.1.1', 'x']
+    $const20.4.2 = const(int, -1)            ['$const20.4.2']
+    $22binary_subscr.5 = getitem(value=x, index=$const20.4.2, fn=<built-in function getitem>) ['$22binary_subscr.5', '$const20.4.2', 'x']
+    $32compare_op.6 = $8binary_subscr.2 > $22binary_subscr.5 ['$22binary_subscr.5', '$32compare_op.6', '$8binary_subscr.2']
+    $const40.8.1 = const(int, 0)             ['$const40.8.1']
+    $42binary_subscr.9 = getitem(value=x, index=$const40.8.1, fn=<built-in function getitem>) ['$42binary_subscr.9', '$const40.8.1', 'x']
+    $const54.11.3 = const(int, 1)            ['$const54.11.3']
+    $56binary_subscr.12 = getitem(value=x, index=$const54.11.3, fn=<built-in function getitem>) ['$56binary_subscr.12', '$const54.11.3', 'x']
+    $66compare_op.13 = $42binary_subscr.9 >= $56binary_subscr.12 ['$42binary_subscr.9', '$56binary_subscr.12', '$66compare_op.13']
+    $binop_and_72.14 = $32compare_op.6 & $66compare_op.13 ['$32compare_op.6', '$66compare_op.13', '$binop_and_72.14']
+    $76return_value.15 = cast(value=$binop_and_72.14) ['$76return_value.15', '$binop_and_72.14']
+    return $76return_value.15                ['$76return_value.15']
+
+DEBUG:numba.core.byteflow:bytecode dump:
+>          0	NOP(arg=None, lineno=1029)
+           2	RESUME(arg=0, lineno=1029)
+           4	LOAD_FAST(arg=0, lineno=1032)
+           6	LOAD_CONST(arg=1, lineno=1032)
+           8	BINARY_SUBSCR(arg=None, lineno=1032)
+          18	LOAD_FAST(arg=0, lineno=1032)
+          20	LOAD_CONST(arg=2, lineno=1032)
+          22	BINARY_SUBSCR(arg=None, lineno=1032)
+          32	COMPARE_OP(arg=0, lineno=1032)
+          38	LOAD_FAST(arg=0, lineno=1032)
+          40	LOAD_CONST(arg=1, lineno=1032)
+          42	BINARY_SUBSCR(arg=None, lineno=1032)
+          52	LOAD_FAST(arg=0, lineno=1032)
+          54	LOAD_CONST(arg=3, lineno=1032)
+          56	BINARY_SUBSCR(arg=None, lineno=1032)
+          66	COMPARE_OP(arg=1, lineno=1032)
+          72	BINARY_OP(arg=1, lineno=1032)
+          76	RETURN_VALUE(arg=None, lineno=1032)
+DEBUG:numba.core.byteflow:pending: deque([State(pc_initial=0 nstack_initial=0)])
+DEBUG:numba.core.byteflow:stack: []
+DEBUG:numba.core.byteflow:state.pc_initial: State(pc_initial=0 nstack_initial=0)
+DEBUG:numba.core.byteflow:dispatch pc=0, inst=NOP(arg=None, lineno=1029)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=2, inst=RESUME(arg=0, lineno=1029)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=4, inst=LOAD_FAST(arg=0, lineno=1032)
+DEBUG:numba.core.byteflow:stack []
+DEBUG:numba.core.byteflow:dispatch pc=6, inst=LOAD_CONST(arg=1, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$x4.0']
+DEBUG:numba.core.byteflow:dispatch pc=8, inst=BINARY_SUBSCR(arg=None, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$x4.0', '$const6.1.1']
+DEBUG:numba.core.byteflow:dispatch pc=18, inst=LOAD_FAST(arg=0, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2']
+DEBUG:numba.core.byteflow:dispatch pc=20, inst=LOAD_CONST(arg=2, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2', '$x18.3']
+DEBUG:numba.core.byteflow:dispatch pc=22, inst=BINARY_SUBSCR(arg=None, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2', '$x18.3', '$const20.4.2']
+DEBUG:numba.core.byteflow:dispatch pc=32, inst=COMPARE_OP(arg=0, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$8binary_subscr.2', '$22binary_subscr.5']
+DEBUG:numba.core.byteflow:dispatch pc=38, inst=LOAD_FAST(arg=0, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6']
+DEBUG:numba.core.byteflow:dispatch pc=40, inst=LOAD_CONST(arg=1, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$x38.7']
+DEBUG:numba.core.byteflow:dispatch pc=42, inst=BINARY_SUBSCR(arg=None, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$x38.7', '$const40.8.1']
+DEBUG:numba.core.byteflow:dispatch pc=52, inst=LOAD_FAST(arg=0, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9']
+DEBUG:numba.core.byteflow:dispatch pc=54, inst=LOAD_CONST(arg=3, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9', '$x52.10']
+DEBUG:numba.core.byteflow:dispatch pc=56, inst=BINARY_SUBSCR(arg=None, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9', '$x52.10', '$const54.11.3']
+DEBUG:numba.core.byteflow:dispatch pc=66, inst=COMPARE_OP(arg=1, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$42binary_subscr.9', '$56binary_subscr.12']
+DEBUG:numba.core.byteflow:dispatch pc=72, inst=BINARY_OP(arg=1, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$32compare_op.6', '$66compare_op.13']
+DEBUG:numba.core.byteflow:dispatch pc=76, inst=RETURN_VALUE(arg=None, lineno=1032)
+DEBUG:numba.core.byteflow:stack ['$binop_and_72.14']
+DEBUG:numba.core.byteflow:end state. edges=[]
+DEBUG:numba.core.byteflow:-------------------------Prune PHIs-------------------------
+DEBUG:numba.core.byteflow:Used_phis: defaultdict(<class 'set'>, {State(pc_initial=0 nstack_initial=0): set()})
+DEBUG:numba.core.byteflow:defmap: {}
+DEBUG:numba.core.byteflow:phismap: defaultdict(<class 'set'>, {})
+DEBUG:numba.core.byteflow:changing phismap: defaultdict(<class 'set'>, {})
+DEBUG:numba.core.byteflow:keep phismap: {}
+DEBUG:numba.core.byteflow:new_out: defaultdict(<class 'dict'>, {})
+DEBUG:numba.core.byteflow:----------------------DONE Prune PHIs-----------------------
+DEBUG:numba.core.byteflow:block_infos State(pc_initial=0 nstack_initial=0):
+AdaptBlockInfo(insts=((0, {}), (2, {}), (4, {'res': '$x4.0'}), (6, {'res': '$const6.1.1'}), (8, {'index': '$const6.1.1', 'target': '$x4.0', 'res': '$8binary_subscr.2'}), (10, {}), (12, {}), (14, {}), (16, {}), (18, {'res': '$x18.3'}), (20, {'res': '$const20.4.2'}), (22, {'index': '$const20.4.2', 'target': '$x18.3', 'res': '$22binary_subscr.5'}), (24, {}), (26, {}), (28, {}), (30, {}), (32, {'lhs': '$8binary_subscr.2', 'rhs': '$22binary_subscr.5', 'res': '$32compare_op.6'}), (34, {}), (36, {}), (38, {'res': '$x38.7'}), (40, {'res': '$const40.8.1'}), (42, {'index': '$const40.8.1', 'target': '$x38.7', 'res': '$42binary_subscr.9'}), (44, {}), (46, {}), (48, {}), (50, {}), (52, {'res': '$x52.10'}), (54, {'res': '$const54.11.3'}), (56, {'index': '$const54.11.3', 'target': '$x52.10', 'res': '$56binary_subscr.12'}), (58, {}), (60, {}), (62, {}), (64, {}), (66, {'lhs': '$42binary_subscr.9', 'rhs': '$56binary_subscr.12', 'res': '$66compare_op.13'}), (68, {}), (70, {}), (72, {'op': '&', 'lhs': '$32compare_op.6', 'rhs': '$66compare_op.13', 'res': '$binop_and_72.14'}), (74, {}), (76, {'retval': '$binop_and_72.14', 'castval': '$76return_value.15'})), outgoing_phis={}, blockstack=(), active_try_block=None, outgoing_edgepushed={})
+DEBUG:numba.core.interpreter:label 0:
+    x = arg(0, name=x)                       ['x']
+    $const6.1.1 = const(int, 0)              ['$const6.1.1']
+    $8binary_subscr.2 = getitem(value=x, index=$const6.1.1, fn=<built-in function getitem>) ['$8binary_subscr.2', '$const6.1.1', 'x']
+    $const20.4.2 = const(int, -1)            ['$const20.4.2']
+    $22binary_subscr.5 = getitem(value=x, index=$const20.4.2, fn=<built-in function getitem>) ['$22binary_subscr.5', '$const20.4.2', 'x']
+    $32compare_op.6 = $8binary_subscr.2 < $22binary_subscr.5 ['$22binary_subscr.5', '$32compare_op.6', '$8binary_subscr.2']
+    $const40.8.1 = const(int, 0)             ['$const40.8.1']
+    $42binary_subscr.9 = getitem(value=x, index=$const40.8.1, fn=<built-in function getitem>) ['$42binary_subscr.9', '$const40.8.1', 'x']
+    $const54.11.3 = const(int, 1)            ['$const54.11.3']
+    $56binary_subscr.12 = getitem(value=x, index=$const54.11.3, fn=<built-in function getitem>) ['$56binary_subscr.12', '$const54.11.3', 'x']
+    $66compare_op.13 = $42binary_subscr.9 <= $56binary_subscr.12 ['$42binary_subscr.9', '$56binary_subscr.12', '$66compare_op.13']
+    $binop_and_72.14 = $32compare_op.6 & $66compare_op.13 ['$32compare_op.6', '$66compare_op.13', '$binop_and_72.14']
+    $76return_value.15 = cast(value=$binop_and_72.14) ['$76return_value.15', '$binop_and_72.14']
+    return $76return_value.15                ['$76return_value.15']
+
+
+==========================================================================
+  FreeVC + ECAPA-space shift + bridge — test evaluation
+==========================================================================
+
+  Strategy                 Baseline   Converted     Delta (mean ± std)
+  --------------------------------------------------------------------
+  A_avg_post_freevc        0.6707     0.4018     -0.2689 ± 0.1151
+  B_bridge_avg_post        0.6707     0.3569     -0.3137 ± 0.1527
+  C_bridge_pre+delta       0.6707     0.4109     -0.2598 ± 0.1254
+  D_bridge_shift           0.6707     0.3971     -0.2735 ± 0.1504
+
+  Per-patient deltas:
+  PID     A_avg_post_freevc       B_bridge_avg_post       C_bridge_pre+delta      D_bridge_shift        
+  0045    -0.2855                 -0.3967                 -0.3085                 -0.2006               
+  0085    -0.3581                 -0.3756                 -0.2775                 -0.3557               
+  0110    -0.1765                 -0.2041                 -0.1509                 -0.1902               
+  0122    -0.4194                 -0.5120                 -0.4588                 -0.5243               
+  0132    -0.1050                 -0.0803                 -0.1033                 -0.0968               
+
+Saved results.json and wavs to /home/sepharfi/projects/def-zshakeri/sepharfi/VoiceConversion/Experiments/free_vc_ecapa/converted_test
+Done!

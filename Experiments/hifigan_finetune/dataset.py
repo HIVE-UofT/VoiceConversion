@@ -20,6 +20,8 @@ SAMPLE_RATE = 16000
 WAVLM_LAYER = 6
 HOP_SIZE = 320  # HiFi-GAN upsamples by 320x to go from feature frames to samples
 
+WAVLM_LOCAL_PATH = "/lustre06/project/6086959/sepharfi/models/wavlm-large"
+
 
 class WavLMFeatureExtractor:
     """Wraps HuggingFace WavLM-Large for layer-6 feature extraction."""
@@ -27,7 +29,7 @@ class WavLMFeatureExtractor:
     def __init__(self, device="cpu"):
         self.device = torch.device(device)
         self.model = WavLMModel.from_pretrained(
-            "microsoft/wavlm-large", output_hidden_states=True
+            WAVLM_LOCAL_PATH, output_hidden_states=True, local_files_only=True
         ).to(self.device)
         self.model.eval()
         for p in self.model.parameters():
@@ -48,12 +50,33 @@ class WavLMFeatureExtractor:
         return features.squeeze(0).cpu()  # (T', 1024)
 
 
-def collect_wav_paths(data_dir):
-    """Recursively find all .wav files under data_dir/**/Speech/2/."""
+def get_patient_id(wav_path):
+    """Extract patient ID from filename, e.g. 'Speech_0085.wav' -> '0085'."""
+    return Path(wav_path).stem.split('_')[-1]
+
+
+def collect_wav_paths(data_dir, surgery="Tonsill", exclude_patients=None):
+    """
+    Find all post-surgery .wav files for one surgery type, excluding held-out patients.
+
+    Args:
+        data_dir: path to CUCO Audios directory (contains Tonsill/, Fess/, etc.)
+        surgery: surgery subdirectory to use (default: 'Tonsill')
+        exclude_patients: collection of patient ID strings to exclude (e.g. ['0085', '0109'])
+
+    Returns:
+        sorted list of Path objects for included post-surgery wav files
+    """
     data_dir = Path(data_dir)
+    speech_dir = data_dir / surgery / "Speech" / "2"
+    if not speech_dir.exists():
+        raise FileNotFoundError(f"Post-surgery speech directory not found: {speech_dir}")
+
+    exclude = set(exclude_patients) if exclude_patients else set()
     wav_paths = []
-    for wav_file in sorted(data_dir.rglob("Speech/2/*.wav")):
-        wav_paths.append(wav_file)
+    for wav_file in sorted(speech_dir.glob("*.wav")):
+        if get_patient_id(wav_file) not in exclude:
+            wav_paths.append(wav_file)
     return wav_paths
 
 

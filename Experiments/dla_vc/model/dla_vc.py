@@ -421,6 +421,19 @@ class DLAVCModel(nn.Module):
         self.quality_encoder = VoiceQualityEncoder1D(
             feat_dim=feat_dim, quality_dim=quality_dim, dropout=dropout)
 
+        # Pre → post quality mapper (learns the "surgery direction" in quality space)
+        # At inference, given a test patient's pre audio, predict their post quality
+        # vector per-patient instead of using a population-averaged vector.
+        self.q_shift = nn.Sequential(
+            nn.Linear(quality_dim, 256),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(256, 256),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(256, quality_dim),
+        )
+
         # Decoder
         self.unet_decoder = UNetDecoder(
             feat_dim=feat_dim, code_dim=code_dim, quality_dim=quality_dim,
@@ -477,6 +490,13 @@ class DLAVCModel(nn.Module):
             content_q, skips = self.encode_content(source_hidden_states)
             converted = self.unet_decoder(content_q, target_quality, skips)
         return converted
+
+    def predict_post_quality(self, pre_hidden_states):
+        """Per-patient post quality prediction: encode_quality + q_shift.
+        Use this at inference instead of a population-averaged post quality."""
+        with torch.no_grad():
+            q_pre = self.encode_quality(pre_hidden_states)
+            return self.q_shift(q_pre)
 
     def get_adapter_weights(self):
         """Return learned adapter weights for visualization."""

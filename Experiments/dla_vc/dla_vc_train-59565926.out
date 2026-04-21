@@ -1,0 +1,130 @@
+==============================
+  DLA-VC — Training
+==============================
+Device: cuda
+
+Tonsill: 23 train/val patients, 282 total files
+  Train: 20 patients, 243 files
+  Val:   3 patients, 39 files
+  Test:  held out: ['0045', '0085', '0110', '0122', '0132']
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 29600.14it/s]
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Train: 1114 same-patient (pre, post) segment pairs
+  Val: 99 + 129 segments
+DLA-VC params: 6,598,064
+Loading kNN-VC vocoder...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+Loading ECAPA-TDNN...
+Pre-computing post-surgery ECAPA embeddings...
+Epoch 1 [WARMUP] | Recon: 7.7387 | Conv: 0.0000 | VQ: 1.6665 | Perp: 1/32 | ECAPA_l: 0.0000 | Cycle: 0.0021 | ECAPA_val: nan
+Epoch 10 [WARMUP] | Recon: 2.7855 | Conv: 0.0000 | VQ: 1.0233 | Perp: 5/32 | ECAPA_l: 0.0000 | Cycle: 0.0003 | ECAPA_val: nan
+Epoch 20 [WARMUP] | Recon: 1.7026 | Conv: 0.0000 | VQ: 0.8165 | Perp: 8/32 | ECAPA_l: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan
+Epoch 30 [WARMUP] | Recon: 2.2241 | Conv: 0.0000 | VQ: 0.7205 | Perp: 12/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+Epoch 40 [WARMUP] | Recon: 1.7017 | Conv: 0.0000 | VQ: 0.7069 | Perp: 12/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+Epoch 50 [WARMUP] | Recon: 2.2653 | Conv: 0.0000 | VQ: 0.5775 | Perp: 15/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+Epoch 60 [WARMUP] | Recon: 1.9460 | Conv: 0.0000 | VQ: 0.4663 | Perp: 19/32 | ECAPA_l: 0.0000 | Cycle: 0.0000 | ECAPA_val: nan
+  -> Saved (epoch 61, ECAPA_val=0.6974)
+  -> Saved (epoch 62, ECAPA_val=0.6773)
+  -> Saved (epoch 66, ECAPA_val=0.6752)
+  -> Saved (epoch 67, ECAPA_val=0.6334)
+  -> Saved (epoch 69, ECAPA_val=0.6242)
+Epoch 70 | Recon: 2.2568 | Conv: 6.2465 | VQ: 0.3300 | Perp: 21/32 | ECAPA_l: 0.4922 | Cycle: 0.0000 | ECAPA_val: 0.6241
+  -> Saved (epoch 70, ECAPA_val=0.6241)
+  -> Saved (epoch 72, ECAPA_val=0.6155)
+  -> Saved (epoch 75, ECAPA_val=0.5823)
+Epoch 80 | Recon: 1.8246 | Conv: 5.0953 | VQ: 0.2303 | Perp: 24/32 | ECAPA_l: 0.4171 | Cycle: 0.0000 | ECAPA_val: 0.6900
+Epoch 90 | Recon: 2.0764 | Conv: 5.7676 | VQ: 0.1501 | Perp: 26/32 | ECAPA_l: 0.4498 | Cycle: 0.0000 | ECAPA_val: 0.6406
+Epoch 100 | Recon: 2.3839 | Conv: 6.5962 | VQ: 0.1361 | Perp: 26/32 | ECAPA_l: 0.4690 | Cycle: 0.0000 | ECAPA_val: 0.6678
+Epoch 110 | Recon: 1.9414 | Conv: 5.2842 | VQ: 0.1181 | Perp: 27/32 | ECAPA_l: 0.3836 | Cycle: 0.0000 | ECAPA_val: 0.6748
+Traceback (most recent call last):
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc/scripts/train_split.py", line 668, in <module>
+    main()
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc/scripts/train_split.py", line 509, in main
+    loss.backward()
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 19.62 GiB of which 7.00 MiB is free. Process 594959 has 30.06 MiB memory in use. Process 594567 has 870.00 MiB memory in use. Process 594566 has 874.00 MiB memory in use. Process 594570 has 788.00 MiB memory in use. Process 594565 has 1.02 GiB memory in use. Process 594569 has 480.00 MiB memory in use. Process 594568 has 620.00 MiB memory in use. Including non-PyTorch memory, this process has 19.50 GiB memory in use. Of the allocated memory 19.10 GiB is allocated by PyTorch, and 103.76 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[W418 15:32:37.434135814 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+
+==============================
+  DLA-VC — Evaluation
+==============================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+[HiFi-GAN] Fine-tuned weights loaded  step=2500  val_mel_loss=0.3961
+[DLA-VC] Loaded: epoch=74  avg_quality_post shape=torch.Size([1, 192])
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 39809.02it/s]
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+
+Evaluating on 5 test patients: ['0045', '0085', '0110', '0122', '0132']
+
+Loading ECAPA-TDNN...
+
+============================================================
+  DLA-VC — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0045      0.7303      0.0928   -0.6375
+        0085      0.7238      0.0827   -0.6410
+        0110      0.6513      0.1180   -0.5334
+        0122      0.7743      0.1144   -0.6599
+        0132      0.4736      0.1722   -0.3014
+  ----------------------------------------------
+        Mean      0.6707      0.1160   -0.5547
+         Std      0.1061      0.0310
+
+Evaluating on 23 training patients...
+
+============================================================
+  DLA-VC [TRAIN SET] — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0007      0.6133     -0.0923   -0.7056
+        0011      0.7222      0.1088   -0.6133
+        0026      0.6901      0.2592   -0.4309
+        0042      0.6307      0.0035   -0.6272
+        0062      0.5517     -0.0058   -0.5576
+        0063      0.7034      0.2035   -0.4999
+        0078      0.4783      0.1998   -0.2785
+        0080      0.4544      0.2490   -0.2053
+        0081      0.6271      0.1069   -0.5202
+        0087      0.7405      0.0226   -0.7180
+        0089      0.6270      0.1706   -0.4564
+        0092      0.7645      0.1357   -0.6288
+        0099      0.7944      0.4802   -0.3142
+        0108      0.2687      0.0767   -0.1920
+        0109      0.7612      0.1225   -0.6387
+        0111      0.5979      0.5629   -0.0350
+        0112      0.7578     -0.0207   -0.7785
+        0125      0.7551      0.0879   -0.6672
+        0129      0.7855      0.1378   -0.6477
+        0137      0.7005      0.0867   -0.6138
+        0144      0.6745      0.1678   -0.5067
+        0145      0.6467      0.1621   -0.4847
+        0147      0.8025      0.1479   -0.6546
+  ----------------------------------------------
+        Mean      0.6586      0.1467   -0.5119
+         Std      0.1248      0.1437
+
+Converted files saved to: /lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc/scripts/../converted_test
+[W418 15:35:36.566920988 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+Done!

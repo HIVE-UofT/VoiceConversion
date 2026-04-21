@@ -3,139 +3,139 @@
   "surgery": "Tonsill",
   "test": [
     {
+      "name": "Tonsill_ses1_speech_0045",
+      "sim_post": 0.7120237946510315,
+      "baseline": 0.7303048372268677
+    },
+    {
       "name": "Tonsill_ses1_speech_0085",
-      "sim_post": 0.7255284190177917,
-      "baseline": 0.7237553596496582
+      "sim_post": 0.740060031414032,
+      "baseline": 0.7237558960914612
     },
     {
-      "name": "Tonsill_ses1_speech_0109",
-      "sim_post": 0.7435044050216675,
-      "baseline": 0.76124107837677
+      "name": "Tonsill_ses1_speech_0110",
+      "sim_post": 0.7129865288734436,
+      "baseline": 0.6513214111328125
     },
     {
-      "name": "Tonsill_ses1_speech_0111",
-      "sim_post": 0.6764601469039917,
-      "baseline": 0.597865641117096
+      "name": "Tonsill_ses1_speech_0122",
+      "sim_post": 0.7612762451171875,
+      "baseline": 0.7743249535560608
     },
     {
-      "name": "Tonsill_ses1_speech_0125",
-      "sim_post": 0.721731424331665,
-      "baseline": 0.7551054954528809
-    },
-    {
-      "name": "Tonsill_ses1_speech_0147",
-      "sim_post": 0.662045955657959,
-      "baseline": 0.8024938106536865
+      "name": "Tonsill_ses1_speech_0132",
+      "sim_post": 0.6550425291061401,
+      "baseline": 0.4736044406890869
     }
   ],
   "train": [
     {
       "name": "Tonsill_ses1_speech_0007",
-      "sim_post": 0.7818911075592041,
-      "baseline": 0.613291323184967
+      "sim_post": 0.7345691919326782,
+      "baseline": 0.6132849454879761
     },
     {
       "name": "Tonsill_ses1_speech_0011",
-      "sim_post": 0.8481066226959229,
-      "baseline": 0.7221626043319702
-    },
-    {
-      "name": "Tonsill_ses1_speech_0026",
-      "sim_post": 0.7353373765945435,
-      "baseline": 0.690130352973938
+      "sim_post": 0.7849525809288025,
+      "baseline": 0.722162663936615
     },
     {
       "name": "Tonsill_ses1_speech_0042",
-      "sim_post": 0.8436456322669983,
-      "baseline": 0.6307337880134583
-    },
-    {
-      "name": "Tonsill_ses1_speech_0045",
-      "sim_post": 0.8726608157157898,
-      "baseline": 0.7303003668785095
+      "sim_post": 0.804407000541687,
+      "baseline": 0.630728006362915
     },
     {
       "name": "Tonsill_ses1_speech_0062",
-      "sim_post": 0.8103039264678955,
-      "baseline": 0.5517405867576599
+      "sim_post": 0.7623418569564819,
+      "baseline": 0.5517445802688599
     },
     {
       "name": "Tonsill_ses1_speech_0063",
-      "sim_post": 0.8135359287261963,
-      "baseline": 0.7034389972686768
+      "sim_post": 0.7890475392341614,
+      "baseline": 0.7034342288970947
     },
     {
       "name": "Tonsill_ses1_speech_0078",
-      "sim_post": 0.8089079856872559,
-      "baseline": 0.4783281087875366
+      "sim_post": 0.7306134104728699,
+      "baseline": 0.4783440828323364
     },
     {
       "name": "Tonsill_ses1_speech_0080",
-      "sim_post": 0.7939141988754272,
-      "baseline": 0.4543571472167969
+      "sim_post": 0.7188079953193665,
+      "baseline": 0.454355925321579
     },
     {
       "name": "Tonsill_ses1_speech_0081",
-      "sim_post": 0.8041930794715881,
-      "baseline": 0.6270655393600464
+      "sim_post": 0.7779099941253662,
+      "baseline": 0.6270684003829956
     },
     {
       "name": "Tonsill_ses1_speech_0087",
-      "sim_post": 0.8796708583831787,
-      "baseline": 0.740527868270874
+      "sim_post": 0.8582553267478943,
+      "baseline": 0.7405251264572144
     },
     {
       "name": "Tonsill_ses1_speech_0089",
-      "sim_post": 0.7841901183128357,
-      "baseline": 0.6270269155502319
+      "sim_post": 0.7590888738632202,
+      "baseline": 0.6270238161087036
     },
     {
       "name": "Tonsill_ses1_speech_0092",
-      "sim_post": 0.7887054085731506,
-      "baseline": 0.7645057439804077
+      "sim_post": 0.7805144786834717,
+      "baseline": 0.7644996643066406
     },
     {
       "name": "Tonsill_ses1_speech_0099",
-      "sim_post": 0.7843599319458008,
-      "baseline": 0.794417142868042
+      "sim_post": 0.7721164226531982,
+      "baseline": 0.7944192290306091
     },
     {
-      "name": "Tonsill_ses1_speech_0110",
-      "sim_post": 0.8564532399177551,
-      "baseline": 0.6513228416442871
+      "name": "Tonsill_ses1_speech_0108",
+      "sim_post": 0.7430394887924194,
+      "baseline": 0.2686723470687866
     },
     {
-      "name": "Tonsill_ses1_speech_0122",
-      "sim_post": 0.8588682413101196,
-      "baseline": 0.7743295431137085
+      "name": "Tonsill_ses1_speech_0109",
+      "sim_post": 0.825000524520874,
+      "baseline": 0.7612484097480774
+    },
+    {
+      "name": "Tonsill_ses1_speech_0125",
+      "sim_post": 0.7940821647644043,
+      "baseline": 0.755103349685669
     },
     {
       "name": "Tonsill_ses1_speech_0129",
-      "sim_post": 0.8999202251434326,
-      "baseline": 0.785525918006897
+      "sim_post": 0.8735575675964355,
+      "baseline": 0.7855247259140015
     },
     {
-      "name": "Tonsill_ses1_speech_0132",
-      "sim_post": 0.8509678840637207,
-      "baseline": 0.4736168384552002
+      "name": "Tonsill_ses1_speech_0137",
+      "sim_post": 0.7960994243621826,
+      "baseline": 0.7004791498184204
     },
     {
       "name": "Tonsill_ses1_speech_0144",
-      "sim_post": 0.816836953163147,
-      "baseline": 0.6744455099105835
+      "sim_post": 0.8028154373168945,
+      "baseline": 0.6744517683982849
     },
     {
       "name": "Tonsill_ses1_speech_0145",
-      "sim_post": 0.8418070673942566,
-      "baseline": 0.6467340588569641
+      "sim_post": 0.8220886588096619,
+      "baseline": 0.6467248201370239
+    },
+    {
+      "name": "Tonsill_ses1_speech_0147",
+      "sim_post": 0.8439182043075562,
+      "baseline": 0.8024962544441223
     }
   ],
   "test_summary": {
-    "baseline": 0.7280922770500183,
-    "conv_post": 0.705854070186615
+    "baseline": 0.6706623077392578,
+    "conv_post": 0.716277825832367
   },
   "train_summary": {
-    "baseline": 0.6567000597715378,
-    "conv_post": 0.8237138301134109
+    "baseline": 0.6551145747303962,
+    "conv_post": 0.7886613070964813
   }
 }

@@ -1,0 +1,168 @@
+==============================
+  DLA-VC — Training
+==============================
+Device: cuda
+
+Tonsill: 23 train/val patients, 282 total files
+  Train: 20 patients, 243 files
+  Val:   3 patients, 39 files
+  Test:  held out: ['0045', '0085', '0110', '0122', '0132']
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 37741.23it/s]
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Train: 1114 same-patient (pre, post) segment pairs
+  Val: 99 + 129 segments
+DLA-VC params: 6,598,064
+Loading kNN-VC vocoder...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+Loading ECAPA-TDNN...
+Pre-computing post-surgery ECAPA embeddings...
+Epoch 1 [WARMUP] | Recon: 6.0176 | Conv: 0.0000 | VQ: 1.4885 | Perp: 2/32 | ECAPA_l: 0.0000 | Cycle: 0.0030 | ECAPA_val: nan
+Epoch 10 [WARMUP] | Recon: 2.5514 | Conv: 0.0000 | VQ: 1.0459 | Perp: 5/32 | ECAPA_l: 0.0000 | Cycle: 0.0003 | ECAPA_val: nan
+Epoch 20 [WARMUP] | Recon: 2.7712 | Conv: 0.0000 | VQ: 0.8014 | Perp: 7/32 | ECAPA_l: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan
+Epoch 30 [WARMUP] | Recon: 2.2272 | Conv: 0.0000 | VQ: 0.6932 | Perp: 9/32 | ECAPA_l: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan
+Epoch 40 [WARMUP] | Recon: 1.9661 | Conv: 0.0000 | VQ: 0.5616 | Perp: 11/32 | ECAPA_l: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan
+Epoch 50 [WARMUP] | Recon: 2.0518 | Conv: 0.0000 | VQ: 0.4073 | Perp: 15/32 | ECAPA_l: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan
+Epoch 60 [WARMUP] | Recon: 2.0054 | Conv: 0.0000 | VQ: 0.3167 | Perp: 18/32 | ECAPA_l: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan
+  -> Saved (epoch 61, ECAPA_val=0.6880)
+Epoch 70 | Recon: 1.7138 | Conv: 5.5835 | VQ: 0.1718 | Perp: 23/32 | ECAPA_l: 0.0000 | Cycle: 0.0036 | ECAPA_val: 0.7046
+Epoch 80 | Recon: 2.0440 | Conv: 6.0196 | VQ: 0.2151 | Perp: 21/32 | ECAPA_l: 0.0000 | Cycle: 0.0018 | ECAPA_val: 0.6757
+  -> Saved (epoch 80, ECAPA_val=0.6757)
+Epoch 90 | Recon: 2.2831 | Conv: 6.4268 | VQ: 0.1971 | Perp: 22/32 | ECAPA_l: 0.0000 | Cycle: 0.0010 | ECAPA_val: 0.7032
+Epoch 100 | Recon: 2.0928 | Conv: 6.3885 | VQ: 0.1721 | Perp: 23/32 | ECAPA_l: 0.0000 | Cycle: 0.0016 | ECAPA_val: 0.7146
+Epoch 110 | Recon: 2.1030 | Conv: 6.4004 | VQ: 0.1601 | Perp: 23/32 | ECAPA_l: 0.0000 | Cycle: 0.0017 | ECAPA_val: 0.7118
+Epoch 120 | Recon: 1.8072 | Conv: 4.6734 | VQ: 0.1607 | Perp: 23/32 | ECAPA_l: 0.0000 | Cycle: 0.0015 | ECAPA_val: 0.6682
+  -> Saved (epoch 120, ECAPA_val=0.6682)
+Traceback (most recent call last):
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc/scripts/train_split.py", line 670, in <module>
+    main()
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc/scripts/train_split.py", line 393, in main
+    hidden_all, target_all = wavlm.extract(audio_all)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc/scripts/train_split.py", line 87, in extract
+    outputs = self.model(audio_batch.to(self.device), output_hidden_states=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/transformers/models/wavlm/modeling_wavlm.py", line 1060, in forward
+    extract_features = self.feature_extractor(input_values)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/transformers/models/wavlm/modeling_wavlm.py", line 787, in forward
+    hidden_states = conv_layer(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/transformers/modeling_layers.py", line 93, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/transformers/models/wavlm/modeling_wavlm.py", line 723, in forward
+    hidden_states = self.layer_norm(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/modules/normalization.py", line 229, in forward
+    return F.layer_norm(
+           ^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/functional.py", line 2901, in layer_norm
+    return torch.layer_norm(
+           ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 126.00 MiB. GPU 0 has a total capacity of 19.62 GiB of which 139.00 MiB is free. Process 3439168 has 30.06 MiB memory in use. Process 3438685 has 514.00 MiB memory in use. Process 3438682 has 682.00 MiB memory in use. Process 3438683 has 660.00 MiB memory in use. Process 3438686 has 880.00 MiB memory in use. Process 3438687 has 444.00 MiB memory in use. Process 3438684 has 828.00 MiB memory in use. Including non-PyTorch memory, this process has 19.37 GiB memory in use. Of the allocated memory 18.85 GiB is allocated by PyTorch, and 223.48 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[W418 23:20:16.499410488 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+
+==============================
+  DLA-VC — Evaluation
+==============================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+[HiFi-GAN] Fine-tuned weights loaded  step=2500  val_mel_loss=0.3961
+[DLA-VC] Loaded: epoch=119  avg_quality_post shape=torch.Size([1, 192])
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 37183.14it/s]
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+
+Evaluating on 5 test patients: ['0045', '0085', '0110', '0122', '0132']
+
+Loading ECAPA-TDNN...
+
+============================================================
+  DLA-VC — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0045      0.7303      0.3700   -0.3603
+        0085      0.7238      0.3717   -0.3520
+        0110      0.6513      0.3832   -0.2681
+        0122      0.7743      0.3187   -0.4556
+        0132      0.4736      0.4633   -0.0103
+  ----------------------------------------------
+        Mean      0.6707      0.3814   -0.2893
+         Std      0.1061      0.0466
+
+Evaluating on 23 training patients...
+
+============================================================
+  DLA-VC [TRAIN SET] — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0007      0.6133      0.2977   -0.3156
+        0011      0.7222      0.4623   -0.2599
+        0026      0.6901      0.2306   -0.4595
+        0042      0.6307      0.4251   -0.2056
+        0062      0.5517      0.0072   -0.5445
+        0063      0.7034      0.1966   -0.5069
+        0078      0.4783      0.5071   +0.0287
+        0080      0.4544      0.5093   +0.0550
+        0081      0.6271      0.3598   -0.2673
+        0087      0.7405      0.2653   -0.4752
+        0089      0.6270      0.4032   -0.2238
+        0092      0.7645      0.3224   -0.4421
+        0099      0.7944      0.1821   -0.6123
+        0108      0.2687      0.3772   +0.1085
+        0109      0.7612      0.3995   -0.3617
+        0111      0.5979      0.3212   -0.2767
+        0112      0.7578      0.2382   -0.5196
+        0125      0.7551      0.4362   -0.3189
+        0129      0.7855      0.4530   -0.3325
+        0137      0.7005      0.0751   -0.6254
+        0144      0.6745      0.4426   -0.2318
+        0145      0.6467      0.5598   -0.0869
+        0147      0.8025      0.4278   -0.3747
+  ----------------------------------------------
+        Mean      0.6586      0.3434   -0.3152
+         Std      0.1248      0.1372
+
+Converted files saved to: /lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc/scripts/../converted_test
+[W418 23:23:14.257795692 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+Done!

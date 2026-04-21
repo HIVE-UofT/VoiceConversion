@@ -51,17 +51,15 @@ AUGMENT_NOISE_STD = 0.02
 AUGMENT_MASK_PROB = 0.1
 
 
-def extract_all_features(knn_vc, wav_dir):
-    """Extract WavLM features from all WAV files. Returns list of (filename, features)."""
-    wav_files = sorted(glob.glob(os.path.join(wav_dir, "*.wav")))
+def extract_all_features(knn_vc, wav_files):
+    """Extract WavLM features from a list of WAV files. Returns list of (filename, features)."""
     if not wav_files:
-        raise ValueError(f"No WAV files found in {wav_dir}")
+        raise ValueError("Empty file list passed to extract_all_features")
 
     results = []
     for wf in wav_files:
         features = knn_vc.get_features(wf)  # (T, 1024)
         results.append((Path(wf).stem, features.cpu()))
-        print(f"  {Path(wf).name}: {features.shape[0]} frames")
 
     total = sum(f.shape[0] for _, f in results)
     print(f"  Total: {total} frames ({total * 0.02 / 60:.1f} min)")
@@ -213,17 +211,25 @@ def train_model(train_indices, val_indices, pre_features, post_features,
 def main():
     parser = argparse.ArgumentParser(description="UNet-VC — K-Fold CV with held-out test set")
     parser.add_argument('--pre_dir', type=str,
-                        default="/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1")
+                        default="/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1")
     parser.add_argument('--post_dir', type=str,
-                        default="/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2")
-    parser.add_argument('--output', type=str,
-                        default=os.path.join(os.path.dirname(__file__), '..', 'checkpoints_kfold'))
+                        default="/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2")
+    parser.add_argument('--output', type=str, default=None)
     parser.add_argument('--n_test', type=int, default=5,
-                        help='Number of patients held out for final test')
+                        help='Number of patients held out for final test (ignored if --test_patients set)')
+    parser.add_argument('--test_patients', type=str,
+                        default="0085,0110,0122,0132,0045",
+                        help='Comma-separated fixed test patient IDs (overrides --n_test random selection)')
     parser.add_argument('--k_folds', type=int, default=5,
                         help='Number of CV folds on non-test patients')
     parser.add_argument('--seed', type=int, default=42)
+    parser.add_argument('--extra_surgeries', action='store_true',
+                        help='Also train on Fess+Sept+Contr data (added to train set in every fold)')
     args = parser.parse_args()
+
+    if args.output is None:
+        suffix = '_multisurg' if args.extra_surgeries else ''
+        args.output = os.path.join(os.path.dirname(__file__), '..', f'checkpoints_kfold{suffix}')
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
@@ -233,55 +239,90 @@ def main():
     print("Loading kNN-VC model...")
     knn_vc = torch.hub.load('bshall/knn-vc', 'knn_vc', prematched=True, device=device)
 
-    # Extract features
-    print(f"\nExtracting pre-surgery features...")
-    pre_data = extract_all_features(knn_vc, args.pre_dir)
-    print(f"\nExtracting post-surgery features...")
-    post_data = extract_all_features(knn_vc, args.post_dir)
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+    from utils import get_all_audio_pairs
 
-    assert len(pre_data) == len(post_data)
-    n_patients = len(pre_data)
+    fixed_ids = set(p.strip() for p in args.test_patients.split(',') if p.strip()) \
+                if args.test_patients else set()
 
-    pre_names = [name for name, _ in pre_data]
-    pre_features = [feat for _, feat in pre_data]
+    # Collect all audio types, excluding test patients
+    patient_pairs = get_all_audio_pairs("Tonsill", exclude=fixed_ids)
+    all_pids = sorted(patient_pairs.keys())
+
+    # Flatten to parallel file lists
+    pid_of_file = [pid for pid in all_pids for _ in patient_pairs[pid]]
+    pre_file_list  = [pre  for pid in all_pids for pre,  _   in patient_pairs[pid]]
+    post_file_list = [post for pid in all_pids for _,    post in patient_pairs[pid]]
+
+    print(f"\nExtracting pre-surgery features ({len(pre_file_list)} files)...")
+    pre_data = extract_all_features(knn_vc, pre_file_list)
+    print(f"\nExtracting post-surgery features ({len(post_file_list)} files)...")
+    post_data = extract_all_features(knn_vc, post_file_list)
+
+    pre_features  = [feat for _, feat in pre_data]
     post_features = [feat for _, feat in post_data]
+    n_cv_files = len(pre_features)  # number of Tonsill CV files
 
-    # ═══ Split: held-out test + CV pool ═══
+    # Extra surgery data: extract features and add to training pool
+    extra_indices = []
+    if args.extra_surgeries:
+        extra_surgeries = ["Fess", "Sept", "Contr"]
+        print(f"\nExtracting features for extra surgery data ({extra_surgeries})...")
+        for surg in extra_surgeries:
+            surg_pairs = get_all_audio_pairs(surg)
+            extra_pre_paths = [pre for pid in sorted(surg_pairs)
+                               for pre, _ in surg_pairs[pid]]
+            extra_post_paths = [post for pid in sorted(surg_pairs)
+                                for _, post in surg_pairs[pid]]
+            n_before = len(pre_features)
+            print(f"  {surg}: {len(extra_pre_paths)} files")
+            extra_pre_data  = extract_all_features(knn_vc, extra_pre_paths)
+            extra_post_data = extract_all_features(knn_vc, extra_post_paths)
+            pre_features  += [f for _, f in extra_pre_data]
+            post_features += [f for _, f in extra_post_data]
+            extra_indices += list(range(n_before, len(pre_features)))
+        print(f"  Total extra features: {len(extra_indices)} files")
+
+    n_files = len(pre_features)
+
+    # ═══ Split: K-fold at PATIENT level, then map to file indices ═══
     random.seed(args.seed)
-    all_indices = list(range(n_patients))
-    random.shuffle(all_indices)
 
-    test_indices = sorted(all_indices[:args.n_test])
-    cv_indices = sorted(all_indices[args.n_test:])
-
-    test_names = [pre_names[i] for i in test_indices]
-    cv_names = [pre_names[i] for i in cv_indices]
+    cv_pids = all_pids.copy()  # already excludes test patients
+    random.shuffle(cv_pids)
 
     print(f"\n{'='*60}")
-    print(f"  Total patients: {n_patients}")
-    print(f"  Held-out test ({args.n_test}): {test_names}")
-    print(f"  CV pool ({len(cv_indices)}): {len(cv_indices)} patients")
+    print(f"  Train/val patients: {len(cv_pids)}, files: {n_files}")
+    print(f"  Held-out test: {sorted(fixed_ids)}")
     print(f"{'='*60}")
+
+    # Map each file index to patient; cv_indices = file-level indices for all cv patients
+    cv_indices = [i for i, pid in enumerate(pid_of_file) if pid in set(cv_pids)]
 
     # Save split info
     split_info = {
         'seed': args.seed,
-        'n_test': args.n_test,
+        'n_test': len(fixed_ids),
         'k_folds': args.k_folds,
-        'test_patients': test_names,
-        'cv_patients': cv_names,
+        'test_patients': sorted(fixed_ids),
+        'cv_patients': cv_pids,
     }
     with open(os.path.join(args.output, 'split_info.json'), 'w') as f:
         json.dump(split_info, f, indent=2)
 
-    # ═══ K-Fold CV on cv_indices ═══
-    random.shuffle(cv_indices)
-    fold_size = len(cv_indices) // args.k_folds
-    folds = []
+    # ═══ K-Fold CV — fold at PATIENT level ═══
+    fold_size = len(cv_pids) // args.k_folds
+    patient_folds = []
     for k in range(args.k_folds):
         start = k * fold_size
-        end = start + fold_size if k < args.k_folds - 1 else len(cv_indices)
-        folds.append(cv_indices[start:end])
+        end = start + fold_size if k < args.k_folds - 1 else len(cv_pids)
+        patient_folds.append(set(cv_pids[start:end]))
+
+    # Convert patient folds to file-level index folds
+    folds = []
+    for pf in patient_folds:
+        folds.append([i for i, pid in enumerate(pid_of_file) if pid in pf])
 
     cv_val_losses = []
     print(f"\n{'='*60}")
@@ -291,9 +332,12 @@ def main():
     for k in range(args.k_folds):
         val_fold = folds[k]
         train_fold = [idx for j, fold in enumerate(folds) for idx in fold if j != k]
+        # Add extra surgery data to training (never to validation)
+        train_fold = train_fold + extra_indices
 
         print(f"\nFold {k+1}/{args.k_folds}: "
-              f"train={len(train_fold)} patients, val={len(val_fold)} patients")
+              f"train={len(train_fold)} files (incl. {len(extra_indices)} extra), "
+              f"val={len(val_fold)} files")
 
         ckpt_path = os.path.join(args.output, f'fold{k+1}_model.pt')
         val_loss = train_model(train_fold, val_fold, pre_features, post_features,
@@ -308,24 +352,22 @@ def main():
     print(f"{'='*60}")
 
     # ═══ Final model: train on ALL cv_indices, validate on a small held-out from cv ═══
-    print(f"\nTraining final model on all {len(cv_indices)} CV patients...")
+    print(f"\nTraining final model on all {len(cv_indices)} CV patients + {len(extra_indices)} extra...")
 
     # Use last fold as val for early stopping (just for stopping criterion)
-    final_train = [idx for fold in folds[:-1] for idx in fold]
+    final_train = [idx for fold in folds[:-1] for idx in fold] + extra_indices
     final_val = folds[-1]
 
     final_ckpt = os.path.join(args.output, 'best_model.pt')
     train_model(final_train, final_val, pre_features, post_features,
                 device, final_ckpt, tag="Final")
 
-    # Save test patient names for inference script
-    pre_dir = args.pre_dir
-    test_wav_files = [os.path.join(pre_dir, name + '.wav') for name in test_names]
+    # Save test patient IDs for inference script
     with open(os.path.join(args.output, 'test_files.json'), 'w') as f:
-        json.dump({'test_patients': test_names, 'test_wav_files': test_wav_files}, f, indent=2)
+        json.dump({'test_patients': sorted(fixed_ids)}, f, indent=2)
 
     print(f"\nDone. Final model: {final_ckpt}")
-    print(f"Test patients ({args.n_test}): {test_names}")
+    print(f"Test patients ({len(fixed_ids)}): {sorted(fixed_ids)}")
     print(f"Run inference on test patients only:")
     print(f"  python scripts/inference_kfold.py --checkpoint {final_ckpt}")
 

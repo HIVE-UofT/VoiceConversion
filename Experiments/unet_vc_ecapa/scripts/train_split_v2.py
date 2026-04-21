@@ -46,7 +46,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from model.unet import ResUNet1D
 
 SAMPLE_RATE = 16000
-CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios"
+CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios"
 
 # Model config (same as v1 so checkpoints are comparable)
 HIDDEN_DIM = 64
@@ -153,10 +153,15 @@ def vocode(hifigan, feats):
     return hifigan(feats).squeeze(1)
 
 
+STYLE_CROP_LEN = 128   # WavLM frames fed to HiFiGAN for style loss (~0.8 s of audio)
+                       # Full utterances (~3000 frames) OOM on 20GB GPU because
+                       # all HiFiGAN conv activations are retained for backprop.
+                       # 128 frames → 128×320 = 40,960 audio samples — fits fine.
+
 def ecapa_style_loss(model, hifigan, ecapa, pre_feats_list, pre_ecapa_embs,
                      train_idx, post_ecapa_embs, device, n_utts=ECAPA_UTTS_PER_STEP):
     """
-    Sample n_utts random training utterances, convert them with `model`,
+    Sample n_utts random training utterances, convert a short crop with `model`,
     vocode, compute ECAPA embedding, and compare to paired post-surgery target.
 
     Returns scalar cosine-distance style loss (differentiable through model + vocoder).
@@ -165,11 +170,16 @@ def ecapa_style_loss(model, hifigan, ecapa, pre_feats_list, pre_ecapa_embs,
     chosen = random.sample(train_idx, min(n_utts, len(train_idx)))
     for utt_idx in chosen:
         full_feats = pre_feats_list[utt_idx].to(device)          # (T, 1024)
+        T = full_feats.shape[0]
+        # Random crop to keep HiFiGAN activation memory bounded
+        crop_len = min(T, STYLE_CROP_LEN)
+        start = random.randint(0, max(0, T - crop_len))
+        feats = full_feats[start:start + crop_len]               # (crop_len, 1024)
         spk_emb = pre_ecapa_embs[utt_idx].unsqueeze(0).to(device)  # (1, 192)
-        out = model(full_feats.t().unsqueeze(0), spk_emb)         # (1, 1024, T)
-        audio = vocode(hifigan, out.transpose(1, 2))              # (1, T_audio)
-        emb = ecapa_embed_differentiable(ecapa, audio).squeeze()  # (192,)
-        target = post_ecapa_embs[utt_idx].to(device)              # (192,)
+        out = model(feats.t().unsqueeze(0), spk_emb)             # (1, 1024, crop_len)
+        audio = vocode(hifigan, out.transpose(1, 2))             # (1, T_audio)
+        emb = ecapa_embed_differentiable(ecapa, audio).squeeze() # (192,)
+        target = post_ecapa_embs[utt_idx].to(device)             # (192,)
         sim = F.cosine_similarity(emb.unsqueeze(0), target.unsqueeze(0))
         losses.append(1.0 - sim.squeeze())
     return torch.stack(losses).mean()
@@ -205,47 +215,78 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--surgery', type=str, default='Tonsill')
     parser.add_argument('--n_test', type=int, default=5)
+    parser.add_argument('--test_patients', type=str,
+                        default="0085,0110,0122,0132,0045",
+                        help='Comma-separated fixed test patient IDs (overrides --n_test)')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--output', type=str, default=None)
+    parser.add_argument('--extra_surgeries', action='store_true',
+                        help='Also train on Fess+Sept+Contr data (train only, val stays Tonsill)')
     args = parser.parse_args()
 
     if args.output is None:
+        suffix = '_multisurg' if args.extra_surgeries else ''
         args.output = os.path.join(
-            os.path.dirname(__file__), '..', f'results_{args.surgery.lower()}_v2')
+            os.path.dirname(__file__), '..', f'results_{args.surgery.lower()}_v2{suffix}')
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
     os.makedirs(args.output, exist_ok=True)
 
-    pre_dir = os.path.join(CUCO_BASE, args.surgery, "Speech", "1")
-    post_dir = os.path.join(CUCO_BASE, args.surgery, "Speech", "2")
-    pre_files = sorted(glob.glob(os.path.join(pre_dir, "*.wav")))
-    post_files = sorted(glob.glob(os.path.join(post_dir, "*.wav")))
-    assert len(pre_files) == len(post_files), \
-        f"Mismatch: {len(pre_files)} pre vs {len(post_files)} post files"
-    n = len(pre_files)
-    names = [Path(f).stem for f in pre_files]
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+    from utils import get_all_audio_pairs
 
-    # Patient-level split
+    fixed_ids = set(p.strip() for p in args.test_patients.split(',') if p.strip()) \
+                if args.test_patients else set()
+
+    # Collect all audio types (Speech + TDU + Vowels + Sustained vowels), excluding test patients
+    patient_pairs = get_all_audio_pairs(args.surgery, exclude=fixed_ids)
+    all_pids = sorted(patient_pairs.keys())
+
     random.seed(args.seed)
-    indices = list(range(n))
-    random.shuffle(indices)
-    test_idx = sorted(indices[:args.n_test])
-    cv_idx = sorted(indices[args.n_test:])
-    random.shuffle(cv_idx)
-    n_val = max(1, int(0.15 * len(cv_idx)))
-    val_idx = sorted(cv_idx[:n_val])
-    train_idx = sorted(cv_idx[n_val:])
+    shuffled_pids = all_pids.copy()
+    random.shuffle(shuffled_pids)
+    n_val_pids = max(1, int(0.15 * len(shuffled_pids)))
+    val_pids   = set(shuffled_pids[:n_val_pids])
+    train_pids = set(shuffled_pids[n_val_pids:])
 
-    print(f"\n{args.surgery}: {n} patients")
-    print(f"  Test  ({len(test_idx)}): {[names[i] for i in test_idx]}")
-    print(f"  Train ({len(train_idx)}): {len(train_idx)} patients")
-    print(f"  Val   ({len(val_idx)}):   {[names[i] for i in val_idx]}")
+    # Flatten to paired file lists (all audio types, all train/val patients)
+    pid_of_file = [pid for pid in sorted(all_pids) for _ in patient_pairs[pid]]
+    pre_files   = [pre  for pid in sorted(all_pids) for pre,  _   in patient_pairs[pid]]
+    post_files  = [post for pid in sorted(all_pids) for _,    post in patient_pairs[pid]]
+    n = len(pre_files)
+    train_idx = [i for i, pid in enumerate(pid_of_file) if pid in train_pids]
+    val_idx   = [i for i, pid in enumerate(pid_of_file) if pid in val_pids]
+
+    # Extra surgery data (appended to training set only)
+    n_extra = 0
+    if args.extra_surgeries:
+        extra_surgeries = ["Fess", "Sept", "Contr"]
+        print(f"\nAdding extra surgery data to training...")
+        n_before = len(pre_files)
+        for surg in extra_surgeries:
+            surg_pairs = get_all_audio_pairs(surg)
+            n_surg = 0
+            for pid in sorted(surg_pairs):
+                for pre, post in surg_pairs[pid]:
+                    pre_files.append(pre)
+                    post_files.append(post)
+                    n_surg += 1
+            print(f"  {surg}: {n_surg} file pairs")
+        n_extra = len(pre_files) - n_before
+        train_idx = list(train_idx) + list(range(n_before, n_before + n_extra))
+        print(f"  Total extra: {n_extra} files; train_idx now {len(train_idx)}")
+
+    print(f"\n{args.surgery}: {len(all_pids)} train/val patients, {n} tonsill files")
+    if args.extra_surgeries:
+        print(f"  + {n_extra} extra-surgery files added to training")
+    print(f"  Train: {len(train_pids)} tonsill patients + extra, {len(train_idx)} files total")
+    print(f"  Val:   {len(val_pids)} patients, {len(val_idx)} files")
+    print(f"  Test:  held out: {sorted(fixed_ids)}")
 
     with open(os.path.join(args.output, 'split_info.json'), 'w') as f:
-        json.dump({'test': [names[i] for i in test_idx],
-                   'train': [names[i] for i in train_idx],
-                   'val': [names[i] for i in val_idx],
+        json.dump({'test': sorted(fixed_ids), 'train': sorted(train_pids),
+                   'val': sorted(val_pids), 'n_files': n,
                    'seed': args.seed}, f, indent=2)
 
     # ── Load external models ──
@@ -343,7 +384,8 @@ def main():
             # Content loss: cosine per frame — orthogonal to style
             c_loss = CONTENT_WEIGHT * cosine_content_loss(pred, xb)
 
-            # Style loss: ECAPA similarity — every step, 2 utterances
+            # Style loss: ECAPA similarity on a short crop (STYLE_CROP_LEN frames)
+            # to avoid OOM from storing full-utterance HiFiGAN activations.
             s_loss = ECAPA_WEIGHT * ecapa_style_loss(
                 model, hifigan, ecapa, pre_feats, pre_ecapa_embs,
                 train_idx, post_ecapa_embs, device)

@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from model.unet_spk import SpeakerConditionedUNet
 
 SAMPLE_RATE = 16000
-CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios"
+CUCO_BASE = "/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios"
 
 HIDDEN_DIM = 128
 N_LEVELS = 2
@@ -120,48 +120,77 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--surgery', type=str, default='Tonsill')
     parser.add_argument('--n_test', type=int, default=5)
+    parser.add_argument('--test_patients', type=str,
+                        default="0085,0110,0122,0132,0045",
+                        help='Comma-separated fixed test patient IDs (overrides --n_test)')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--output', type=str, default=None)
+    parser.add_argument('--extra_surgeries', action='store_true',
+                        help='Also train on Fess+Sept+Contr data (train only, val stays Tonsill)')
     args = parser.parse_args()
 
     if args.output is None:
+        suffix = '_multisurg' if args.extra_surgeries else ''
         args.output = os.path.join(os.path.dirname(__file__), '..',
-                                    f'results_{args.surgery.lower()}')
+                                    f'results_{args.surgery.lower()}{suffix}')
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
     os.makedirs(args.output, exist_ok=True)
 
-    pre_dir = os.path.join(CUCO_BASE, args.surgery, "Speech", "1")
-    post_dir = os.path.join(CUCO_BASE, args.surgery, "Speech", "2")
-    pre_files  = sorted(glob.glob(os.path.join(pre_dir,  "*.wav")))
-    post_files = sorted(glob.glob(os.path.join(post_dir, "*.wav")))
-    assert len(pre_files) == len(post_files)
-    n = len(pre_files)
-    names = [Path(f).stem for f in pre_files]
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+    from utils import get_all_audio_pairs
 
-    # Patient-level split
+    fixed_ids = set(p.strip() for p in args.test_patients.split(',') if p.strip()) \
+                if args.test_patients else set()
+
+    # Collect all audio types (Speech + TDU + Vowels + Sustained vowels), excluding test patients
+    patient_pairs = get_all_audio_pairs(args.surgery, exclude=fixed_ids)
+    all_pids = sorted(patient_pairs.keys())
+
     random.seed(args.seed)
-    indices = list(range(n))
-    random.shuffle(indices)
-    test_idx  = sorted(indices[:args.n_test])
-    cv_idx    = sorted(indices[args.n_test:])
-    random.shuffle(cv_idx)
-    n_val    = max(1, int(0.15 * len(cv_idx)))
-    val_idx  = sorted(cv_idx[:n_val])
-    train_idx = sorted(cv_idx[n_val:])
+    shuffled_pids = all_pids.copy()
+    random.shuffle(shuffled_pids)
+    n_val_pids = max(1, int(0.15 * len(shuffled_pids)))
+    val_pids   = set(shuffled_pids[:n_val_pids])
+    train_pids = set(shuffled_pids[n_val_pids:])
 
-    test_names  = [names[i] for i in test_idx]
-    train_names = [names[i] for i in train_idx]
-    val_names   = [names[i] for i in val_idx]
+    # Flatten to paired file lists (all audio types, all train/val patients)
+    pid_of_file = [pid for pid in sorted(all_pids) for _ in patient_pairs[pid]]
+    pre_files   = [pre  for pid in sorted(all_pids) for pre,  _   in patient_pairs[pid]]
+    post_files  = [post for pid in sorted(all_pids) for _,    post in patient_pairs[pid]]
+    n = len(pre_files)
+    train_idx = [i for i, pid in enumerate(pid_of_file) if pid in train_pids]
+    val_idx   = [i for i, pid in enumerate(pid_of_file) if pid in val_pids]
 
-    print(f"\n{args.surgery}: {n} patients")
-    print(f"  Test  ({len(test_idx)}):  {test_names}")
-    print(f"  Train ({len(train_idx)}): {len(train_idx)} patients")
-    print(f"  Val   ({len(val_idx)}):   {val_names}")
+    # Extra surgery data (appended to training set only)
+    if args.extra_surgeries:
+        extra_surgeries = ["Fess", "Sept", "Contr"]
+        print(f"\nAdding extra surgery data to training...")
+        n_before = len(pre_files)
+        for surg in extra_surgeries:
+            surg_pairs = get_all_audio_pairs(surg)
+            n_surg = 0
+            for pid in sorted(surg_pairs):
+                for pre, post in surg_pairs[pid]:
+                    pre_files.append(pre)
+                    post_files.append(post)
+                    n_surg += 1
+            print(f"  {surg}: {n_surg} file pairs")
+        n_extra = len(pre_files) - n_before
+        train_idx = list(train_idx) + list(range(n_before, n_before + n_extra))
+        print(f"  Total extra: {n_extra} files; train_idx now {len(train_idx)}")
+
+    print(f"\n{args.surgery}: {len(all_pids)} train/val patients, {n} tonsill files")
+    if args.extra_surgeries:
+        print(f"  + {n_extra} extra-surgery files added to training")
+    print(f"  Train: {len(train_pids)} tonsill patients + extra, {len(train_idx)} files total")
+    print(f"  Val:   {len(val_pids)} patients, {len(val_idx)} files")
+    print(f"  Test:  held out: {sorted(fixed_ids)}")
 
     with open(os.path.join(args.output, 'split_info.json'), 'w') as f:
-        json.dump({'test': test_names, 'train': train_names, 'val': val_names,
+        json.dump({'test': sorted(fixed_ids), 'train': sorted(train_pids),
+                   'val': sorted(val_pids), 'n_files': n,
                    'seed': args.seed}, f, indent=2)
 
     # Extract features

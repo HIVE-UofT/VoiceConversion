@@ -1,0 +1,131 @@
+================================================
+  FreeVC + ECAPA shift + bridge — Training
+================================================
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+Device: cuda
+Train patients: 23
+
+Loading ECAPA-TDNN (frozen, our metric space)...
+Loading FreeVC speaker encoder (frozen)...
+Loaded the voice encoder model on cuda in 0.02 seconds.
+
+Extracting paired embeddings (10 crops × 3.0s per utt)...
+  Bridge: 460 pairs  |  Shift: 2300 pairs
+
+============================================================
+  Bridge K-fold CV
+============================================================
+  Bridge Fold 1 ep   1  train=0.4621  val_mse=0.0059  val_cos=0.2410
+  Bridge Fold 1 ep  50  train=0.0649  val_mse=0.0014  val_cos=0.8209
+  Bridge Fold 1 ep 100  train=0.0433  val_mse=0.0013  val_cos=0.8357
+  Bridge Fold 1 ep 150  train=0.0360  val_mse=0.0013  val_cos=0.8380
+  Bridge Fold 1 ep 200  train=0.0326  val_mse=0.0013  val_cos=0.8388
+  Bridge Fold 1 ep 250  train=0.0315  val_mse=0.0013  val_cos=0.8382
+  Bridge Fold 1 ep 300  train=0.0311  val_mse=0.0013  val_cos=0.8380
+Bridge Fold 1/5: val_loss=0.0819
+  Bridge Fold 2 ep   1  train=0.4444  val_mse=0.0054  val_cos=0.3029
+  Bridge Fold 2 ep  50  train=0.0668  val_mse=0.0014  val_cos=0.8199
+  Bridge Fold 2 ep 100  train=0.0439  val_mse=0.0013  val_cos=0.8325
+  Bridge Fold 2 ep 150  train=0.0359  val_mse=0.0013  val_cos=0.8362
+  Bridge Fold 2 ep 200  train=0.0329  val_mse=0.0013  val_cos=0.8365
+  Bridge Fold 2 ep 250  train=0.0312  val_mse=0.0013  val_cos=0.8368
+  Bridge Fold 2 ep 300  train=0.0312  val_mse=0.0013  val_cos=0.8366
+Bridge Fold 2/5: val_loss=0.0828
+  Bridge Fold 3 ep   1  train=0.4615  val_mse=0.0059  val_cos=0.2484
+  Bridge Fold 3 ep  50  train=0.0658  val_mse=0.0013  val_cos=0.8285
+  Bridge Fold 3 ep 100  train=0.0449  val_mse=0.0013  val_cos=0.8380
+  Bridge Fold 3 ep 150  train=0.0368  val_mse=0.0012  val_cos=0.8416
+  Bridge Fold 3 ep 200  train=0.0334  val_mse=0.0012  val_cos=0.8421
+  Bridge Fold 3 ep 250  train=0.0319  val_mse=0.0012  val_cos=0.8424
+  Bridge Fold 3 ep 300  train=0.0316  val_mse=0.0012  val_cos=0.8422
+Bridge Fold 3/5: val_loss=0.0800
+  Bridge Fold 4 ep   1  train=0.4688  val_mse=0.0057  val_cos=0.2709
+  Bridge Fold 4 ep  50  train=0.0645  val_mse=0.0015  val_cos=0.8106
+  Bridge Fold 4 ep 100  train=0.0434  val_mse=0.0014  val_cos=0.8204
+  Bridge Fold 4 ep 150  train=0.0357  val_mse=0.0014  val_cos=0.8207
+  Bridge Fold 4 ep 200  train=0.0326  val_mse=0.0014  val_cos=0.8198
+  Bridge Fold 4 ep 250  train=0.0309  val_mse=0.0014  val_cos=0.8197
+  Bridge Fold 4 ep 300  train=0.0309  val_mse=0.0014  val_cos=0.8196
+Bridge Fold 4/5: val_loss=0.0909
+  Bridge Fold 5 ep   1  train=0.4433  val_mse=0.0057  val_cos=0.2678
+  Bridge Fold 5 ep  50  train=0.0677  val_mse=0.0012  val_cos=0.8425
+  Bridge Fold 5 ep 100  train=0.0462  val_mse=0.0012  val_cos=0.8491
+  Bridge Fold 5 ep 150  train=0.0378  val_mse=0.0012  val_cos=0.8499
+  Bridge Fold 5 ep 200  train=0.0344  val_mse=0.0012  val_cos=0.8495
+  Bridge Fold 5 ep 250  train=0.0337  val_mse=0.0012  val_cos=0.8492
+  Bridge Fold 5 ep 300  train=0.0331  val_mse=0.0012  val_cos=0.8492
+Bridge Fold 5/5: val_loss=0.0761
+Bridge CV: 0.0823 ± 0.0049
+
+============================================================
+  Shift K-fold CV
+============================================================
+  Shift Fold 1 ep   1  train=0.2641  val_mse=0.0050  val_cos=0.5199
+  Shift Fold 1 ep  50  train=0.0850  val_mse=0.0057  val_cos=0.4493
+  Shift Fold 1 ep 100  train=0.0822  val_mse=0.0059  val_cos=0.4303
+  Shift Fold 1 ep 150  train=0.0813  val_mse=0.0060  val_cos=0.4220
+  Shift Fold 1 ep 200  train=0.0809  val_mse=0.0060  val_cos=0.4200
+  Shift Fold 1 ep 250  train=0.0810  val_mse=0.0061  val_cos=0.4186
+  Shift Fold 1 ep 300  train=0.0808  val_mse=0.0061  val_cos=0.4179
+Shift Fold 1/5: val_loss=0.2357
+  Shift Fold 2 ep   1  train=0.2586  val_mse=0.0055  val_cos=0.4745
+  Shift Fold 2 ep  50  train=0.0846  val_mse=0.0060  val_cos=0.4280
+  Shift Fold 2 ep 100  train=0.0815  val_mse=0.0061  val_cos=0.4162
+  Shift Fold 2 ep 150  train=0.0807  val_mse=0.0061  val_cos=0.4112
+  Shift Fold 2 ep 200  train=0.0804  val_mse=0.0061  val_cos=0.4100
+  Shift Fold 2 ep 250  train=0.0802  val_mse=0.0062  val_cos=0.4085
+  Shift Fold 2 ep 300  train=0.0803  val_mse=0.0062  val_cos=0.4073
+Shift Fold 2/5: val_loss=0.2495
+  Shift Fold 3 ep   1  train=0.2675  val_mse=0.0046  val_cos=0.5584
+  Shift Fold 3 ep  50  train=0.0891  val_mse=0.0052  val_cos=0.5035
+  Shift Fold 3 ep 100  train=0.0864  val_mse=0.0054  val_cos=0.4794
+  Shift Fold 3 ep 150  train=0.0855  val_mse=0.0056  val_cos=0.4641
+  Shift Fold 3 ep 200  train=0.0851  val_mse=0.0056  val_cos=0.4595
+  Shift Fold 3 ep 250  train=0.0849  val_mse=0.0057  val_cos=0.4559
+  Shift Fold 3 ep 300  train=0.0849  val_mse=0.0057  val_cos=0.4552
+Shift Fold 3/5: val_loss=0.2115
+  Shift Fold 4 ep   1  train=0.2612  val_mse=0.0052  val_cos=0.4992
+  Shift Fold 4 ep  50  train=0.0834  val_mse=0.0061  val_cos=0.4170
+  Shift Fold 4 ep 100  train=0.0806  val_mse=0.0064  val_cos=0.3901
+  Shift Fold 4 ep 150  train=0.0797  val_mse=0.0064  val_cos=0.3829
+  Shift Fold 4 ep 200  train=0.0794  val_mse=0.0065  val_cos=0.3770
+  Shift Fold 4 ep 250  train=0.0792  val_mse=0.0065  val_cos=0.3762
+  Shift Fold 4 ep 300  train=0.0792  val_mse=0.0065  val_cos=0.3753
+Shift Fold 4/5: val_loss=0.2445
+  Shift Fold 5 ep   1  train=0.2601  val_mse=0.0054  val_cos=0.4829
+  Shift Fold 5 ep  50  train=0.0900  val_mse=0.0056  val_cos=0.4587
+  Shift Fold 5 ep 100  train=0.0870  val_mse=0.0058  val_cos=0.4423
+  Shift Fold 5 ep 150  train=0.0861  val_mse=0.0059  val_cos=0.4327
+  Shift Fold 5 ep 200  train=0.0857  val_mse=0.0059  val_cos=0.4290
+  Shift Fold 5 ep 250  train=0.0855  val_mse=0.0060  val_cos=0.4275
+  Shift Fold 5 ep 300  train=0.0855  val_mse=0.0060  val_cos=0.4266
+Shift Fold 5/5: val_loss=0.2435
+Shift CV: 0.2369 ± 0.0135
+
+Training final models on all training data...
+  Bridge Final ep   1  train=0.3884  val_mse=0.0044  val_cos=0.4332
+  Bridge Final ep  50  train=0.0635  val_mse=0.0009  val_cos=0.8802
+  Bridge Final ep 100  train=0.0421  val_mse=0.0007  val_cos=0.9054
+  Bridge Final ep 150  train=0.0346  val_mse=0.0007  val_cos=0.9130
+  Bridge Final ep 200  train=0.0316  val_mse=0.0007  val_cos=0.9160
+  Bridge Final ep 250  train=0.0302  val_mse=0.0007  val_cos=0.9167
+  Bridge Final ep 300  train=0.0301  val_mse=0.0006  val_cos=0.9169
+  Shift Final ep   1  train=0.2603  val_mse=0.0050  val_cos=0.5207
+  Shift Final ep  50  train=0.0860  val_mse=0.0018  val_cos=0.8258
+  Shift Final ep 100  train=0.0836  val_mse=0.0018  val_cos=0.8300
+  Shift Final ep 150  train=0.0825  val_mse=0.0018  val_cos=0.8310
+  Shift Final ep 200  train=0.0819  val_mse=0.0018  val_cos=0.8315
+  Shift Final ep 250  train=0.0819  val_mse=0.0018  val_cos=0.8318
+  Shift Final ep 300  train=0.0819  val_mse=0.0018  val_cos=0.8319
+
+Saved bridge.pt, shift.pt
+Saved population averages for baseline comparison.
+
+================================================
+  FreeVC + ECAPA shift + bridge — Eval (4 strategies)
+================================================
+Traceback (most recent call last):
+  File "/home/sepharfi/projects/def-zshakeri/sepharfi/VoiceConversion/Experiments/free_vc_ecapa/scripts/run_eval.py", line 34, in <module>
+    from models import SynthesizerTrn
+ImportError: cannot import name 'SynthesizerTrn' from 'models' (/home/sepharfi/projects/def-zshakeri/sepharfi/VoiceConversion/Experiments/free_vc_ecapa/scripts/models.py)
+Done!

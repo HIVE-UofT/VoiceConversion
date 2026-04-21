@@ -1,0 +1,140 @@
+==============================
+  DLA-VC (no VQ) — Training
+==============================
+Device: cuda
+
+Tonsill: 23 train/val patients, 282 total files
+  Train: 20 patients, 243 files
+  Val:   3 patients, 39 files
+  Test:  held out: ['0045', '0085', '0110', '0122', '0132']
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 40006.65it/s]
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Train: 1114 same-patient (pre, post) segment pairs
+  Val: 99 + 129 segments
+DLA-VC params: 6,762,608
+Loading kNN-VC vocoder...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+Loading ECAPA-TDNN...
+Pre-computing post-surgery ECAPA embeddings...
+Epoch 1 [WARMUP] | Recon: 6.7960 | Conv: 0.0000 | Qshift: 0.0000 | Cycle: 0.0010 | ECAPA_val: nan | (VQ disabled)
+Epoch 10 [WARMUP] | Recon: 3.3621 | Conv: 0.0000 | Qshift: 0.0000 | Cycle: 0.0002 | ECAPA_val: nan | (VQ disabled)
+Epoch 20 [WARMUP] | Recon: 2.0379 | Conv: 0.0000 | Qshift: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan | (VQ disabled)
+Epoch 30 [WARMUP] | Recon: 1.8072 | Conv: 0.0000 | Qshift: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan | (VQ disabled)
+Epoch 40 [WARMUP] | Recon: 1.8363 | Conv: 0.0000 | Qshift: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan | (VQ disabled)
+Epoch 50 [WARMUP] | Recon: 2.0399 | Conv: 0.0000 | Qshift: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan | (VQ disabled)
+Epoch 60 [WARMUP] | Recon: 1.9576 | Conv: 0.0000 | Qshift: 0.0000 | Cycle: 0.0001 | ECAPA_val: nan | (VQ disabled)
+  -> Saved (epoch 61, ECAPA_val=0.7564)
+  -> Saved (epoch 62, ECAPA_val=0.7147)
+  -> Saved (epoch 64, ECAPA_val=0.7113)
+  -> Saved (epoch 65, ECAPA_val=0.6719)
+  -> Saved (epoch 68, ECAPA_val=0.6669)
+Epoch 70 | Recon: 2.2865 | Conv: 7.0067 | Qshift: 0.2365 | Cycle: 0.0017 | ECAPA_val: 0.6500 | (VQ disabled)
+  -> Saved (epoch 70, ECAPA_val=0.6500)
+  -> Saved (epoch 75, ECAPA_val=0.6482)
+Epoch 80 | Recon: 1.7866 | Conv: 5.4606 | Qshift: 0.1669 | Cycle: 0.0012 | ECAPA_val: 0.6962 | (VQ disabled)
+Epoch 90 | Recon: 2.0407 | Conv: 6.0599 | Qshift: 0.2193 | Cycle: 0.0008 | ECAPA_val: 0.6514 | (VQ disabled)
+Epoch 100 | Recon: 2.0385 | Conv: 6.2771 | Qshift: 0.1705 | Cycle: 0.0005 | ECAPA_val: 0.6492 | (VQ disabled)
+Epoch 110 | Recon: 2.2280 | Conv: 6.5643 | Qshift: 0.1397 | Cycle: 0.0005 | ECAPA_val: 0.6768 | (VQ disabled)
+  Patience exhausted but continuing (epoch 115<150)
+Epoch 120 | Recon: 1.9054 | Conv: 5.2805 | Qshift: 0.1304 | Cycle: 0.0004 | ECAPA_val: 0.7017 | (VQ disabled)
+Epoch 130 | Recon: 2.0683 | Conv: 5.7975 | Qshift: 0.1127 | Cycle: 0.0003 | ECAPA_val: 0.7393 | (VQ disabled)
+  -> Saved (epoch 137, ECAPA_val=0.6454)
+Epoch 140 | Recon: 1.8555 | Conv: 5.3196 | Qshift: 0.1188 | Cycle: 0.0003 | ECAPA_val: 0.6630 | (VQ disabled)
+Epoch 150 | Recon: 1.8518 | Conv: 5.0199 | Qshift: 0.1431 | Cycle: 0.0004 | ECAPA_val: 0.7142 | (VQ disabled)
+Epoch 160 | Recon: 1.9541 | Conv: 5.5321 | Qshift: 0.1230 | Cycle: 0.0004 | ECAPA_val: 0.6911 | (VQ disabled)
+Epoch 170 | Recon: 1.9274 | Conv: 5.3050 | Qshift: 0.1071 | Cycle: 0.0004 | ECAPA_val: 0.7069 | (VQ disabled)
+Early stop at epoch 177
+
+Best val: 0.6454
+
+======================================================================
+  Evaluating DLA-VC on test + train patients
+======================================================================
+
+--- TEST ---
+Traceback (most recent call last):
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc_noVQ/scripts/train_split.py", line 686, in <module>
+    main()
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc_noVQ/scripts/train_split.py", line 658, in main
+    results_test = evaluate_patients(test_idx, "TEST")
+                                     ^^^^^^^^
+NameError: name 'test_idx' is not defined. Did you mean: 'utt_idx'?
+[W420 17:40:14.164652899 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+
+==============================
+  DLA-VC (no VQ) — Evaluation
+==============================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+[HiFi-GAN] Fine-tuned weights loaded  step=2500  val_mel_loss=0.3961
+[DLA-VC] Loaded: epoch=136  avg_quality_post shape=torch.Size([1, 192])  q_shift available=True
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 39278.09it/s]
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+
+Evaluating on 5 test patients: ['0045', '0085', '0110', '0122', '0132']
+
+Loading ECAPA-TDNN...
+
+============================================================
+  DLA-VC — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0045      0.7303      0.3848   -0.3455
+        0085      0.7238      0.4827   -0.2410
+        0110      0.6513      0.5169   -0.1344
+        0122      0.7743      0.2744   -0.4999
+        0132      0.4736      0.5240   +0.0504
+  ----------------------------------------------
+        Mean      0.6707      0.4366   -0.2341
+         Std      0.1061      0.0951
+
+Evaluating on 23 training patients...
+
+============================================================
+  DLA-VC [TRAIN SET] — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0007      0.6133      0.1581   -0.4551
+        0011      0.7222      0.5292   -0.1929
+        0026      0.6901      0.1457   -0.5445
+        0042      0.6307      0.3521   -0.2786
+        0062      0.5517     -0.0314   -0.5831
+        0063      0.7034      0.1888   -0.5147
+        0078      0.4783      0.5338   +0.0555
+        0080      0.4544      0.4021   -0.0522
+        0081      0.6271      0.2047   -0.4223
+        0087      0.7405      0.2193   -0.5212
+        0089      0.6270      0.2792   -0.3478
+        0092      0.7645      0.2211   -0.5434
+        0099      0.7944      0.1853   -0.6091
+        0108      0.2687      0.3488   +0.0801
+        0109      0.7612      0.3099   -0.4514
+        0111      0.5979      0.2826   -0.3153
+        0112      0.7578      0.2452   -0.5126
+        0125      0.7551      0.2684   -0.4867
+        0129      0.7855      0.3344   -0.4511
+        0137      0.7005     -0.0045   -0.7050
+        0144      0.6745      0.3639   -0.3106
+        0145      0.6467      0.5294   -0.1173
+        0147      0.8025      0.3441   -0.4584
+  ----------------------------------------------
+        Mean      0.6586      0.2787   -0.3799
+         Std      0.1248      0.1431
+
+Converted files saved to: /lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc_noVQ/scripts/../converted_test
+[W420 17:43:13.716429021 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+Done!

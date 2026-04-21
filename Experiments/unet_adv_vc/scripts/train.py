@@ -131,9 +131,9 @@ def recon_loss(y_pred, y_target, cosine_weight=0.5):
 def main():
     parser = argparse.ArgumentParser(description="UNet-Adv-VC — Train with adversarial loss")
     parser.add_argument('--pre_dir', type=str,
-                        default="/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/1")
+                        default="/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1")
     parser.add_argument('--post_dir', type=str,
-                        default="/home/sepharfi/projects/def-zshakeri/sepehr/CUCO/data_final/Audios/Tonsill/Speech/2")
+                        default="/home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2")
     parser.add_argument('--output', type=str,
                         default=os.path.join(os.path.dirname(__file__), '..', 'checkpoints'))
     parser.add_argument('--epochs', type=int, default=EPOCHS)
