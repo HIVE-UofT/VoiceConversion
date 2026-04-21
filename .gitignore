@@ -1,9 +1,53 @@
+# ── Python ────────────────────────────────────────────────────────────
 .venv/
 .env/
+__pycache__/
+*.pyc
+
+# ── Model checkpoints (any extension / backup) ────────────────────────
 *.pth
 *.pt
+*.pth.bak
+*.pt.bak
+*.ckpt
+*.bin
+*.safetensors
+
+# ── Precomputed features / embeddings ─────────────────────────────────
+*.npy
+*.npz
+
+# ── Converted audio outputs ───────────────────────────────────────────
 plots/
 */plots/
-knn_vc/knn_vc_converted/
-__pycache__/
 */converted/
+*/converted_test/
+*/converted_test_*/
+knn_vc/knn_vc_converted/
+
+# ── Per-experiment result dirs that hold checkpoints ──────────────────
+Experiments/*/results_tonsill/
+Experiments/*/results_tonsill_split/
+Experiments/*/results_tonsill_multisurg/
+Experiments/*/results_tonsill_v2/
+Experiments/*/results_tonsill_v2_multisurg/
+Experiments/*/checkpoints/
+Experiments/*/checkpoints_*/
+
+# ── FreeVC-specific (large pretrained weights + cloned upstream repo) ─
+Experiments/free_vc/FreeVC/
+Experiments/free_vc/checkpoints/
+Experiments/free_vc/data/
+Experiments/free_vc/converted_test*/
+Experiments/free_vc_shift/checkpoints/
+Experiments/free_vc_shift/converted_test*/
+Experiments/free_vc_ecapa/checkpoints/
+Experiments/free_vc_ecapa/converted_test*/
+
+# ── PDF build artifacts (keep .pdf, drop intermediates) ──────────────
+*.aux
+*.log
+*.bbl
+*.blg
+*.toc
+*.out.bak
