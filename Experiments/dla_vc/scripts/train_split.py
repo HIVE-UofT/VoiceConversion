@@ -47,7 +47,7 @@ EPOCHS = 400
 LR = 3e-4                  # bumped 1e-4→3e-4 (matches working UNet-VC baselines)
 SEGMENT_SAMPLES = 40000
 SEGMENT_HOP_SAMPLES = 20000
-WARMUP_EPOCHS = 60         # bumped 30→60 (more time for pure recon before conversion pressure)
+WARMUP_EPOCHS = 60         # restored to 60 after residual-output rollback
 PATIENCE = 40
 
 LAMBDA_RECON = 10.0        # Direct WavLM feature MSE+cos (high during warmup)
@@ -122,17 +122,40 @@ class AudioSegmentDatasetFromFiles(Dataset):
         return audio, torch.tensor(self.label, dtype=torch.float32)
 
 
+def _build_audio_augmenter_dla():
+    """Audio-domain augmentation chain (audiomentations). Same params applied
+    to pre and post within a pair preserves the surgery direction in feature
+    space, just shifted in pitch/time/gain."""
+    from audiomentations import (Compose, PitchShift, TimeStretch,
+                                  AddGaussianNoise, Gain)
+    return Compose([
+        PitchShift(min_semitones=-2.0, max_semitones=2.0, p=0.7),
+        TimeStretch(min_rate=0.92, max_rate=1.08, leave_length_unchanged=True, p=0.5),
+        AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.005, p=0.3),
+        Gain(min_gain_db=-3.0, max_gain_db=3.0, p=0.4),
+    ])
+
+
 class PatientPairedSegmentDataset(Dataset):
     """Same-patient (pre, post) segment pairs — same file index, same utterance.
     Each item returns (pre_segment, post_segment) from the same file pair, so
     both come from the same patient saying the same thing. Time alignment within
     segments is approximate (not DTW-aligned); kNN frame-pairing in the training
-    loop handles fine-grained alignment."""
+    loop handles fine-grained alignment.
+
+    When augment=True, each __getitem__ call samples a SINGLE random transform
+    (pitch shift, time stretch, gain, noise) and applies it to both pre and
+    post with the same parameters, so the surgery direction is preserved while
+    each epoch sees a different acoustic variant of every pair (more effective
+    data per parameter update)."""
     def __init__(self, pre_files, post_files, segment_samples=40000,
                  hop_samples=20000, augment=False):
         assert len(pre_files) == len(post_files)
         self.items = []
         self.augment = augment
+        # Build augmenter once — re-seeded per __getitem__ call to ensure the
+        # SAME random transform is applied to both pre and post in a pair.
+        self.audio_augmenter = _build_audio_augmenter_dla() if augment else None
         for pre_path, post_path in zip(pre_files, post_files):
             pre_audio, sr = torchaudio.load(pre_path)
             if sr != SAMPLE_RATE:
@@ -167,9 +190,22 @@ class PatientPairedSegmentDataset(Dataset):
 
     def __getitem__(self, idx):
         pre, post = self.items[idx]
-        if self.augment:
+        if self.augment and self.audio_augmenter is not None:
+            # Apply the SAME random transform to pre and post by reseeding
+            # numpy/python RNG between the two calls. audiomentations uses
+            # numpy.random under the hood.
+            seed = random.randint(0, 2**31 - 1)
+            pre_np  = pre.numpy().astype('float32')
+            post_np = post.numpy().astype('float32')
+            random.seed(seed); np.random.seed(seed)
+            pre_np  = self.audio_augmenter(samples=pre_np,  sample_rate=SAMPLE_RATE)
+            random.seed(seed); np.random.seed(seed)
+            post_np = self.audio_augmenter(samples=post_np, sample_rate=SAMPLE_RATE)
+            pre  = torch.from_numpy(pre_np[:pre.shape[0]])     # truncate to original length
+            post = torch.from_numpy(post_np[:post.shape[0]])
+            # Tiny extra Gaussian noise to keep some independence between pre/post
             if torch.rand(1).item() > 0.5:
-                pre = pre + torch.randn_like(pre) * 0.002
+                pre  = pre  + torch.randn_like(pre)  * 0.002
             if torch.rand(1).item() > 0.5:
                 post = post + torch.randn_like(post) * 0.002
         return pre, post
@@ -579,7 +615,8 @@ def main():
                 'ecapa_val': ecapa_val,
                 'config': {'feat_dim': FEAT_DIM, 'code_dim': CODE_DIM,
                            'num_codes': NUM_CODES, 'num_heads': NUM_HEADS,
-                           'quality_dim': QUALITY_DIM, 'num_wavlm_layers': wavlm.num_layers},
+                           'quality_dim': QUALITY_DIM, 'num_wavlm_layers': wavlm.num_layers,
+                           'use_residual_output': False},
             }, ckpt_path)
             print(f"  -> Saved (epoch {epoch+1}, ECAPA_val={ecapa_val:.4f})")
         elif epoch >= WARMUP_EPOCHS:

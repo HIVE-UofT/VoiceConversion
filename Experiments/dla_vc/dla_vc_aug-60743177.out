@@ -1,0 +1,38 @@
+================================================
+  DLA-VC + Audio Augmentation — Training
+  Augmentation: pitch shift (+-2 st), time stretch (0.92-1.08),
+  gain (+-3 dB), Gaussian noise. Same params per (pre, post) pair.
+  Test patients (0045,0085,0110,0122,0132) excluded from training.
+================================================
+Device: cuda
+
+Tonsill: 23 train/val patients, 282 total files
+  Train: 20 patients, 243 files
+  Val:   3 patients, 39 files
+  Test:  held out: ['0045', '0085', '0110', '0122', '0132']
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 39231.41it/s]
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+  Train: 1114 same-patient (pre, post) segment pairs
+  Val: 99 + 129 segments
+DLA-VC params: 6,762,609
+Loading kNN-VC vocoder...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+Loading ECAPA-TDNN...
+Pre-computing post-surgery ECAPA embeddings...
+Epoch 1 | Recon: 0.1102 | Conv: 11.3283 | Qshift: 0.0295 | VQ: 0.9030 | Perp: 5/32 | Cycle: 0.0009 | ECAPA_val: 0.6584
+  -> Saved (epoch 1, ECAPA_val=0.6584)
+  -> Saved (epoch 2, ECAPA_val=0.6461)
+  -> Saved (epoch 3, ECAPA_val=0.6388)
+  -> Saved (epoch 4, ECAPA_val=0.6252)
+  -> Saved (epoch 5, ECAPA_val=0.6077)
+  -> Saved (epoch 7, ECAPA_val=0.6073)
+Epoch 10 | Recon: 0.0488 | Conv: 5.5991 | Qshift: 0.1705 | VQ: 0.7645 | Perp: 7/32 | Cycle: 0.0003 | ECAPA_val: 0.6252
+  -> Saved (epoch 18, ECAPA_val=0.6073)
+Epoch 20 | Recon: 0.0043 | Conv: 9.3359 | Qshift: 0.2037 | VQ: 0.7263 | Perp: 8/32 | Cycle: 0.0000 | ECAPA_val: 0.6190
+slurmstepd: error: *** JOB 60743177 ON ng20604 CANCELLED AT 2026-05-10T21:43:05 ***

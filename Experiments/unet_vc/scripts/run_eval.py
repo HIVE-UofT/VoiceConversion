@@ -39,14 +39,22 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint', type=str, default=CKPT)
+    parser.add_argument('--stock_vocoder', action='store_true',
+                        help='Skip the CUCO-fine-tuned HiFi-GAN and use the stock '
+                             'bshall/knn-vc HiFi-GAN instead. Useful when the '
+                             'fine-tuned vocoder over-fits the small training set.')
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}')
     os.makedirs(OUT_DIR, exist_ok=True)
 
-    # Load fine-tuned kNN-VC (WavLM encoder + fine-tuned HiFi-GAN)
-    knn_vc = load_finetuned_knnvc(device)
+    # Load kNN-VC vocoder: either the CUCO-fine-tuned HiFi-GAN or the stock one.
+    if args.stock_vocoder:
+        print('[HiFi-GAN] Using STOCK bshall/knn-vc HiFi-GAN (--stock_vocoder).')
+        knn_vc = torch.hub.load("bshall/knn-vc", "knn_vc", prematched=True, device=device)
+    else:
+        knn_vc = load_finetuned_knnvc(device)
 
     # Load trained UNet-VC model
     ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)

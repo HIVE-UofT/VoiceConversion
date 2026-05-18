@@ -1,0 +1,53 @@
+================================================
+  DLA-VC v3 - Training (KD from UNet-VC-ECAPA + ECAPA loss)
+================================================
+Device: cuda
+
+Tonsill: 23 train/val patients, 282 total files
+  Train: 20 patients, 243 files
+  Val:   3 patients, 39 files
+  Test:  held out: ['0045', '0085', '0110', '0122', '0132']
+Loading WavLM-Large...
+Loading weights:   0%|          | 0/488 [00:00<?, ?it/s]Loading weights: 100%|██████████| 488/488 [00:00<00:00, 38912.93it/s]
+  Train: 1114 same-patient (pre, post) segment pairs
+  Val: 99 + 129 segments
+DLA-VC params: 6,762,609
+
+[v3] Loading frozen UNet-VC-ECAPA teacher from /lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/unet_vc_ecapa/results_tonsill_v2/best_model.pt...
+Traceback (most recent call last):
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc_v3/scripts/train_split.py", line 790, in <module>
+    main()
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc_v3/scripts/train_split.py", line 410, in main
+    from model.unet import ResUNet1D as _TeacherNet
+ModuleNotFoundError: No module named 'model.unet'
+[W511 14:10:23.664603461 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+
+================================================
+  DLA-VC v3 - Evaluation (stock HiFi-GAN)
+================================================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+[HiFi-GAN] Using STOCK bshall/knn-vc HiFi-GAN (FORCE_STOCK_VOCODER env var set). Numbers in this run are not directly comparable to runs that used the CUCO-fine-tuned vocoder.
+Traceback (most recent call last):
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc_v3/scripts/run_eval.py", line 188, in <module>
+    main()
+  File "/lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/dla_vc_v3/scripts/run_eval.py", line 79, in main
+    ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/serialization.py", line 1484, in load
+    with _open_file_like(f, "rb") as opened_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/serialization.py", line 759, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/serialization.py", line 740, in __init__
+    super().__init__(open(name, mode))
+                     ^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results_v3/best_model.pth'
+[W511 14:12:41.631084934 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+Done!

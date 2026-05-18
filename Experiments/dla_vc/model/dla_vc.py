@@ -392,11 +392,21 @@ class DLAVCModel(nn.Module):
     def __init__(self, feat_dim=1024, code_dim=64, num_codes=32, num_heads=4,
                  quality_dim=64, num_wavlm_layers=24,
                  commitment_weight=0.25, ema_decay=0.99, entropy_weight=0.5,
-                 dropout=0.1, content_noise_std=0.1):
+                 dropout=0.1, content_noise_std=0.1,
+                 use_residual_output=False, wavlm_layer_idx=5,
+                 alpha_init=0.1):
         super().__init__()
         self.feat_dim = feat_dim
         self.content_noise_std = content_noise_std
         self.num_wavlm_layers = num_wavlm_layers
+        # When True, the decoder predicts a *delta* and the model output is
+        # anchor + alpha * delta (UNet-VC's residual trick). The anchor is the
+        # input WavLM layer-6 features (i.e. pre features at conversion time).
+        # alpha is a learnable scalar that scales the predicted shift.
+        self.use_residual_output = use_residual_output
+        self.wavlm_layer_idx = wavlm_layer_idx  # 0-indexed; layer 6 → index 5
+        if use_residual_output:
+            self.alpha = nn.Parameter(torch.tensor(float(alpha_init)))
 
         # Adapters (the key novelty from AdaptVC)
         self.content_adapter = LayerAdapter(num_wavlm_layers)
@@ -462,9 +472,17 @@ class DLAVCModel(nn.Module):
         # Quality path
         quality = self.quality_encoder(quality_feats)
 
-        # Decode → reconstruct layer 6 features
-        recon = self.unet_decoder(content_q, quality, skips)
-        recon = self._match_time(recon, target_features)
+        # Decode → either layer-6 features directly, or a delta added to the
+        # input layer-6 anchor (residual-output mode, UNet-VC style).
+        delta = self.unet_decoder(content_q, quality, skips)
+        delta = self._match_time(delta, target_features)
+        if self.use_residual_output:
+            # Anchor on the input layer-6 features (target_features at training
+            # time IS the input layer 6 because forward is called with paired
+            # hidden_all/target_all from the same audio).
+            recon = target_features + self.alpha * delta
+        else:
+            recon = delta
 
         return recon, vq_loss, perplexity, content_z, quality
 
@@ -485,10 +503,21 @@ class DLAVCModel(nn.Module):
         """
         Voice conversion: content from source, quality from target.
         Skip connections from source, FiLM-modulated by target quality.
+
+        With residual-output mode, the decoder predicts a delta that is added
+        to the source's layer-6 features (anchor = pre features), so the
+        model only has to learn the pre→post shift instead of full post-feature
+        regeneration. Same trick UNet-VC uses.
         """
         with torch.no_grad():
             content_q, skips = self.encode_content(source_hidden_states)
-            converted = self.unet_decoder(content_q, target_quality, skips)
+            delta = self.unet_decoder(content_q, target_quality, skips)
+            if self.use_residual_output:
+                anchor = source_hidden_states[:, self.wavlm_layer_idx]  # (B, 1024, T)
+                delta = self._match_time(delta, anchor)
+                converted = anchor + self.alpha * delta
+            else:
+                converted = delta
         return converted
 
     def predict_post_quality(self, pre_hidden_states):

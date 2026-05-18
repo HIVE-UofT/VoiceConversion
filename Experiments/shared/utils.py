@@ -153,13 +153,27 @@ def _merge_weight_norm(state_dict):
 
 def load_finetuned_knnvc(device, hifigan_ckpt=HIFIGAN_CKPT):
     """
-    Load kNN-VC (WavLM encoder + HiFi-GAN) and swap in fine-tuned generator
-    weights.  All downstream knn_vc.vocode() and knn_vc.match() calls will then
-    use the domain-adapted vocoder without any other code changes.
+    Load kNN-VC (WavLM encoder + HiFi-GAN) and, if available, swap in the
+    CUCO-fine-tuned generator weights. If the fine-tuned checkpoint is
+    missing on disk OR the environment variable FORCE_STOCK_VOCODER is set,
+    fall back to the stock bshall/knn-vc HiFi-GAN. The override is useful
+    for re-evaluating all methods with the same stock vocoder so test
+    numbers are comparable across the table.
     """
     knn_vc = torch.hub.load(
         "bshall/knn-vc", "knn_vc", prematched=True, device=device
     )
+    force_stock = os.environ.get("FORCE_STOCK_VOCODER", "").lower() in ("1", "true", "yes")
+    if force_stock or not os.path.exists(hifigan_ckpt):
+        reason = "FORCE_STOCK_VOCODER env var set" if force_stock \
+                 else f"fine-tuned checkpoint not found at {hifigan_ckpt}"
+        print(
+            f"[HiFi-GAN] Using STOCK bshall/knn-vc HiFi-GAN ({reason}). "
+            f"Numbers in this run are not directly comparable to runs that "
+            f"used the CUCO-fine-tuned vocoder."
+        )
+        knn_vc.hifigan.eval()
+        return knn_vc
     ckpt       = torch.load(hifigan_ckpt, map_location=device, weights_only=False)
     gen_state  = _merge_weight_norm(ckpt["generator"])
     knn_vc.hifigan.load_state_dict(gen_state)

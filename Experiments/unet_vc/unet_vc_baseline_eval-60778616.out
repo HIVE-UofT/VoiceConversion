@@ -1,0 +1,96 @@
+================================================
+  UNet-VC baseline (no aug) — Eval with stock HiFi-GAN
+================================================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+Device: cuda
+[HiFi-GAN] Using STOCK bshall/knn-vc HiFi-GAN (--stock_vocoder).
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+[UNet-VC] Loaded checkpoint: epoch=43  val_loss=4.432656  alpha=0.9275
+
+Evaluating on 5 test patients: ['0045', '0085', '0110', '0122', '0132']
+
+Loading ECAPA-TDNN...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0045.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0085.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0110.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0122.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0132.wav
+
+============================================================
+  UNet-VC — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0045      0.7303      0.7395   +0.0092
+        0085      0.7238      0.7171   -0.0066
+        0110      0.6513      0.7654   +0.1140
+        0122      0.7743      0.7236   -0.0507
+        0132      0.4736      0.6705   +0.1969
+  ----------------------------------------------
+        Mean      0.6707      0.7232   +0.0525
+         Std      0.1061      0.0312
+
+Evaluating on 23 training patients...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0007.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0011.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0026.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0042.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0062.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0063.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0078.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0080.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0081.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0087.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0089.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0092.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0099.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0108.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0112.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0129.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0137.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0144.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0145.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav
+
+============================================================
+  UNet-VC [TRAIN SET] — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0007      0.6133      0.6711   +0.0578
+        0011      0.7222      0.8247   +0.1025
+        0026      0.6901      0.7250   +0.0349
+        0042      0.6307      0.7491   +0.1184
+        0062      0.5517      0.6450   +0.0933
+        0063      0.7034      0.8023   +0.0988
+        0078      0.4783      0.8168   +0.3385
+        0080      0.4544      0.5569   +0.1025
+        0081      0.6271      0.6074   -0.0197
+        0087      0.7405      0.8813   +0.1408
+        0089      0.6270      0.7715   +0.1445
+        0092      0.7645      0.7812   +0.0167
+        0099      0.7944      0.7660   -0.0285
+        0108      0.2687      0.8086   +0.5399
+        0109      0.7612      0.8267   +0.0654
+        0111      0.5979      0.7920   +0.1941
+        0112      0.7578      0.7971   +0.0393
+        0125      0.7551      0.7740   +0.0189
+        0129      0.7855      0.8370   +0.0514
+        0137      0.7005      0.8016   +0.1011
+        0144      0.6745      0.6452   -0.0292
+        0145      0.6467      0.8350   +0.1882
+        0147      0.8025      0.8164   +0.0139
+  ----------------------------------------------
+        Mean      0.6586      0.7622   +0.1036
+         Std      0.1248      0.0809
+
+Converted files saved to: /lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/unet_vc/scripts/../converted_test
+Done!

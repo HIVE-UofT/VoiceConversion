@@ -66,6 +66,49 @@ def extract_all_features(knn_vc, wav_files):
     return results
 
 
+def _build_audio_augmenter():
+    """audiomentations chain: pitch shift + time stretch + gaussian noise + gain.
+    Same chain object can be re-seeded per call to produce deterministic per-pair
+    transformations (so pre and post in a pair get the SAME params)."""
+    from audiomentations import (Compose, PitchShift, TimeStretch,
+                                  AddGaussianNoise, Gain)
+    return Compose([
+        PitchShift(min_semitones=-2.0, max_semitones=2.0, p=0.7),
+        TimeStretch(min_rate=0.92, max_rate=1.08, leave_length_unchanged=False, p=0.5),
+        AddGaussianNoise(min_amplitude=0.001, max_amplitude=0.005, p=0.3),
+        Gain(min_gain_db=-3.0, max_gain_db=3.0, p=0.4),
+    ])
+
+
+def extract_features_audio_augmented(knn_vc, wav_paths, augmenter, seed_offset, device):
+    """Augment each audio file deterministically (seeded by index + seed_offset),
+    then run WavLM. Returning (stem, features) like extract_all_features.
+
+    The seed is deterministic per (file_index, seed_offset), so calling this
+    on the corresponding pre/post file lists in the same order with the same
+    seed_offset yields IDENTICAL augmentation parameters for matched pairs --
+    which preserves the surgery direction in feature space."""
+    import librosa, soundfile as sf, tempfile
+    SAMPLE_RATE = 16000
+    results = []
+    for i, wp in enumerate(wav_paths):
+        per_seed = seed_offset * 100003 + i  # large prime separation
+        random.seed(per_seed); np.random.seed(per_seed)
+        wav, _ = librosa.load(wp, sr=SAMPLE_RATE)
+        wav_aug = augmenter(samples=wav, sample_rate=SAMPLE_RATE)
+        # Easiest cross-API path: write to temp wav, hand to knn_vc.get_features
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+            sf.write(tmp.name, wav_aug, SAMPLE_RATE)
+            try:
+                feats = knn_vc.get_features(tmp.name)
+            finally:
+                os.unlink(tmp.name)
+        results.append((Path(wp).stem + f"_aug{seed_offset}", feats.cpu()))
+    total = sum(f.shape[0] for _, f in results)
+    print(f"  [aug{seed_offset}] Total: {total} frames ({total * 0.02 / 60:.1f} min)")
+    return results
+
+
 def pair_frames_knn(X, Y):
     """Pair source frames (X) to target frames (Y) via cosine NN."""
     X_norm = X / (X.norm(dim=1, keepdim=True) + 1e-8)
@@ -225,6 +268,14 @@ def main():
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--extra_surgeries', action='store_true',
                         help='Also train on Fess+Sept+Contr data (added to train set in every fold)')
+    parser.add_argument('--n_aug', type=int, default=0,
+                        help='Number of audio-domain augmentation rounds applied to '
+                             'CV training audio before WavLM extraction. Each round '
+                             'uses pitch shift + time stretch + gain + Gaussian noise '
+                             'with the SAME parameters applied to pre and post in a '
+                             'pair (preserves surgery direction). 0 disables. '
+                             'Test patients are NEVER augmented '
+                             '(get_all_audio_pairs already excludes them).')
     args = parser.parse_args()
 
     if args.output is None:
@@ -263,6 +314,35 @@ def main():
     pre_features  = [feat for _, feat in pre_data]
     post_features = [feat for _, feat in post_data]
     n_cv_files = len(pre_features)  # number of Tonsill CV files
+
+    # ── Audio-domain augmentation rounds (CV pool only; test patients
+    #    were already filtered by get_all_audio_pairs(exclude=fixed_ids)).
+    # Augmented features are appended to pre_features/post_features but
+    # tracked in `aug_pid_of_file` and `aug_feature_indices`, NOT in
+    # `pid_of_file`. They will be added only to train folds, never val,
+    # so val stays a clean measurement of original CUCO data.
+    aug_feature_indices = []
+    aug_pid_of_file = []
+    if args.n_aug > 0:
+        print(f"\n=== Audio augmentation: {args.n_aug} extra rounds "
+              f"on the {n_cv_files} CV file pairs (train-only) ===")
+        augmenter = _build_audio_augmenter()
+        for k in range(1, args.n_aug + 1):
+            print(f"\n[Aug round {k}/{args.n_aug}] re-extracting pre features...")
+            aug_pre  = extract_features_audio_augmented(
+                knn_vc, pre_file_list,  augmenter, seed_offset=k, device=device)
+            print(f"[Aug round {k}/{args.n_aug}] re-extracting post features...")
+            aug_post = extract_features_audio_augmented(
+                knn_vc, post_file_list, augmenter, seed_offset=k, device=device)
+            n_before = len(pre_features)
+            pre_features  += [f for _, f in aug_pre]
+            post_features += [f for _, f in aug_post]
+            aug_feature_indices += list(range(n_before, len(pre_features)))
+            # The augmented copies' patient IDs (parallel to the new indices)
+            aug_pid_of_file += list(pid_of_file[:n_cv_files])
+        print(f"\n  After augmentation: {len(pre_features)} pre / "
+              f"{len(post_features)} post feature vectors "
+              f"({n_cv_files} originals + {len(aug_feature_indices)} augmented)")
 
     # Extra surgery data: extract features and add to training pool
     extra_indices = []
@@ -334,9 +414,23 @@ def main():
         train_fold = [idx for j, fold in enumerate(folds) for idx in fold if j != k]
         # Add extra surgery data to training (never to validation)
         train_fold = train_fold + extra_indices
+        # Add augmented features whose source patient is a TRAIN patient in
+        # this fold (never val): pick aug indices whose patient ID is in
+        # the train-patient set for this fold.
+        if aug_feature_indices:
+            train_pids_this_fold = set(cv_pids) - patient_folds[k]
+            aug_train_for_fold = [
+                ai for ai, apid in zip(aug_feature_indices, aug_pid_of_file)
+                if apid in train_pids_this_fold
+            ]
+            train_fold = train_fold + aug_train_for_fold
+        else:
+            aug_train_for_fold = []
 
         print(f"\nFold {k+1}/{args.k_folds}: "
-              f"train={len(train_fold)} files (incl. {len(extra_indices)} extra), "
+              f"train={len(train_fold)} files "
+              f"(incl. {len(extra_indices)} extra-surg, "
+              f"{len(aug_train_for_fold)} augmented), "
               f"val={len(val_fold)} files")
 
         ckpt_path = os.path.join(args.output, f'fold{k+1}_model.pt')
@@ -356,6 +450,12 @@ def main():
 
     # Use last fold as val for early stopping (just for stopping criterion)
     final_train = [idx for fold in folds[:-1] for idx in fold] + extra_indices
+    if aug_feature_indices:
+        final_train_pids = set(cv_pids) - patient_folds[-1]
+        final_train += [
+            ai for ai, apid in zip(aug_feature_indices, aug_pid_of_file)
+            if apid in final_train_pids
+        ]
     final_val = folds[-1]
 
     final_ckpt = os.path.join(args.output, 'best_model.pt')

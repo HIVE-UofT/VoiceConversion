@@ -1,0 +1,1370 @@
+==============================
+  UNet-Adv-VC — Training
+==============================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Device: cuda
+
+Tonsill: 23 train/val patients, 282 tonsill files
+  Train: 20 tonsill patients + extra, 243 files total
+  Val:   3 patients, 39 files
+  Test:  held out: ['0045', '0085', '0110', '0122', '0132']
+
+Loading kNN-VC model...
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+
+Extracting pre-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0007.wav
+  Tonsill_ses1_speech_0007.wav: 3451 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0007.wav
+  Tonsill_ses1_agua_0007.wav: 103 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0007.wav
+  Tonsill_ses1_brasero_0007.wav: 120 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0007.wav
+  Tonsill_ses1_dia_0007.wav: 60 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0007.wav
+  Tonsill_ses1_mesa_0007.wav: 62 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0007.wav
+  Tonsill_ses1_a_0007.wav: 57 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0007.wav
+  Tonsill_ses1_e_0007.wav: 62 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0007.wav
+  Tonsill_ses1_i_0007.wav: 57 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0007.wav
+  Tonsill_ses1_o_0007.wav: 49 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0007.wav
+  Tonsill_ses1_u_0007.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0007.wav
+  Tonsill_ses1_a1_0007.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0007.wav
+  Tonsill_ses1_a2_0007.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0007.wav
+  Tonsill_ses1_a3_0007.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0011.wav
+  Tonsill_ses1_speech_0011.wav: 3599 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0011.wav
+  Tonsill_ses1_agua_0011.wav: 116 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0011.wav
+  Tonsill_ses1_brasero_0011.wav: 144 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0011.wav
+  Tonsill_ses1_dia_0011.wav: 70 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0011.wav
+  Tonsill_ses1_mesa_0011.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0011.wav
+  Tonsill_ses1_a_0011.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0011.wav
+  Tonsill_ses1_e_0011.wav: 67 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0011.wav
+  Tonsill_ses1_i_0011.wav: 62 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0011.wav
+  Tonsill_ses1_o_0011.wav: 60 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0011.wav
+  Tonsill_ses1_u_0011.wav: 60 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0011.wav
+  Tonsill_ses1_a1_0011.wav: 97 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0011.wav
+  Tonsill_ses1_a2_0011.wav: 94 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0011.wav
+  Tonsill_ses1_a3_0011.wav: 257 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0026.wav
+  Tonsill_ses1_speech_0026.wav: 2523 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0026.wav
+  Tonsill_ses1_agua_0026.wav: 116 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0026.wav
+  Tonsill_ses1_brasero_0026.wav: 149 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0026.wav
+  Tonsill_ses1_dia_0026.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0026.wav
+  Tonsill_ses1_mesa_0026.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0026.wav
+  Tonsill_ses1_a_0026.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0026.wav
+  Tonsill_ses1_e_0026.wav: 49 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0026.wav
+  Tonsill_ses1_i_0026.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0026.wav
+  Tonsill_ses1_o_0026.wav: 51 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0026.wav
+  Tonsill_ses1_u_0026.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0026.wav
+  Tonsill_ses1_a1_0026.wav: 98 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0026.wav
+  Tonsill_ses1_a2_0026.wav: 102 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0026.wav
+  Tonsill_ses1_a3_0026.wav: 107 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0042.wav
+  Tonsill_ses1_speech_0042.wav: 3453 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0042.wav
+  Tonsill_ses1_agua_0042.wav: 128 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0042.wav
+  Tonsill_ses1_brasero_0042.wav: 158 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0042.wav
+  Tonsill_ses1_dia_0042.wav: 96 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0042.wav
+  Tonsill_ses1_mesa_0042.wav: 96 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0042.wav
+  Tonsill_ses1_a_0042.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0042.wav
+  Tonsill_ses1_e_0042.wav: 86 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0042.wav
+  Tonsill_ses1_i_0042.wav: 86 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0042.wav
+  Tonsill_ses1_o_0042.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0042.wav
+  Tonsill_ses1_u_0042.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0042.wav
+  Tonsill_ses1_a1_0042.wav: 106 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0042.wav
+  Tonsill_ses1_a2_0042.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0042.wav
+  Tonsill_ses1_a3_0042.wav: 96 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0062.wav
+  Tonsill_ses1_speech_0062.wav: 2833 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0062.wav
+  Tonsill_ses1_agua_0062.wav: 138 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0062.wav
+  Tonsill_ses1_brasero_0062.wav: 154 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0062.wav
+  Tonsill_ses1_dia_0062.wav: 84 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0062.wav
+  Tonsill_ses1_mesa_0062.wav: 98 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0062.wav
+  Tonsill_ses1_a_0062.wav: 51 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0062.wav
+  Tonsill_ses1_e_0062.wav: 53 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0062.wav
+  Tonsill_ses1_i_0062.wav: 44 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0062.wav
+  Tonsill_ses1_o_0062.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0062.wav
+  Tonsill_ses1_u_0062.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0062.wav
+  Tonsill_ses1_a1_0062.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0062.wav
+  Tonsill_ses1_a2_0062.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0062.wav
+  Tonsill_ses1_a3_0062.wav: 85 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0063.wav
+  Tonsill_ses1_speech_0063.wav: 2979 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0063.wav
+  Tonsill_ses1_agua_0063.wav: 95 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0063.wav
+  Tonsill_ses1_brasero_0063.wav: 135 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0063.wav
+  Tonsill_ses1_dia_0063.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0063.wav
+  Tonsill_ses1_mesa_0063.wav: 82 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0063.wav
+  Tonsill_ses1_a_0063.wav: 60 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0063.wav
+  Tonsill_ses1_e_0063.wav: 59 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0063.wav
+  Tonsill_ses1_i_0063.wav: 54 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0063.wav
+  Tonsill_ses1_o_0063.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0063.wav
+  Tonsill_ses1_u_0063.wav: 51 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0063.wav
+  Tonsill_ses1_a1_0063.wav: 86 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0063.wav
+  Tonsill_ses1_a2_0063.wav: 95 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0063.wav
+  Tonsill_ses1_a3_0063.wav: 121 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0078.wav
+  Tonsill_ses1_speech_0078.wav: 3655 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0078.wav
+  Tonsill_ses1_agua_0078.wav: 123 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0078.wav
+  Tonsill_ses1_brasero_0078.wav: 155 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0078.wav
+  Tonsill_ses1_dia_0078.wav: 78 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0078.wav
+  Tonsill_ses1_a_0078.wav: 59 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0078.wav
+  Tonsill_ses1_e_0078.wav: 53 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0078.wav
+  Tonsill_ses1_i_0078.wav: 43 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0078.wav
+  Tonsill_ses1_o_0078.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0078.wav
+  Tonsill_ses1_u_0078.wav: 24 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0078.wav
+  Tonsill_ses1_a1_0078.wav: 70 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0078.wav
+  Tonsill_ses1_a2_0078.wav: 70 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0078.wav
+  Tonsill_ses1_a3_0078.wav: 55 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0080.wav
+  Tonsill_ses1_speech_0080.wav: 3016 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0080.wav
+  Tonsill_ses1_agua_0080.wav: 77 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0080.wav
+  Tonsill_ses1_brasero_0080.wav: 115 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0080.wav
+  Tonsill_ses1_dia_0080.wav: 75 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0080.wav
+  Tonsill_ses1_mesa_0080.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0080.wav
+  Tonsill_ses1_a1_0080.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0080.wav
+  Tonsill_ses1_a2_0080.wav: 75 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0080.wav
+  Tonsill_ses1_a3_0080.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0081.wav
+  Tonsill_ses1_speech_0081.wav: 3294 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0081.wav
+  Tonsill_ses1_agua_0081.wav: 129 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0081.wav
+  Tonsill_ses1_brasero_0081.wav: 148 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0081.wav
+  Tonsill_ses1_dia_0081.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0081.wav
+  Tonsill_ses1_mesa_0081.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0081.wav
+  Tonsill_ses1_a_0081.wav: 40 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0081.wav
+  Tonsill_ses1_e_0081.wav: 40 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0081.wav
+  Tonsill_ses1_i_0081.wav: 41 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0081.wav
+  Tonsill_ses1_o_0081.wav: 41 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0081.wav
+  Tonsill_ses1_u_0081.wav: 41 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0081.wav
+  Tonsill_ses1_a1_0081.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0081.wav
+  Tonsill_ses1_a2_0081.wav: 78 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0081.wav
+  Tonsill_ses1_a3_0081.wav: 73 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0087.wav
+  Tonsill_ses1_speech_0087.wav: 2925 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0087.wav
+  Tonsill_ses1_agua_0087.wav: 148 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0087.wav
+  Tonsill_ses1_brasero_0087.wav: 144 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0087.wav
+  Tonsill_ses1_dia_0087.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0087.wav
+  Tonsill_ses1_mesa_0087.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0087.wav
+  Tonsill_ses1_a_0087.wav: 46 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0087.wav
+  Tonsill_ses1_e_0087.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0087.wav
+  Tonsill_ses1_i_0087.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0087.wav
+  Tonsill_ses1_o_0087.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0087.wav
+  Tonsill_ses1_u_0087.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0087.wav
+  Tonsill_ses1_a1_0087.wav: 66 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0087.wav
+  Tonsill_ses1_a2_0087.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0087.wav
+  Tonsill_ses1_a3_0087.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0089.wav
+  Tonsill_ses1_speech_0089.wav: 3014 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0089.wav
+  Tonsill_ses1_agua_0089.wav: 151 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0089.wav
+  Tonsill_ses1_brasero_0089.wav: 159 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0089.wav
+  Tonsill_ses1_dia_0089.wav: 87 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0089.wav
+  Tonsill_ses1_mesa_0089.wav: 112 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0089.wav
+  Tonsill_ses1_a_0089.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0089.wav
+  Tonsill_ses1_e_0089.wav: 28 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0089.wav
+  Tonsill_ses1_i_0089.wav: 24 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0089.wav
+  Tonsill_ses1_o_0089.wav: 32 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0089.wav
+  Tonsill_ses1_u_0089.wav: 12 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0089.wav
+  Tonsill_ses1_a1_0089.wav: 141 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0089.wav
+  Tonsill_ses1_a2_0089.wav: 101 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0089.wav
+  Tonsill_ses1_a3_0089.wav: 98 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0092.wav
+  Tonsill_ses1_speech_0092.wav: 2986 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0092.wav
+  Tonsill_ses1_agua_0092.wav: 120 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0092.wav
+  Tonsill_ses1_brasero_0092.wav: 139 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0092.wav
+  Tonsill_ses1_dia_0092.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0092.wav
+  Tonsill_ses1_mesa_0092.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0092.wav
+  Tonsill_ses1_a_0092.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0092.wav
+  Tonsill_ses1_e_0092.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0092.wav
+  Tonsill_ses1_i_0092.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0092.wav
+  Tonsill_ses1_o_0092.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0092.wav
+  Tonsill_ses1_u_0092.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0092.wav
+  Tonsill_ses1_a1_0092.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0092.wav
+  Tonsill_ses1_a2_0092.wav: 90 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0092.wav
+  Tonsill_ses1_a3_0092.wav: 100 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0099.wav
+  Tonsill_ses1_speech_0099.wav: 3317 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0099.wav
+  Tonsill_ses1_agua_0099.wav: 108 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0099.wav
+  Tonsill_ses1_brasero_0099.wav: 130 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0099.wav
+  Tonsill_ses1_dia_0099.wav: 67 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0099.wav
+  Tonsill_ses1_mesa_0099.wav: 75 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0099.wav
+  Tonsill_ses1_a_0099.wav: 44 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0099.wav
+  Tonsill_ses1_e_0099.wav: 24 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0099.wav
+  Tonsill_ses1_i_0099.wav: 22 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0099.wav
+  Tonsill_ses1_o_0099.wav: 24 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0099.wav
+  Tonsill_ses1_u_0099.wav: 15 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0099.wav
+  Tonsill_ses1_a1_0099.wav: 40 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0099.wav
+  Tonsill_ses1_a2_0099.wav: 41 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0099.wav
+  Tonsill_ses1_a3_0099.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0108.wav
+  Tonsill_ses1_speech_0108.wav: 2847 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0108.wav
+  Tonsill_ses1_agua_0108.wav: 97 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0108.wav
+  Tonsill_ses1_brasero_0108.wav: 138 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0108.wav
+  Tonsill_ses1_dia_0108.wav: 70 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0108.wav
+  Tonsill_ses1_mesa_0108.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0108.wav
+  Tonsill_ses1_a_0108.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0108.wav
+  Tonsill_ses1_e_0108.wav: 51 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0108.wav
+  Tonsill_ses1_i_0108.wav: 41 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0108.wav
+  Tonsill_ses1_o_0108.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0108.wav
+  Tonsill_ses1_u_0108.wav: 30 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0108.wav
+  Tonsill_ses1_a1_0108.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0108.wav
+  Tonsill_ses1_a2_0108.wav: 70 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0108.wav
+  Tonsill_ses1_a3_0108.wav: 57 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav
+  Tonsill_ses1_speech_0109.wav: 2793 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0109.wav
+  Tonsill_ses1_agua_0109.wav: 125 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0109.wav
+  Tonsill_ses1_brasero_0109.wav: 157 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0109.wav
+  Tonsill_ses1_dia_0109.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0109.wav
+  Tonsill_ses1_mesa_0109.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0109.wav
+  Tonsill_ses1_a_0109.wav: 51 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0109.wav
+  Tonsill_ses1_e_0109.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0109.wav
+  Tonsill_ses1_i_0109.wav: 49 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0109.wav
+  Tonsill_ses1_o_0109.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0109.wav
+  Tonsill_ses1_u_0109.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0109.wav
+  Tonsill_ses1_a1_0109.wav: 78 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0109.wav
+  Tonsill_ses1_a2_0109.wav: 72 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0109.wav
+  Tonsill_ses1_a3_0109.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav
+  Tonsill_ses1_speech_0111.wav: 2323 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0111.wav
+  Tonsill_ses1_agua_0111.wav: 117 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0111.wav
+  Tonsill_ses1_brasero_0111.wav: 142 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0111.wav
+  Tonsill_ses1_dia_0111.wav: 75 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0111.wav
+  Tonsill_ses1_mesa_0111.wav: 89 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0111.wav
+  Tonsill_ses1_a_0111.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0111.wav
+  Tonsill_ses1_e_0111.wav: 48 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0111.wav
+  Tonsill_ses1_i_0111.wav: 44 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0111.wav
+  Tonsill_ses1_o_0111.wav: 40 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0111.wav
+  Tonsill_ses1_u_0111.wav: 40 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0111.wav
+  Tonsill_ses1_a1_0111.wav: 100 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0111.wav
+  Tonsill_ses1_a2_0111.wav: 100 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0111.wav
+  Tonsill_ses1_a3_0111.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0112.wav
+  Tonsill_ses1_speech_0112.wav: 3224 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0112.wav
+  Tonsill_ses1_agua_0112.wav: 112 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0112.wav
+  Tonsill_ses1_brasero_0112.wav: 154 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0112.wav
+  Tonsill_ses1_dia_0112.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0112.wav
+  Tonsill_ses1_mesa_0112.wav: 89 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0112.wav
+  Tonsill_ses1_a_0112.wav: 37 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0112.wav
+  Tonsill_ses1_e_0112.wav: 34 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0112.wav
+  Tonsill_ses1_i_0112.wav: 31 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0112.wav
+  Tonsill_ses1_o_0112.wav: 26 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0112.wav
+  Tonsill_ses1_u_0112.wav: 25 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0112.wav
+  Tonsill_ses1_a1_0112.wav: 77 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0112.wav
+  Tonsill_ses1_a2_0112.wav: 82 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0112.wav
+  Tonsill_ses1_a3_0112.wav: 89 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav
+  Tonsill_ses1_speech_0125.wav: 2766 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0125.wav
+  Tonsill_ses1_agua_0125.wav: 158 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0125.wav
+  Tonsill_ses1_brasero_0125.wav: 182 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0125.wav
+  Tonsill_ses1_dia_0125.wav: 97 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0125.wav
+  Tonsill_ses1_mesa_0125.wav: 78 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0125.wav
+  Tonsill_ses1_a_0125.wav: 30 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0125.wav
+  Tonsill_ses1_e_0125.wav: 27 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0125.wav
+  Tonsill_ses1_i_0125.wav: 30 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0125.wav
+  Tonsill_ses1_o_0125.wav: 31 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0125.wav
+  Tonsill_ses1_u_0125.wav: 31 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0125.wav
+  Tonsill_ses1_a1_0125.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0125.wav
+  Tonsill_ses1_a2_0125.wav: 55 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0125.wav
+  Tonsill_ses1_a3_0125.wav: 54 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0129.wav
+  Tonsill_ses1_speech_0129.wav: 3088 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0129.wav
+  Tonsill_ses1_agua_0129.wav: 124 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0129.wav
+  Tonsill_ses1_brasero_0129.wav: 132 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0129.wav
+  Tonsill_ses1_dia_0129.wav: 82 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0129.wav
+  Tonsill_ses1_mesa_0129.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0129.wav
+  Tonsill_ses1_a_0129.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0129.wav
+  Tonsill_ses1_e_0129.wav: 46 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0129.wav
+  Tonsill_ses1_i_0129.wav: 40 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0129.wav
+  Tonsill_ses1_o_0129.wav: 37 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0129.wav
+  Tonsill_ses1_u_0129.wav: 33 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0129.wav
+  Tonsill_ses1_a1_0129.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0129.wav
+  Tonsill_ses1_a2_0129.wav: 97 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0129.wav
+  Tonsill_ses1_a3_0129.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0137.wav
+  Tonsill_ses1_speech_0137.wav: 3020 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0137.wav
+  Tonsill_ses1_mesa_0137.wav: 97 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0144.wav
+  Tonsill_ses1_speech_0144.wav: 2969 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0144.wav
+  Tonsill_ses1_agua_0144.wav: 130 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0144.wav
+  Tonsill_ses1_brasero_0144.wav: 158 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0144.wav
+  Tonsill_ses1_dia_0144.wav: 86 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0144.wav
+  Tonsill_ses1_mesa_0144.wav: 87 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0144.wav
+  Tonsill_ses1_a_0144.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0144.wav
+  Tonsill_ses1_e_0144.wav: 49 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0144.wav
+  Tonsill_ses1_i_0144.wav: 44 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0144.wav
+  Tonsill_ses1_o_0144.wav: 46 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0144.wav
+  Tonsill_ses1_u_0144.wav: 39 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0144.wav
+  Tonsill_ses1_a1_0144.wav: 94 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0144.wav
+  Tonsill_ses1_a2_0144.wav: 73 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0144.wav
+  Tonsill_ses1_a3_0144.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0145.wav
+  Tonsill_ses1_speech_0145.wav: 2871 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0145.wav
+  Tonsill_ses1_agua_0145.wav: 107 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0145.wav
+  Tonsill_ses1_brasero_0145.wav: 150 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0145.wav
+  Tonsill_ses1_dia_0145.wav: 87 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0145.wav
+  Tonsill_ses1_mesa_0145.wav: 77 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0145.wav
+  Tonsill_ses1_a_0145.wav: 19 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0145.wav
+  Tonsill_ses1_e_0145.wav: 18 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0145.wav
+  Tonsill_ses1_i_0145.wav: 16 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0145.wav
+  Tonsill_ses1_o_0145.wav: 13 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0145.wav
+  Tonsill_ses1_u_0145.wav: 12 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0145.wav
+  Tonsill_ses1_a1_0145.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0145.wav
+  Tonsill_ses1_a2_0145.wav: 56 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0145.wav
+  Tonsill_ses1_a3_0145.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav
+  Tonsill_ses1_speech_0147.wav: 2845 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/1/Tonsill_ses1_agua_0147.wav
+  Tonsill_ses1_agua_0147.wav: 132 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/1/Tonsill_ses1_brasero_0147.wav
+  Tonsill_ses1_brasero_0147.wav: 148 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/1/Tonsill_ses1_dia_0147.wav
+  Tonsill_ses1_dia_0147.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/1/Tonsill_ses1_mesa_0147.wav
+  Tonsill_ses1_mesa_0147.wav: 96 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/1/Tonsill_ses1_a_0147.wav
+  Tonsill_ses1_a_0147.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/1/Tonsill_ses1_e_0147.wav
+  Tonsill_ses1_e_0147.wav: 43 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/1/Tonsill_ses1_i_0147.wav
+  Tonsill_ses1_i_0147.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/1/Tonsill_ses1_o_0147.wav
+  Tonsill_ses1_o_0147.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/1/Tonsill_ses1_u_0147.wav
+  Tonsill_ses1_u_0147.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/1/Tonsill_ses1_a1_0147.wav
+  Tonsill_ses1_a1_0147.wav: 57 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/1/Tonsill_ses1_a2_0147.wav
+  Tonsill_ses1_a2_0147.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/1/Tonsill_ses1_a3_0147.wav
+  Tonsill_ses1_a3_0147.wav: 77 frames
+  Total: 89271 frames (29.8 min)
+
+Extracting post-surgery features...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0007.wav
+  Tonsill_ses2_speech_0007.wav: 3179 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0007.wav
+  Tonsill_ses2_agua_0007.wav: 106 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0007.wav
+  Tonsill_ses2_brasero_0007.wav: 141 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0007.wav
+  Tonsill_ses2_dia_0007.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0007.wav
+  Tonsill_ses2_mesa_0007.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0007.wav
+  Tonsill_ses2_a_0007.wav: 53 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0007.wav
+  Tonsill_ses2_e_0007.wav: 63 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0007.wav
+  Tonsill_ses2_i_0007.wav: 63 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0007.wav
+  Tonsill_ses2_o_0007.wav: 55 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0007.wav
+  Tonsill_ses2_u_0007.wav: 59 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0007.wav
+  Tonsill_ses2_a1_0007.wav: 77 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0007.wav
+  Tonsill_ses2_a2_0007.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0007.wav
+  Tonsill_ses2_a3_0007.wav: 84 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0011.wav
+  Tonsill_ses2_speech_0011.wav: 3266 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0011.wav
+  Tonsill_ses2_agua_0011.wav: 115 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0011.wav
+  Tonsill_ses2_brasero_0011.wav: 142 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0011.wav
+  Tonsill_ses2_dia_0011.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0011.wav
+  Tonsill_ses2_mesa_0011.wav: 77 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0011.wav
+  Tonsill_ses2_a_0011.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0011.wav
+  Tonsill_ses2_e_0011.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0011.wav
+  Tonsill_ses2_i_0011.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0011.wav
+  Tonsill_ses2_o_0011.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0011.wav
+  Tonsill_ses2_u_0011.wav: 61 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0011.wav
+  Tonsill_ses2_a1_0011.wav: 82 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0011.wav
+  Tonsill_ses2_a2_0011.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0011.wav
+  Tonsill_ses2_a3_0011.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0026.wav
+  Tonsill_ses2_speech_0026.wav: 4785 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0026.wav
+  Tonsill_ses2_agua_0026.wav: 114 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0026.wav
+  Tonsill_ses2_brasero_0026.wav: 144 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0026.wav
+  Tonsill_ses2_dia_0026.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0026.wav
+  Tonsill_ses2_mesa_0026.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0026.wav
+  Tonsill_ses2_a_0026.wav: 49 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0026.wav
+  Tonsill_ses2_e_0026.wav: 54 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0026.wav
+  Tonsill_ses2_i_0026.wav: 52 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0026.wav
+  Tonsill_ses2_o_0026.wav: 55 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0026.wav
+  Tonsill_ses2_u_0026.wav: 53 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0026.wav
+  Tonsill_ses2_a1_0026.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0026.wav
+  Tonsill_ses2_a2_0026.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0026.wav
+  Tonsill_ses2_a3_0026.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0042.wav
+  Tonsill_ses2_speech_0042.wav: 3055 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0042.wav
+  Tonsill_ses2_agua_0042.wav: 132 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0042.wav
+  Tonsill_ses2_brasero_0042.wav: 167 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0042.wav
+  Tonsill_ses2_dia_0042.wav: 90 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0042.wav
+  Tonsill_ses2_mesa_0042.wav: 91 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0042.wav
+  Tonsill_ses2_a_0042.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0042.wav
+  Tonsill_ses2_e_0042.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0042.wav
+  Tonsill_ses2_i_0042.wav: 92 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0042.wav
+  Tonsill_ses2_o_0042.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0042.wav
+  Tonsill_ses2_u_0042.wav: 86 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0042.wav
+  Tonsill_ses2_a1_0042.wav: 91 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0042.wav
+  Tonsill_ses2_a2_0042.wav: 82 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0042.wav
+  Tonsill_ses2_a3_0042.wav: 98 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0062.wav
+  Tonsill_ses2_speech_0062.wav: 3244 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0062.wav
+  Tonsill_ses2_agua_0062.wav: 114 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0062.wav
+  Tonsill_ses2_brasero_0062.wav: 155 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0062.wav
+  Tonsill_ses2_dia_0062.wav: 89 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0062.wav
+  Tonsill_ses2_mesa_0062.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0062.wav
+  Tonsill_ses2_a_0062.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0062.wav
+  Tonsill_ses2_e_0062.wav: 49 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0062.wav
+  Tonsill_ses2_i_0062.wav: 47 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0062.wav
+  Tonsill_ses2_o_0062.wav: 46 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0062.wav
+  Tonsill_ses2_u_0062.wav: 48 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0062.wav
+  Tonsill_ses2_a1_0062.wav: 110 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0062.wav
+  Tonsill_ses2_a2_0062.wav: 120 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0062.wav
+  Tonsill_ses2_a3_0062.wav: 117 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0063.wav
+  Tonsill_ses2_speech_0063.wav: 3156 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0063.wav
+  Tonsill_ses2_agua_0063.wav: 141 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0063.wav
+  Tonsill_ses2_brasero_0063.wav: 143 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0063.wav
+  Tonsill_ses2_dia_0063.wav: 86 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0063.wav
+  Tonsill_ses2_mesa_0063.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0063.wav
+  Tonsill_ses2_a_0063.wav: 34 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0063.wav
+  Tonsill_ses2_e_0063.wav: 33 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0063.wav
+  Tonsill_ses2_i_0063.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0063.wav
+  Tonsill_ses2_o_0063.wav: 35 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0063.wav
+  Tonsill_ses2_u_0063.wav: 34 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0063.wav
+  Tonsill_ses2_a1_0063.wav: 68 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0063.wav
+  Tonsill_ses2_a2_0063.wav: 66 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0063.wav
+  Tonsill_ses2_a3_0063.wav: 71 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0078.wav
+  Tonsill_ses2_speech_0078.wav: 3148 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0078.wav
+  Tonsill_ses2_agua_0078.wav: 117 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0078.wav
+  Tonsill_ses2_brasero_0078.wav: 167 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0078.wav
+  Tonsill_ses2_dia_0078.wav: 73 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0078.wav
+  Tonsill_ses2_a_0078.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0078.wav
+  Tonsill_ses2_e_0078.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0078.wav
+  Tonsill_ses2_i_0078.wav: 35 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0078.wav
+  Tonsill_ses2_o_0078.wav: 37 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0078.wav
+  Tonsill_ses2_u_0078.wav: 35 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0078.wav
+  Tonsill_ses2_a1_0078.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0078.wav
+  Tonsill_ses2_a2_0078.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0078.wav
+  Tonsill_ses2_a3_0078.wav: 75 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0080.wav
+  Tonsill_ses2_speech_0080.wav: 2861 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0080.wav
+  Tonsill_ses2_agua_0080.wav: 96 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0080.wav
+  Tonsill_ses2_brasero_0080.wav: 129 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0080.wav
+  Tonsill_ses2_dia_0080.wav: 94 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0080.wav
+  Tonsill_ses2_mesa_0080.wav: 90 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0080.wav
+  Tonsill_ses2_a1_0080.wav: 72 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0080.wav
+  Tonsill_ses2_a2_0080.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0080.wav
+  Tonsill_ses2_a3_0080.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0081.wav
+  Tonsill_ses2_speech_0081.wav: 2526 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0081.wav
+  Tonsill_ses2_agua_0081.wav: 131 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0081.wav
+  Tonsill_ses2_brasero_0081.wav: 134 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0081.wav
+  Tonsill_ses2_dia_0081.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0081.wav
+  Tonsill_ses2_mesa_0081.wav: 92 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0081.wav
+  Tonsill_ses2_a_0081.wav: 48 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0081.wav
+  Tonsill_ses2_e_0081.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0081.wav
+  Tonsill_ses2_i_0081.wav: 48 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0081.wav
+  Tonsill_ses2_o_0081.wav: 44 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0081.wav
+  Tonsill_ses2_u_0081.wav: 37 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0081.wav
+  Tonsill_ses2_a1_0081.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0081.wav
+  Tonsill_ses2_a2_0081.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0081.wav
+  Tonsill_ses2_a3_0081.wav: 89 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0087.wav
+  Tonsill_ses2_speech_0087.wav: 2950 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0087.wav
+  Tonsill_ses2_agua_0087.wav: 116 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0087.wav
+  Tonsill_ses2_brasero_0087.wav: 142 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0087.wav
+  Tonsill_ses2_dia_0087.wav: 87 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0087.wav
+  Tonsill_ses2_mesa_0087.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0087.wav
+  Tonsill_ses2_a_0087.wav: 26 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0087.wav
+  Tonsill_ses2_e_0087.wav: 28 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0087.wav
+  Tonsill_ses2_i_0087.wav: 39 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0087.wav
+  Tonsill_ses2_o_0087.wav: 39 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0087.wav
+  Tonsill_ses2_u_0087.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0087.wav
+  Tonsill_ses2_a1_0087.wav: 66 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0087.wav
+  Tonsill_ses2_a2_0087.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0087.wav
+  Tonsill_ses2_a3_0087.wav: 80 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0089.wav
+  Tonsill_ses2_speech_0089.wav: 3094 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0089.wav
+  Tonsill_ses2_agua_0089.wav: 162 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0089.wav
+  Tonsill_ses2_brasero_0089.wav: 211 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0089.wav
+  Tonsill_ses2_dia_0089.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0089.wav
+  Tonsill_ses2_mesa_0089.wav: 107 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0089.wav
+  Tonsill_ses2_a_0089.wav: 31 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0089.wav
+  Tonsill_ses2_e_0089.wav: 29 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0089.wav
+  Tonsill_ses2_i_0089.wav: 30 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0089.wav
+  Tonsill_ses2_o_0089.wav: 31 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0089.wav
+  Tonsill_ses2_u_0089.wav: 18 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0089.wav
+  Tonsill_ses2_a1_0089.wav: 111 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0089.wav
+  Tonsill_ses2_a2_0089.wav: 106 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0089.wav
+  Tonsill_ses2_a3_0089.wav: 127 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0092.wav
+  Tonsill_ses2_speech_0092.wav: 2445 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0092.wav
+  Tonsill_ses2_agua_0092.wav: 118 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0092.wav
+  Tonsill_ses2_brasero_0092.wav: 161 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0092.wav
+  Tonsill_ses2_dia_0092.wav: 91 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0092.wav
+  Tonsill_ses2_mesa_0092.wav: 84 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0092.wav
+  Tonsill_ses2_a_0092.wav: 27 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0092.wav
+  Tonsill_ses2_e_0092.wav: 34 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0092.wav
+  Tonsill_ses2_i_0092.wav: 31 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0092.wav
+  Tonsill_ses2_o_0092.wav: 34 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0092.wav
+  Tonsill_ses2_u_0092.wav: 31 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0092.wav
+  Tonsill_ses2_a1_0092.wav: 2447 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0092.wav
+  Tonsill_ses2_a2_0092.wav: 78 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0092.wav
+  Tonsill_ses2_a3_0092.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0099.wav
+  Tonsill_ses2_speech_0099.wav: 2771 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0099.wav
+  Tonsill_ses2_agua_0099.wav: 120 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0099.wav
+  Tonsill_ses2_brasero_0099.wav: 140 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0099.wav
+  Tonsill_ses2_dia_0099.wav: 75 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0099.wav
+  Tonsill_ses2_mesa_0099.wav: 76 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0099.wav
+  Tonsill_ses2_a_0099.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0099.wav
+  Tonsill_ses2_e_0099.wav: 29 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0099.wav
+  Tonsill_ses2_i_0099.wav: 35 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0099.wav
+  Tonsill_ses2_o_0099.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0099.wav
+  Tonsill_ses2_u_0099.wav: 30 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0099.wav
+  Tonsill_ses2_a1_0099.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0099.wav
+  Tonsill_ses2_a2_0099.wav: 62 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0099.wav
+  Tonsill_ses2_a3_0099.wav: 57 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0108.wav
+  Tonsill_ses2_speech_0108.wav: 2591 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0108.wav
+  Tonsill_ses2_agua_0108.wav: 111 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0108.wav
+  Tonsill_ses2_brasero_0108.wav: 142 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0108.wav
+  Tonsill_ses2_dia_0108.wav: 70 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0108.wav
+  Tonsill_ses2_mesa_0108.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0108.wav
+  Tonsill_ses2_a_0108.wav: 44 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0108.wav
+  Tonsill_ses2_e_0108.wav: 43 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0108.wav
+  Tonsill_ses2_i_0108.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0108.wav
+  Tonsill_ses2_o_0108.wav: 34 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0108.wav
+  Tonsill_ses2_u_0108.wav: 28 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0108.wav
+  Tonsill_ses2_a1_0108.wav: 52 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0108.wav
+  Tonsill_ses2_a2_0108.wav: 54 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0108.wav
+  Tonsill_ses2_a3_0108.wav: 52 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0109.wav
+  Tonsill_ses2_speech_0109.wav: 2581 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0109.wav
+  Tonsill_ses2_agua_0109.wav: 131 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0109.wav
+  Tonsill_ses2_brasero_0109.wav: 153 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0109.wav
+  Tonsill_ses2_dia_0109.wav: 87 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0109.wav
+  Tonsill_ses2_mesa_0109.wav: 97 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0109.wav
+  Tonsill_ses2_a_0109.wav: 54 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0109.wav
+  Tonsill_ses2_e_0109.wav: 56 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0109.wav
+  Tonsill_ses2_i_0109.wav: 53 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0109.wav
+  Tonsill_ses2_o_0109.wav: 50 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0109.wav
+  Tonsill_ses2_u_0109.wav: 54 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0109.wav
+  Tonsill_ses2_a1_0109.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0109.wav
+  Tonsill_ses2_a2_0109.wav: 111 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0109.wav
+  Tonsill_ses2_a3_0109.wav: 94 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0111.wav
+  Tonsill_ses2_speech_0111.wav: 3989 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0111.wav
+  Tonsill_ses2_agua_0111.wav: 118 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0111.wav
+  Tonsill_ses2_brasero_0111.wav: 146 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0111.wav
+  Tonsill_ses2_dia_0111.wav: 72 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0111.wav
+  Tonsill_ses2_mesa_0111.wav: 87 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0111.wav
+  Tonsill_ses2_a_0111.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0111.wav
+  Tonsill_ses2_e_0111.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0111.wav
+  Tonsill_ses2_i_0111.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0111.wav
+  Tonsill_ses2_o_0111.wav: 39 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0111.wav
+  Tonsill_ses2_u_0111.wav: 30 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0111.wav
+  Tonsill_ses2_a1_0111.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0111.wav
+  Tonsill_ses2_a2_0111.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0111.wav
+  Tonsill_ses2_a3_0111.wav: 72 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0112.wav
+  Tonsill_ses2_speech_0112.wav: 3058 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0112.wav
+  Tonsill_ses2_agua_0112.wav: 122 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0112.wav
+  Tonsill_ses2_brasero_0112.wav: 134 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0112.wav
+  Tonsill_ses2_dia_0112.wav: 82 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0112.wav
+  Tonsill_ses2_mesa_0112.wav: 84 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0112.wav
+  Tonsill_ses2_a_0112.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0112.wav
+  Tonsill_ses2_e_0112.wav: 38 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0112.wav
+  Tonsill_ses2_i_0112.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0112.wav
+  Tonsill_ses2_o_0112.wav: 33 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0112.wav
+  Tonsill_ses2_u_0112.wav: 34 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0112.wav
+  Tonsill_ses2_a1_0112.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0112.wav
+  Tonsill_ses2_a2_0112.wav: 83 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0112.wav
+  Tonsill_ses2_a3_0112.wav: 95 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0125.wav
+  Tonsill_ses2_speech_0125.wav: 2975 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0125.wav
+  Tonsill_ses2_agua_0125.wav: 145 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0125.wav
+  Tonsill_ses2_brasero_0125.wav: 171 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0125.wav
+  Tonsill_ses2_dia_0125.wav: 93 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0125.wav
+  Tonsill_ses2_mesa_0125.wav: 103 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0125.wav
+  Tonsill_ses2_a_0125.wav: 35 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0125.wav
+  Tonsill_ses2_e_0125.wav: 33 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0125.wav
+  Tonsill_ses2_i_0125.wav: 33 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0125.wav
+  Tonsill_ses2_o_0125.wav: 32 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0125.wav
+  Tonsill_ses2_u_0125.wav: 35 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0125.wav
+  Tonsill_ses2_a1_0125.wav: 67 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0125.wav
+  Tonsill_ses2_a2_0125.wav: 54 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0125.wav
+  Tonsill_ses2_a3_0125.wav: 75 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0129.wav
+  Tonsill_ses2_speech_0129.wav: 2974 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0129.wav
+  Tonsill_ses2_agua_0129.wav: 126 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0129.wav
+  Tonsill_ses2_brasero_0129.wav: 139 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0129.wav
+  Tonsill_ses2_dia_0129.wav: 85 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0129.wav
+  Tonsill_ses2_mesa_0129.wav: 81 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0129.wav
+  Tonsill_ses2_a_0129.wav: 39 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0129.wav
+  Tonsill_ses2_e_0129.wav: 46 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0129.wav
+  Tonsill_ses2_i_0129.wav: 42 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0129.wav
+  Tonsill_ses2_o_0129.wav: 48 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0129.wav
+  Tonsill_ses2_u_0129.wav: 33 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0129.wav
+  Tonsill_ses2_a1_0129.wav: 87 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0129.wav
+  Tonsill_ses2_a2_0129.wav: 95 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0129.wav
+  Tonsill_ses2_a3_0129.wav: 92 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0137.wav
+  Tonsill_ses2_speech_0137.wav: 2954 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0137.wav
+  Tonsill_ses2_mesa_0137.wav: 155 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0144.wav
+  Tonsill_ses2_speech_0144.wav: 4204 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0144.wav
+  Tonsill_ses2_agua_0144.wav: 161 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0144.wav
+  Tonsill_ses2_brasero_0144.wav: 182 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0144.wav
+  Tonsill_ses2_dia_0144.wav: 90 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0144.wav
+  Tonsill_ses2_mesa_0144.wav: 96 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0144.wav
+  Tonsill_ses2_a_0144.wav: 58 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0144.wav
+  Tonsill_ses2_e_0144.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0144.wav
+  Tonsill_ses2_i_0144.wav: 65 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0144.wav
+  Tonsill_ses2_o_0144.wav: 63 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0144.wav
+  Tonsill_ses2_u_0144.wav: 59 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0144.wav
+  Tonsill_ses2_a1_0144.wav: 69 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0144.wav
+  Tonsill_ses2_a2_0144.wav: 74 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0144.wav
+  Tonsill_ses2_a3_0144.wav: 67 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0145.wav
+  Tonsill_ses2_speech_0145.wav: 3215 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0145.wav
+  Tonsill_ses2_agua_0145.wav: 134 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0145.wav
+  Tonsill_ses2_brasero_0145.wav: 159 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0145.wav
+  Tonsill_ses2_dia_0145.wav: 90 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0145.wav
+  Tonsill_ses2_mesa_0145.wav: 90 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0145.wav
+  Tonsill_ses2_a_0145.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0145.wav
+  Tonsill_ses2_e_0145.wav: 32 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0145.wav
+  Tonsill_ses2_i_0145.wav: 30 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0145.wav
+  Tonsill_ses2_o_0145.wav: 25 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0145.wav
+  Tonsill_ses2_u_0145.wav: 25 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0145.wav
+  Tonsill_ses2_a1_0145.wav: 79 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0145.wav
+  Tonsill_ses2_a2_0145.wav: 128 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0145.wav
+  Tonsill_ses2_a3_0145.wav: 88 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/2/Tonsill_ses2_speech_0147.wav
+  Tonsill_ses2_speech_0147.wav: 2883 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Agua/2/Tonsill_ses2_agua_0147.wav
+  Tonsill_ses2_agua_0147.wav: 137 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Brasero/2/Tonsill_ses2_brasero_0147.wav
+  Tonsill_ses2_brasero_0147.wav: 162 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Dia/2/Tonsill_ses2_dia_0147.wav
+  Tonsill_ses2_dia_0147.wav: 90 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/TDU/Mesa/2/Tonsill_ses2_mesa_0147.wav
+  Tonsill_ses2_mesa_0147.wav: 100 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/A/2/Tonsill_ses2_a_0147.wav
+  Tonsill_ses2_a_0147.wav: 43 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/E/2/Tonsill_ses2_e_0147.wav
+  Tonsill_ses2_e_0147.wav: 43 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/I/2/Tonsill_ses2_i_0147.wav
+  Tonsill_ses2_i_0147.wav: 40 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/O/2/Tonsill_ses2_o_0147.wav
+  Tonsill_ses2_o_0147.wav: 36 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Vowels/U/2/Tonsill_ses2_u_0147.wav
+  Tonsill_ses2_u_0147.wav: 39 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A1/2/Tonsill_ses2_a1_0147.wav
+  Tonsill_ses2_a1_0147.wav: 63 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A2/2/Tonsill_ses2_a2_0147.wav
+  Tonsill_ses2_a2_0147.wav: 55 frames
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Sustained vowels/A3/2/Tonsill_ses2_a3_0147.wav
+  Tonsill_ses2_a3_0147.wav: 64 frames
+  Total: 94155 frames (31.4 min)
+
+Building training segments...
+Building validation segments...
+
+Train: 4142 segs, Val: 554 segs, Post unpaired: 4195 segs
+Generator:     4,384,513 params
+Discriminator: 2,624,257 params
+Epoch   1/400 [WARMUP]  recon=5.113537  g_adv=0.0000  d_loss=0.0000  val=4.137637  alpha=0.1719
+  -> Saved best (val=4.137637)
+Epoch   2/400 [WARMUP]  recon=4.915332  g_adv=0.0000  d_loss=0.0000  val=4.123928  alpha=0.2362
+  -> Saved best (val=4.123928)
+Epoch   3/400 [WARMUP]  recon=4.750908  g_adv=0.0000  d_loss=0.0000  val=4.108775  alpha=0.3009
+  -> Saved best (val=4.108775)
+Epoch   4/400 [WARMUP]  recon=4.585817  g_adv=0.0000  d_loss=0.0000  val=4.060400  alpha=0.3601
+  -> Saved best (val=4.060400)
+Epoch   5/400 [WARMUP]  recon=4.458070  g_adv=0.0000  d_loss=0.0000  val=4.019434  alpha=0.4096
+  -> Saved best (val=4.019434)
+Epoch   6/400 [WARMUP]  recon=4.360089  g_adv=0.0000  d_loss=0.0000  val=3.994462  alpha=0.4488
+  -> Saved best (val=3.994462)
+Epoch   7/400 [WARMUP]  recon=4.286213  g_adv=0.0000  d_loss=0.0000  val=3.960123  alpha=0.4812
+  -> Saved best (val=3.960123)
+Epoch   8/400 [WARMUP]  recon=4.230976  g_adv=0.0000  d_loss=0.0000  val=3.935271  alpha=0.5094
+  -> Saved best (val=3.935271)
+Epoch   9/400 [WARMUP]  recon=4.183180  g_adv=0.0000  d_loss=0.0000  val=3.910012  alpha=0.5351
+  -> Saved best (val=3.910012)
+Epoch  10/400 [WARMUP]  recon=4.141757  g_adv=0.0000  d_loss=0.0000  val=3.904260  alpha=0.5587
+  -> Saved best (val=3.904260)
+Epoch  11/400 [WARMUP]  recon=4.105135  g_adv=0.0000  d_loss=0.0000  val=3.887078  alpha=0.5807
+  -> Saved best (val=3.887078)
+Epoch  12/400 [WARMUP]  recon=4.069725  g_adv=0.0000  d_loss=0.0000  val=3.892003  alpha=0.6017
+Epoch  13/400 [WARMUP]  recon=4.035222  g_adv=0.0000  d_loss=0.0000  val=3.886268  alpha=0.6219
+  -> Saved best (val=3.886268)
+Epoch  14/400 [WARMUP]  recon=4.005221  g_adv=0.0000  d_loss=0.0000  val=3.874463  alpha=0.6414
+  -> Saved best (val=3.874463)
+Epoch  15/400 [WARMUP]  recon=3.972741  g_adv=0.0000  d_loss=0.0000  val=3.883763  alpha=0.6603
+Epoch  16/400 [WARMUP]  recon=3.946543  g_adv=0.0000  d_loss=0.0000  val=3.845941  alpha=0.6782
+  -> Saved best (val=3.845941)
+Epoch  17/400 [WARMUP]  recon=3.917821  g_adv=0.0000  d_loss=0.0000  val=3.848167  alpha=0.6961
+Epoch  18/400 [WARMUP]  recon=3.893472  g_adv=0.0000  d_loss=0.0000  val=3.861164  alpha=0.7135
+Epoch  19/400 [WARMUP]  recon=3.868763  g_adv=0.0000  d_loss=0.0000  val=3.877267  alpha=0.7304
+Epoch  20/400 [WARMUP]  recon=3.847991  g_adv=0.0000  d_loss=0.0000  val=3.843894  alpha=0.7469
+  -> Saved best (val=3.843894)
+Epoch  21/400 [WARMUP]  recon=3.828507  g_adv=0.0000  d_loss=0.0000  val=3.847545  alpha=0.7627
+Epoch  22/400 [WARMUP]  recon=3.810900  g_adv=0.0000  d_loss=0.0000  val=3.856178  alpha=0.7781
+Epoch  23/400 [WARMUP]  recon=3.793343  g_adv=0.0000  d_loss=0.0000  val=3.853921  alpha=0.7926
+Epoch  24/400 [WARMUP]  recon=3.780387  g_adv=0.0000  d_loss=0.0000  val=3.854329  alpha=0.8072
+Epoch  25/400 [WARMUP]  recon=3.762665  g_adv=0.0000  d_loss=0.0000  val=3.838701  alpha=0.8213
+  -> Saved best (val=3.838701)
+Epoch  26/400 [WARMUP]  recon=3.749266  g_adv=0.0000  d_loss=0.0000  val=3.848881  alpha=0.8348
+Epoch  27/400 [WARMUP]  recon=3.736822  g_adv=0.0000  d_loss=0.0000  val=3.851479  alpha=0.8480
+Epoch  28/400 [WARMUP]  recon=3.725402  g_adv=0.0000  d_loss=0.0000  val=3.855305  alpha=0.8607
+Epoch  29/400 [WARMUP]  recon=3.714540  g_adv=0.0000  d_loss=0.0000  val=3.837371  alpha=0.8734
+  -> Saved best (val=3.837371)
+Epoch  30/400 [WARMUP]  recon=3.702340  g_adv=0.0000  d_loss=0.0000  val=3.840942  alpha=0.8857
+Epoch  31/400 [WARMUP]  recon=3.695001  g_adv=0.0000  d_loss=0.0000  val=3.836127  alpha=0.8978
+  -> Saved best (val=3.836127)
+Epoch  32/400 [WARMUP]  recon=3.685614  g_adv=0.0000  d_loss=0.0000  val=3.836831  alpha=0.9092
+Epoch  33/400 [WARMUP]  recon=3.676370  g_adv=0.0000  d_loss=0.0000  val=3.829964  alpha=0.9205
+  -> Saved best (val=3.829964)
+Epoch  34/400 [WARMUP]  recon=3.668215  g_adv=0.0000  d_loss=0.0000  val=3.839464  alpha=0.9318
+Epoch  35/400 [WARMUP]  recon=3.657809  g_adv=0.0000  d_loss=0.0000  val=3.833698  alpha=0.9427
+Epoch  36/400 [WARMUP]  recon=3.653015  g_adv=0.0000  d_loss=0.0000  val=3.844924  alpha=0.9540
+Epoch  37/400 [WARMUP]  recon=3.645024  g_adv=0.0000  d_loss=0.0000  val=3.846339  alpha=0.9641
+Epoch  38/400 [WARMUP]  recon=3.638287  g_adv=0.0000  d_loss=0.0000  val=3.835218  alpha=0.9749
+Epoch  39/400 [WARMUP]  recon=3.631120  g_adv=0.0000  d_loss=0.0000  val=3.848676  alpha=0.9850
+Epoch  40/400 [WARMUP]  recon=3.624011  g_adv=0.0000  d_loss=0.0000  val=3.824228  alpha=0.9945
+  -> Saved best (val=3.824228)
+Epoch  41/400 [WARMUP]  recon=3.619182  g_adv=0.0000  d_loss=0.0000  val=3.832242  alpha=1.0051
+Epoch  42/400 [WARMUP]  recon=3.611931  g_adv=0.0000  d_loss=0.0000  val=3.836620  alpha=1.0151
+Epoch  43/400 [WARMUP]  recon=3.608917  g_adv=0.0000  d_loss=0.0000  val=3.839824  alpha=1.0247
+Epoch  44/400 [WARMUP]  recon=3.602544  g_adv=0.0000  d_loss=0.0000  val=3.852934  alpha=1.0336
+Epoch  45/400 [WARMUP]  recon=3.600003  g_adv=0.0000  d_loss=0.0000  val=3.850151  alpha=1.0428
+Epoch  46/400 [WARMUP]  recon=3.592993  g_adv=0.0000  d_loss=0.0000  val=3.841738  alpha=1.0523
+Epoch  47/400 [WARMUP]  recon=3.589864  g_adv=0.0000  d_loss=0.0000  val=3.829524  alpha=1.0622
+Epoch  48/400 [WARMUP]  recon=3.584569  g_adv=0.0000  d_loss=0.0000  val=3.853828  alpha=1.0708
+Epoch  49/400 [WARMUP]  recon=3.579167  g_adv=0.0000  d_loss=0.0000  val=3.848793  alpha=1.0799
+Epoch  50/400 [WARMUP]  recon=3.574532  g_adv=0.0000  d_loss=0.0000  val=3.849723  alpha=1.0887
+Epoch  51/400   recon=3.584478  g_adv=0.7552  d_loss=0.6748  val=3.885895  alpha=1.0865
+Epoch  52/400   recon=3.622791  g_adv=0.9768  d_loss=0.5884  val=3.917584  alpha=1.0304
+Epoch  53/400   recon=3.659397  g_adv=1.2167  d_loss=0.5361  val=4.035462  alpha=0.9373
+Epoch  54/400   recon=4.001998  g_adv=2.4521  d_loss=0.6131  val=4.006330  alpha=0.7115
+Epoch  55/400   recon=3.691379  g_adv=0.8785  d_loss=0.6528  val=3.897685  alpha=0.7479
+Epoch  56/400   recon=3.667855  g_adv=1.3677  d_loss=0.4781  val=3.930605  alpha=0.7761
+Epoch  57/400   recon=3.707322  g_adv=1.6617  d_loss=0.4318  val=3.986553  alpha=0.7940
+Epoch  58/400   recon=3.770785  g_adv=1.6066  d_loss=0.5026  val=3.995970  alpha=0.8049
+Epoch  59/400   recon=3.799778  g_adv=1.4722  d_loss=0.5337  val=4.002352  alpha=0.7963
+Epoch  60/400   recon=3.800150  g_adv=1.5768  d_loss=0.4728  val=4.005495  alpha=0.7939
+Epoch  61/400   recon=3.819484  g_adv=1.6508  d_loss=0.4574  val=4.030403  alpha=0.7906
+Epoch  62/400   recon=3.844972  g_adv=1.7351  d_loss=0.4381  val=4.076501  alpha=0.7746
+Epoch  63/400   recon=3.856241  g_adv=1.8059  d_loss=0.4341  val=3.991348  alpha=0.7568
+Epoch  64/400   recon=3.874849  g_adv=1.8613  d_loss=0.4289  val=4.149879  alpha=0.7427
+Epoch  65/400   recon=3.909223  g_adv=1.9703  d_loss=0.4326  val=3.991230  alpha=0.7214
+Epoch  66/400   recon=3.894210  g_adv=1.9611  d_loss=0.3706  val=4.090144  alpha=0.7297
+Epoch  67/400   recon=3.994682  g_adv=2.3302  d_loss=0.4207  val=4.115478  alpha=0.6312
+Epoch  68/400   recon=4.020957  g_adv=2.5693  d_loss=0.3056  val=4.048530  alpha=0.5846
+Epoch  69/400   recon=3.920241  g_adv=2.9654  d_loss=0.1584  val=4.092715  alpha=0.6268
+Epoch  70/400   recon=3.972135  g_adv=2.7007  d_loss=0.2807  val=4.043389  alpha=0.6556
+Epoch  71/400   recon=4.027101  g_adv=2.5218  d_loss=0.3448  val=4.076202  alpha=0.6377
+Epoch  72/400   recon=4.078968  g_adv=3.3091  d_loss=0.2104  val=4.120407  alpha=0.5720
+Epoch  73/400   recon=3.992346  g_adv=3.0833  d_loss=0.1604  val=4.107363  alpha=0.6147
+Epoch  74/400   recon=4.059520  g_adv=2.7194  d_loss=0.2679  val=4.120352  alpha=0.6384
+Epoch  75/400   recon=4.098016  g_adv=2.8872  d_loss=0.2336  val=4.049692  alpha=0.6191
+Epoch  76/400   recon=4.070820  g_adv=3.3953  d_loss=0.1442  val=4.120255  alpha=0.6087
+Epoch  77/400   recon=4.069953  g_adv=3.3567  d_loss=0.1474  val=4.122092  alpha=0.6338
+Epoch  78/400   recon=4.102581  g_adv=2.9903  d_loss=0.2307  val=4.131071  alpha=0.6557
+Epoch  79/400   recon=4.107769  g_adv=3.0012  d_loss=0.2036  val=4.097798  alpha=0.6597
+Epoch  80/400   recon=4.121340  g_adv=3.2149  d_loss=0.1855  val=4.124568  alpha=0.6583
+Epoch  81/400   recon=4.097104  g_adv=3.3077  d_loss=0.1415  val=4.129025  alpha=0.6645
+Epoch  82/400   recon=4.093066  g_adv=3.3171  d_loss=0.1417  val=4.074749  alpha=0.6724
+Epoch  83/400   recon=4.065925  g_adv=3.4672  d_loss=0.1078  val=4.084205  alpha=0.6927
+Epoch  84/400   recon=4.078133  g_adv=3.3458  d_loss=0.1170  val=4.095061  alpha=0.7119
+Epoch  85/400   recon=4.116757  g_adv=3.2445  d_loss=0.1546  val=4.095181  alpha=0.7141
+Epoch  86/400   recon=4.149480  g_adv=3.2877  d_loss=0.1842  val=4.106969  alpha=0.6640
+Epoch  87/400   recon=4.096699  g_adv=3.6713  d_loss=0.0983  val=4.100305  alpha=0.6853
+Epoch  88/400   recon=4.070124  g_adv=3.4800  d_loss=0.1003  val=4.078638  alpha=0.7265
+Epoch  89/400   recon=4.136179  g_adv=3.4255  d_loss=0.1402  val=4.142876  alpha=0.7330
+Epoch  90/400   recon=4.168932  g_adv=3.2623  d_loss=0.1747  val=4.195942  alpha=0.7250
+
+Early stopping at epoch 90
+
+Done. Best val loss: 3.824228
+Checkpoint: checkpoints/best_model.pt
+
+==============================
+  UNet-Adv-VC — Evaluation
+==============================
+Using cache found in /home/sepharfi/.cache/torch/hub/bshall_knn-vc_master
+/home/sepharfi/envs/myenv/lib/python3.11/site-packages/torch/nn/utils/weight_norm.py:144: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+Could not parse CUDA device string 'cuda': not enough values to unpack (expected 2, got 1). Falling back to device 0.
+Device: cuda
+Removing weight norm...
+[HiFiGAN] Generator loaded with 16,523,393 parameters.
+WavLM-Large loaded with 315,453,120 parameters.
+[HiFi-GAN] Using STOCK bshall/knn-vc HiFi-GAN (FORCE_STOCK_VOCODER env var set). Numbers in this run are not directly comparable to runs that used the CUCO-fine-tuned vocoder.
+[UNet-Adv-VC] Loaded: epoch=40  val_loss=3.824228  alpha=0.9945
+
+Evaluating on 5 test patients: ['0045', '0085', '0110', '0122', '0132']
+
+Loading ECAPA-TDNN...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0045.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0085.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0110.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0122.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0132.wav
+
+============================================================
+  UNet-Adv-VC — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0045      0.7303      0.7270   -0.0033
+        0085      0.7238      0.7228   -0.0009
+        0110      0.6513      0.7161   +0.0648
+        0122      0.7743      0.7275   -0.0468
+        0132      0.4736      0.6689   +0.1953
+  ----------------------------------------------
+        Mean      0.6707      0.7125   +0.0418
+         Std      0.1061      0.0222
+
+Evaluating on 23 training patients...
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0007.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0011.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0026.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0042.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0062.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0063.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0078.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0080.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0081.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0087.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0089.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0092.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0099.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0108.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0109.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0111.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0112.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0125.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0129.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0137.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0144.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0145.wav
+resample 44100 to 16000 in /home/sepharfi/projects/def-zshakeri/sepharfi/CUCO/data_final/Audios/Tonsill/Speech/1/Tonsill_ses1_speech_0147.wav
+
+============================================================
+  UNet-Adv-VC [TRAIN SET] — ECAPA Evaluation on Test Patients
+============================================================
+     Patient    Baseline   Converted     Delta
+  ----------------------------------------------
+        0007      0.6133      0.7688   +0.1556
+        0011      0.7222      0.8095   +0.0873
+        0026      0.6901      0.5712   -0.1189
+        0042      0.6307      0.8195   +0.1888
+        0062      0.5517      0.7750   +0.2233
+        0063      0.7034      0.8088   +0.1054
+        0078      0.4783      0.8106   +0.3322
+        0080      0.4544      0.7816   +0.3272
+        0081      0.6271      0.7891   +0.1621
+        0087      0.7405      0.8663   +0.1258
+        0089      0.6270      0.7697   +0.1426
+        0092      0.7645      0.7642   -0.0003
+        0099      0.7944      0.7773   -0.0171
+        0108      0.2687      0.8056   +0.5369
+        0109      0.7612      0.8385   +0.0772
+        0111      0.5979      0.6299   +0.0321
+        0112      0.7578      0.7119   -0.0460
+        0125      0.7551      0.7717   +0.0166
+        0129      0.7855      0.8874   +0.1019
+        0137      0.7005      0.8097   +0.1092
+        0144      0.6745      0.8095   +0.1350
+        0145      0.6467      0.8318   +0.1851
+        0147      0.8025      0.8450   +0.0425
+  ----------------------------------------------
+        Mean      0.6586      0.7849   +0.1263
+         Std      0.1248      0.0681
+
+Converted files saved to: /lustre06/project/6086959/sepharfi/VoiceConversion/Experiments/unet_adv_vc/scripts/../converted_test
+Done!
