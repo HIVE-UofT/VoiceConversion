@@ -1,6 +1,8 @@
-# Voice Conversion for Post-Tonsillectomy Speech
+# Voice Conversion for Post-Surgery Speech
 
 Reference-free voice conversion from pre-surgery to post-surgery speech on the CUCO dataset. Given only a patient's pre-surgery audio, predict and synthesise their post-surgery voice — no post-surgery audio of the target patient is used at inference. Pre-surgery audio is mapped to a predicted post-surgery feature representation, then vocoded back to waveform.
+
+The methods are condition-agnostic: the same architectures apply to any surgery that affects voice. The headline experiments in this report use **Tonsillectomy** (largest measurable voice change in CUCO, baseline pre↔post similarity 0.661); CUCO also contains Sept and Fess paired recordings, and `unet_vc_v2/` reports cross-surgery results showing that conversion utility scales with the size of the pre↔post domain gap. The work is positioned as a feasibility study on small-data post-surgical voice rehabilitation, not as a tonsillectomy-specific system.
 
 This is **not** standard zero-shot any-to-any voice conversion. Zero-shot VC assumes a reference utterance from the target speaker at inference; here we have none. The model must learn the surgical pre→post transformation from a small set of paired training patients and generalise to a new patient at inference, using only that patient's pre-surgery audio.
 
