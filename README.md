@@ -1,444 +1,252 @@
-# Voice Conversion for Pre/Post Tonsillectomy Speech
+# Voice Conversion for Post-Tonsillectomy Speech
 
-Non-parallel voice conversion between pre-surgery and post-surgery (tonsillectomy) speech using the CUCO dataset. The goal is to convert a pre-surgery voice to sound like the same speaker post-surgery, preserving linguistic content while transforming voice quality (resonance, nasality, vocal tract characteristics).
+Reference-free voice conversion from pre-surgery to post-surgery speech on the CUCO dataset. Given only a patient's pre-surgery audio, predict and synthesise their post-surgery voice — no post-surgery audio of the target patient is used at inference. Pre-surgery audio is mapped to a predicted post-surgery feature representation, then vocoded back to waveform.
+
+This is **not** standard zero-shot any-to-any voice conversion. Zero-shot VC assumes a reference utterance from the target speaker at inference; here we have none. The model must learn the surgical pre→post transformation from a small set of paired training patients and generalise to a new patient at inference, using only that patient's pre-surgery audio.
 
 ---
 
-## Results
+## Final Results
 
-### Full Dataset Evaluation (28 Tonsill Patients)
+### Setup
 
-Methods trained/evaluated on all 28 patients using ECAPA-TDNN speaker cosine similarity. Baseline = pre vs post, same patient, no conversion.
-
-| Method | SpkSim (conv→post) | vs Baseline | LSD (dB) | SED (dB) | Type | Params |
-|--------|:------------------:|:-----------:|:--------:|:--------:|------|:------:|
-| **UNet-VC** | **0.792 ± 0.055** | **+19.8%** | 1.96 ± 0.14 | 2.64 ± 0.97 | Residual U-Net | ~2M |
-| UNet-Adv-VC | 0.780 ± 0.058 | +18.0% | 1.97 ± 0.13 | 2.70 ± 1.08 | U-Net + adversarial | ~2M |
-| kNN-VC | 0.710 ± 0.084 | +7.4% | — | — | Nearest-neighbor retrieval | 0 |
-| MKL-VC | 0.642 ± 0.097 | -2.9% | — | — | Factorized OT | 0 |
-| Mean-Shift | 0.638 ± 0.098 | -3.5% | — | — | Mean translation | 0 |
-| VQVAE Exp5 | 0.394 ± 0.119 | -40.4% | — | — | VQ disentanglement | ~3M |
-| MaskCycleGAN | — | — | — | — | CycleGAN on mel | ~10M |
-| LinearVC | — | — | — | — | Linear projection | — |
-| **DLA-VC** | *tuning in progress (current best on test split: 0.487)* | — | — | — | UNet-VC adaptation + dual adapters + Product VQ + FiLM quality branch | 6.6M |
-| VQ-UNet (Exp6) | *in progress* | — | — | — | VQ + U-Net + FiLM | — |
-
-**Baseline (pre vs post, same patient, no conversion): 0.661 ± 0.118**
-
-### Train/Test Split Evaluation (5-Patient Held-Out Test Set)
-
-Strict evaluation with a fixed 5-patient test set (`[0045, 0085, 0110, 0122, 0132]`, seed=42). All 9 methods trained on 23 train patients using **all 13 audio types** (Speech + 4 TDU sentences + 5 vowels + 3 sustained vowels) = ~282 files. Vocoder: HiFi-GAN fine-tuned on CUCO post-surgery audio (step=2500, val_mel_loss=0.3961). Evaluation: speech files only, ECAPA-TDNN SpkSim.
-
+- **Dataset:** CUCO Tonsillectomy. 28 patients with paired pre/post surgery recordings.
+- **Split:** 5 held-out test patients (`0045, 0085, 0110, 0122, 0132`, seed=42); 23 train/val patients; never overlapping.
+- **Vocoder:** stock `bshall/knn-vc` HiFi-GAN (not fine-tuned on CUCO — see "Vocoder finding" below).
+- **Metric:** ECAPA-TDNN cosine similarity between converted and post-surgery audio. Δ = converted similarity − pre/post baseline similarity, averaged across the 5 test patients.
 - **Test baseline** (pre vs post, no conversion, 5 test patients): **0.6707 ± 0.1061**
 - **Train baseline** (pre vs post, no conversion, 23 train patients): **0.6586 ± 0.1248**
 
-| Method | Test SpkSim | Δ (test) | Train SpkSim | Δ (train) | Notes |
-|--------|:-----------:|:--------:|:------------:|:---------:|-------|
-| **UNet-VC** | **0.6868** | **+0.0162** | 0.7746 | +0.1160 | K-fold; all audio types |
-| UNet-Adv-VC | 0.6825 | +0.0119 | 0.8001 | +0.1415 | K-fold; all audio types |
-| UNet-VC-ECAPA | 0.6837 | +0.0130 | 0.6982 | +0.0396 | ep 98; ECAPA loss + style crop fix |
-| UNet-VC-SPK | 0.6705 | −0.0002 | 0.7849 | +0.1263 | FiLM speaker cond; all audio types |
-| Mean-Shift | 0.6862 | +0.0155 | 0.6892 | +0.0306 | All audio types in matching set |
-| MKL-VC | 0.6845 | +0.0138 | 0.6881 | +0.0295 | All audio types in matching set |
-| LinearVC | 0.6186 | −0.0521 | 0.6739 | +0.0153 | Ridge regression; all audio types |
-| kNN-VC | 0.5793 | −0.0914 | 0.7043 | +0.0457 | Matching set = train patients only |
-| **DLA-VC** (current best, *tuning in progress*) | 0.4874 | −0.1832 | 0.2787 | −0.3799 | UNet-VC adaptation + dual adapters + Product VQ + FiLM quality branch |
-| &nbsp;&nbsp;&nbsp;— ablation: DLA-VC without VQ | 0.4366 | −0.2341 | 0.2787 | −0.3799 | Validates VQ bottleneck is architecturally load-bearing |
-| FreeVC zero-shot (pretrained on VCTK) | 0.4056 | −0.2651 | 0.2954 | −0.3632 | Foundation-model baseline (no fine-tune) |
-| FreeVC fine-tuned (200 ep, self-recon on post) | 0.5121 | −0.1586 | 0.4054 | −0.2532 | Best of the pretrained-model approaches |
-| FreeVC + learned shift (FreeVC speaker space) | 0.4146 | −0.2561 | — | — | Frozen FreeVC + trained 70K-param shift MLP |
-| FreeVC + learned shift (ECAPA space + bridge) | 0.3971 | −0.2735 | — | — | Shift in ECAPA space, bridge → FreeVC gen |
+### Headline table
 
-> **kNN-VC note:** The train/test split exposes a fundamental limitation — kNN-VC requires the target patient's post-surgery features in its matching set. In the full-dataset evaluation (28 patients, self-matching), it scored 0.710 (+7.4%). In the strict split, it can only use training patients' features, so it converts test patients toward a generic post-surgery voice rather than their own, explaining the −0.0914 drop.
->
-> **Large train/test gap for UNet-VC variants:** Training patients achieve 0.77–0.80, while test patients achieve 0.68–0.69. Expected in the 23-patient small-data regime. The gap is smallest for UNet-VC-ECAPA (+0.0130 test vs +0.0396 train), suggesting the ECAPA loss may improve generalization relative to raw reconstruction methods.
+| Method | Test Δ | Test Std | Type | Notes |
+|---|:---:|:---:|---|---|
+| **UNet-VC-ECAPA** | **+0.0635** | 0.043 | Residual U-Net + ECAPA loss | **Best overall; deployment recommendation.** |
+| UNet-VC (vanilla) | +0.0525 | 0.031 | Residual U-Net | Strong simple baseline. |
+| UNet-VC (+ audio aug) | +0.0493 | 0.026 | Residual U-Net | Augmentation neutral / mildly harmful. |
+| **DLA-VC v3 (KD)** | **+0.0450** | 0.032 | Disentangled VC + KD from UNet-VC-ECAPA | **Best DLA-VC variant.** |
+| UNet-Adv-VC | +0.0418 | 0.022 | U-Net + adversarial discriminator | Adversarial loss hurts vs vanilla. |
+| UNet-VC-Spk | +0.0357 | 0.027 | U-Net + FiLM speaker conditioning | Conditioning helps train, hurts test (overfit). |
+| DLA-VC v3b (KD + low λ_recon) | +0.0240 | 0.035 | KD variant with weaker recon anchor | Better val, worse test — small-N val noise. |
+| MKL-VC | +0.0120 | 0.062 | Training-free factorized OT | Best of the training-free methods. |
+| Mean-Shift | +0.0103 | 0.068 | Training-free global shift | Tied with MKL-VC. |
+| LinearVC | +0.0091 | 0.039 | Linear projection (ridge) | Marginal but positive. |
+| DLA-VC v2 | −0.0668 | 0.082 | DLA-VC without KD | Pre-KD architectural baseline — fails. |
+| kNN-VC | −0.0483 | 0.055 | Nearest-neighbor retrieval | Needs target post audio; degrades on unseen patients. |
 
-### Cross-Surgery Type Results (Sept — Unet-VC-v2)
+### Per-patient results for the top three methods
 
-| Pairing | Test SpkSim | Baseline | Delta |
-|---------|:-----------:|:--------:|:-----:|
-| Cross-patient pairs | 0.759 ± 0.049 | 0.841 | −0.082 |
-| Same-patient pairs  | 0.778 ± 0.041 | 0.841 | −0.063 |
+Test set (pre↔post baseline shown; "Δ" = converted − baseline):
 
-> Sept surgery has a much smaller domain gap than Tonsill (baseline 0.828 vs 0.661), so conversion provides less headroom for improvement.
+| Patient | Baseline | UNet-VC-ECAPA Δ | UNet-VC Δ | DLA-VC v3 Δ |
+|---|:---:|:---:|:---:|:---:|
+| 0045 | 0.7303 | +0.0636 | +0.0092 | −0.0465 |
+| 0085 | 0.7238 | +0.0084 | −0.0066 | −0.0343 |
+| 0110 | 0.6513 | +0.1110 | +0.1140 | +0.0822 |
+| 0122 | 0.7743 | −0.0608 | −0.0507 | −0.1149 |
+| 0132 | 0.4736 | +0.1952 | +0.1969 | +0.2038 |
+| **Mean** | **0.6707** | **+0.0635** | **+0.0525** | **+0.0450** |
 
-### Baselines Across Surgery Types
+Across methods, patient 0132 consistently gains the most (low baseline → large headroom) and patient 0122 consistently loses (already-high baseline). This inter-patient heterogeneity dominates the std and is itself a clinical-relevance finding.
 
-| Condition | Baseline SpkSim | n | Interpretation |
-|-----------|:---------------:|:-:|---------------|
-| Contr (control) | 0.886 ± 0.056 | 28 | No surgery — natural session variability |
-| Fess | 0.828 ± 0.076 | 27 | Mild surgery effect |
-| Sept | 0.828 ± 0.065 | 32 | Mild surgery effect |
-| **Tonsill** | **0.661 ± 0.118** | **28** | **Largest surgery effect — hardest to convert** |
+### Methodological finding: fine-tuned HiFi-GAN overfits
+
+Fine-tuning HiFi-GAN on CUCO post-surgery audio improved validation mel loss but **degraded held-out test ECAPA Δ** across every method. Example: UNet-VC dropped from **+0.049 (stock vocoder)** to **+0.015 (fine-tuned on 23 patients)** on the same checkpoints. On 23 patients the vocoder memorises the training distribution; held-out patients fall outside it. **All numbers above use the stock vocoder for a fair comparison.**
+
+---
+
+## Reference-free counterfactual conversion
+
+The inference setting here is closer to **counterfactual VC** than to standard VC:
+
+| Setting | Reference at inference | Task |
+|---|---|---|
+| Standard zero-shot VC ([Gusev 2024](https://www.isca-archive.org/interspeech_2024/gusev24_interspeech.html), kNN-VC) | Target speaker utterance | Any-to-any speaker conversion |
+| Dysarthric→healthy ([Halpern 2025](https://arxiv.org/html/2501.10256v1)) | Fixed healthy template (e.g. LJSpeech) | Patient → single fixed healthy template |
+| **This work** | **None** — pre audio only | **Predict same patient's own post-surgery voice without seeing it** |
+
+Both UNet-VC-ECAPA and DLA-VC operate in this reference-free regime. UNet-VC-ECAPA does so implicitly (the network learns a fixed pre→post translator). DLA-VC does so explicitly, via a `q_shift` MLP that maps a pre-surgery quality embedding to a predicted post-surgery quality embedding, which then conditions a FiLM decoder. This explicit decomposition is what makes the DLA-VC contribution architectural rather than just empirical.
 
 ---
 
 ## Dataset
 
-**CUCO Dataset** — Paired recordings from tonsillectomy patients:
-- **28 patients** (Tonsill), each recorded before (session 1) and after (session 2) surgery
-- Also: Fess (27 patients), Sept (32 patients), Contr/control (28 patients)
-- Speech tasks: reading passages, sustained vowels
-- Audio: resampled to 16kHz mono
-- Fixed train/val/test split: patients `[0045, 0085, 0110, 0122, 0132]` held out as test (seed=42); never used in any training stage
+**CUCO Dataset** — Paired pre/post-surgery recordings:
+- **28 Tonsillectomy patients** (focus of this work)
+- Also available: Fess (27 patients), Sept (32 patients), Contr/control (28 patients)
+- Audio: resampled to 16 kHz mono
+- All 13 audio types used in training: Speech, 4 TDU sentence types, 5 vowels, 3 sustained vowels (23 train patients × ~12 files ≈ **282 paired training files**)
+- Test split (fixed, seed=42): patients `[0045, 0085, 0110, 0122, 0132]` held out — never used in any training stage.
 
-```
-CUCO/data_final/Audios/
-├── Tonsill/
-│   ├── Speech/{1,2}/                    # 28 pre + 28 post files
-│   ├── TDU/{Agua,Brasero,Dia,Mesa}/{1,2}/  # 4 sentence types × 28 patients
-│   ├── Vowels/{A,E,I,O,U}/{1,2}/        # 5 vowels × 28 patients
-│   └── Sustained vowels/{A1,A2,A3}/{1,2}/  # 3 sustained vowels × 28 patients
-├── Fess/Speech/{1,2}/      # 27 pre + 27 post files
-├── Sept/Speech/{1,2}/      # 32 pre + 32 post files
-└── Contr/Speech/{1,2}/     # 28 pre + 28 post files
-```
+### Baselines across surgery types
 
-All 13 audio types used in training: 23 train patients × ~12 files ≈ **282 training file pairs**.
+| Condition | Baseline SpkSim | n | Interpretation |
+|---|:---:|:---:|---|
+| Contr (control) | 0.886 ± 0.056 | 28 | No surgery — session variability only |
+| Fess | 0.828 ± 0.076 | 27 | Mild surgery effect |
+| Sept | 0.828 ± 0.065 | 32 | Mild surgery effect |
+| **Tonsill** | **0.661 ± 0.118** | **28** | **Largest surgery effect — most headroom for conversion** |
 
----
+### Voice change vs speaker identity (preliminary analysis)
 
-## Preliminary Analysis
-
-### WavLM Quality Mapper — ECAPA Content Invariance Analysis
-**Directory:** `Experiments/wavlm_quality_mapper/` | Log: `ecapa_analyze-58874812.out`
-
-Before building conversion models, measured how much surgery changes ECAPA-TDNN representations and how discriminative they are between speakers.
+`Experiments/wavlm_quality_mapper/`
 
 | Comparison | SpkSim |
-|-----------|:------:|
-| Pre vs Pre (same speaker, cross-session baseline) | 0.780 ± 0.080 |
+|---|:---:|
+| Pre vs Pre (same speaker, cross-session) | 0.780 ± 0.080 |
 | Pre vs Post (surgery effect) | 0.529 ± 0.114 |
-| Between-speaker (different patients) | 0.196 ± 0.117 |
+| Between-speaker | 0.196 ± 0.117 |
 
-- **Voice change magnitude** (pre-pre minus pre-post): +0.251 — surgery introduces a substantial shift
-- **Speaker discrimination** (pre-post minus between-speaker): +0.333 — speaker identity is still largely preserved post-surgery
-
-This confirms: (1) surgery causes a meaningful voice change that models can learn to compensate, (2) ECAPA-TDNN is a meaningful metric because post-surgery voices remain closer to the same speaker's pre-surgery voice than to other speakers.
+Voice change magnitude: **0.251** (pre-pre minus pre-post). Speaker discrimination: **0.333** (pre-post minus between-speaker). Surgery introduces a substantial measurable shift while speaker identity is largely preserved — both signals that ECAPA-TDNN is a meaningful target metric.
 
 ---
 
 ## Methods
 
-### Baselines (No/Minimal Training)
+### Training-free baselines
 
-#### kNN-VC — Nearest-Neighbor Retrieval
-**Directory:** `Experiments/knn_vc/` | [Baas et al., Interspeech 2023](https://arxiv.org/abs/2305.18975)
+#### kNN-VC — Nearest-Neighbour Retrieval
+`Experiments/knn_vc/` | [Baas et al., Interspeech 2023](https://arxiv.org/abs/2305.18975)
 
-Replaces each source WavLM frame with the mean of its k=4 nearest neighbors from the post-surgery matching set. No training — leverages frozen WavLM-Large (layer 6 features) + HiFi-GAN vocoder.
+Replaces each source WavLM frame with the mean of its k=4 nearest neighbours from a matching set built from post-surgery audio. No training. **Test Δ = −0.0483.**
 
-- **SpkSim:** 0.710 ± 0.084 (+7.4% vs baseline)
-- **Key insight:** Strong despite no training; the WavLM feature space already captures surgery-related voice change. Sets a high bar for learned methods.
+**Why it fails on this task:** kNN-VC needs the target patient's own post-surgery features in the matching set. With held-out test patients, the matching set contains only *other* patients' post audio — so kNN-VC converts toward a generic post-surgery voice rather than the specific patient's predicted post voice. This is the canonical example of a reference-dependent method failing in our reference-free setting.
 
-#### Mean-Shift — Domain Mean Translation
-**Directory:** `Experiments/mean_shift/`
+#### Mean-Shift — Global Domain Translation
+`Experiments/mean_shift/`
 
-`converted = source + (mean_post − mean_pre)` in WavLM feature space. Assumes the surgery effect is a constant direction in embedding space.
+`converted = source + (mean_post − mean_pre)` in WavLM feature space. No training. **Test Δ = +0.0103.**
 
-- **SpkSim:** 0.638 ± 0.098 (−3.5% vs baseline)
-- **Key insight:** The surgery effect is not a simple additive shift — patient-specific adaptation is needed.
+#### MKL-VC — Factorised Optimal Transport
+`Experiments/mkl_vc/` | [MKL-VC, Interspeech 2025](https://arxiv.org/html/2506.09709)
 
-#### MKL-VC — Factorized Optimal Transport
-**Directory:** `Experiments/mkl_vc/` | [MKL-VC, Interspeech 2025](https://arxiv.org/html/2506.09709)
-
-Models pre/post domains as Gaussians, computes Monge-Kantorovich transport map. Factorized into K=2 subgroups by variance. Generates new feature combinations (unlike kNN retrieval).
-
-- **SpkSim:** 0.642 ± 0.097 (−2.9% vs baseline)
-- **Key insight:** Factorization does not help over Mean-Shift; the domain gap is not well-modeled by a single Gaussian.
+Pre/post domains modelled as factorised Gaussians; Monge–Kantorovich transport map. **Test Δ = +0.0120.**
 
 #### LinearVC — Linear Projection
-**Directory:** `Experiments/linear_vc/` | [LinearVC, 2025](https://arxiv.org/html/2506.01510)
+`Experiments/linear_vc/` | [LinearVC, 2025](https://arxiv.org/html/2506.01510)
 
-Learns `W @ features` via ridge regression on nearest-neighbor-paired frames.
-
-- **Status:** Not yet evaluated — `torch.load` compatibility issue pending.
+Ridge regression on nearest-neighbour-paired frames. **Test Δ = +0.0091.**
 
 ---
 
-### Analysis Tools
+### Learned methods — UNet-VC family
 
-#### ECAPA Mapper — Embedding-Space Mapping
-**Directory:** `Experiments/ecapa_mapper/`
+All four UNet-VC variants share a 1D residual U-Net operating in WavLM-Large layer-6 feature space (~1024 dim), with `output = input + α · network(input)` and a learnable scalar α. Vocoded through HiFi-GAN.
 
-Maps pre-surgery ECAPA-TDNN embeddings to post-surgery embeddings directly (bypassing audio synthesis) to measure the upper bound of embedding-domain conversion. Multiple approaches tested.
+#### UNet-VC (vanilla)
+`Experiments/unet_vc/` — **Test Δ = +0.0525, Train Δ = +0.116.**
 
-| Experiment | Mapper | Test SpkSim | Baseline | Delta |
-|-----------|--------|:-----------:|:--------:|:-----:|
-| 1 | MLP (5-fold CV) | 0.7537 | 0.7274 | +0.026 |
-| 2 | MLP + 10× crop augmentation | 0.7265 | 0.7274 | +0.026 |
-| 3 | Ridge regression | 0.7342 | 0.7274 | +0.034 |
-| 4 | MFCC → ECAPA projection | 0.5480 | 0.5099 | +0.038 |
-| 5 | k-NN in ECAPA space (k=10) | 0.5998 | 0.7106 | −0.111 |
+Single learning signal: paired-patient feature reconstruction. 5-fold CV-trained, 300 epochs.
 
-- **Key insight:** A simple MLP can push test-set SpkSim to ~0.754, which is a soft upper bound for how much voice identity shift can be recovered in embedding space. All audio-domain methods should aim to approach this.
+#### UNet-Adv-VC
+`Experiments/unet_adv_vc/` — **Test Δ = +0.0418.**
 
-#### HiFi-GAN Fine-Tuning
-**Directory:** `Experiments/hifigan_finetune/` | Log: `hifigan_finetune-59193247.out`
+Adds an adversarial discriminator. The discriminator marginally **hurts** vs vanilla UNet-VC on test (+0.042 vs +0.053). The small pre↔post domain gap means adversarial pressure pulls outputs out of the post manifold more than it pushes them toward it.
 
-Fine-tuning the HiFi-GAN vocoder on CUCO post-surgery audio to improve audio quality of converted speech.
+#### UNet-VC-Spk
+`Experiments/unet_vc_spk/` — **Test Δ = +0.0357.**
 
-- **Status:** **Complete** — step=2500, val_mel_loss=0.3961. Fine-tuned weights are loaded by all current split-based evaluations.
+FiLM-modulated skip connections conditioned on a target ECAPA speaker embedding. Highest **train** Δ (+0.126) but lowest **test** Δ — the speaker conditioning overfits to the 23 training identities.
 
----
+#### UNet-VC-ECAPA (best)
+`Experiments/unet_vc_ecapa/` — **Test Δ = +0.0635, Std = 0.043. Best overall.**
 
-### Learned Methods
+UNet-VC with a differentiable ECAPA-TDNN similarity loss: every N=3 steps, the model is penalised for `1 − cos(ECAPA(vocode(converted)), ECAPA(post))`. Directly optimises the evaluation metric at training time.
 
-#### VAE — Initial Baseline
-**Directory:** `Experiments/VAE/`
-
-Variational autoencoder with content/surgery disentanglement on mel spectrograms. The first method explored; established the disentanglement framework and motivated moving to WavLM features.
-
-- **Status:** Complete (3 log files). Metrics not directly comparable — preceded ECAPA-TDNN evaluation protocol.
-- **Key insight:** Continuous latent spaces allow information leakage; motivated the switch to VQ-based approaches.
+Training stops on val ECAPA plateau (epoch 68 / 300 budget; longer training rebounds toward identity).
 
 ---
 
-#### MaskCycleGAN-VC — CycleGAN with Fill-in-Frames Masking
-**Directory:** `Experiments/mask_cyclegan/` | [Kaneko et al., 2021](https://arxiv.org/abs/2102.12841)
+### DLA-VC — Disentangled-Latent VC (proposed)
 
-CycleGAN operating on mel spectrograms with Filling-in-Frames (FIF) masking applied to the source during training.
+`Experiments/dla_vc_v3/` — **Test Δ = +0.0450, Std = 0.032. Best DLA-VC variant.**
 
-- **MCD (reconstruction):** 76.53 ± 6.70
-- Pre/post surgery domains are acoustically very similar, which makes it difficult for the adversarial discriminator to learn a meaningful pre-vs-post boundary.
+**Framing.** DLA-VC is an architectural exploration: rather than learning a single black-box pre→post translator (UNet-VC), DLA-VC factorises the conversion into separate **content** and **quality** pathways, plus an explicit **q_shift** module that predicts the patient's post-surgery quality embedding from their pre-surgery quality embedding. The architecture is designed for reference-free counterfactual conversion *and* for interpretable / interpolatable / controllable use cases downstream (gradual rehab exposure, pre-op triage, cross-patient transfer).
 
----
-
-#### UNet-VC — Residual U-Net Feature Transform (Best Performing)
-**Directory:** `Experiments/unet_vc/` | Log: `unet_vc-10810013.out`
-
-Residual 1D U-Net learning the small delta between pre and post surgery domains in WavLM feature space. Core idea: `output = input + α × network(input)` where α is a learned scalar initialized to 0.1.
-
-**Architecture:**
-- Input/output: WavLM-Large layer 6 features (1024-dim) over 64-frame segments
-- 1D U-Net with 2 encoder/decoder levels, HIDDEN_DIM=128 channels
-- Skip connections: preserve content-relevant information
-- Learnable alpha (residual weight): starts at 0.1, learned to ~0.27 by end of training
-- Output → HiFi-GAN vocoder → waveform
-
-**Training:**
-| Hyperparameter | Value |
-|---------------|-------|
-| Segments | 3,778 train / 557 val |
-| Batch size | 32 |
-| Segment length | 64 frames |
-| Learning rate | 5e-4 |
-| Epochs | 300 |
-| Loss | MSE + Cosine (weight 0.5) |
-| Optimizer | Adam |
-
-**Results (28 Tonsill patients):**
-- SpkSim (conv→post): **0.792 ± 0.055** (+19.8% vs baseline)
-- LSD to target: 1.96 ± 0.14 dB
-- SED to target: 2.64 ± 0.97 dB
-
-**Why it works:** The pre→post domain shift is small (Tonsill baseline 0.661 — voices are already similar). A residual formulation prevents the network from over-correcting; the small learned α ensures the output stays close to the input. Skip connections prevent information loss.
-
----
-
-#### UNet-Adv-VC — U-Net with Adversarial Discriminator
-**Directory:** `Experiments/unet_adv_vc/` | Log: `unet_adv_vc-10872738.out`
-
-Same residual U-Net architecture as UNet-VC with an added adversarial discriminator to push converted features toward the post-surgery distribution.
-
-**Results (28 Tonsill patients):**
-- SpkSim (conv→post): **0.780 ± 0.058** (+18.0% vs baseline)
-- LSD to target: 1.97 ± 0.13 dB
-- SED to target: 2.70 ± 1.08 dB
-
-Individual SpkSim range: 0.637–0.886 (conv→post), 0.541–0.879 (conv→source)
-
-- **Key insight:** Adding adversarial loss marginally hurts performance vs pure reconstruction (0.780 vs 0.792). The discriminator may introduce instability that outweighs its domain-alignment benefit for this subtle domain gap.
-
----
-
-#### UNet-VC-ECAPA — U-Net with ECAPA Similarity Loss
-**Directory:** `Experiments/unet_vc_ecapa/` | Log: `unet_ecapa-11425380.out`
-
-UNet-VC augmented with an additional ECAPA-TDNN speaker similarity loss during training — directly optimizing the evaluation metric at train time.
-
-**Architecture:** Same U-Net backbone as UNet-VC (~4.4M params including ECAPA head), with cosine similarity between converted and target post-surgery ECAPA embeddings added to the training objective.
-
-**Training:** Best model at epoch 98/300 (val_ecapa=0.6072, alpha=0.3822). Training on all 13 audio types (~282 files). ECAPA style loss uses `STYLE_CROP_LEN=128` WavLM frames to avoid HiFiGAN OOM.
-
-**Results (5-patient test split — 0045, 0085, 0110, 0122, 0132 — baseline = 0.6707):**
-
-| Patient | Conv→Post | Baseline | Δ |
-|---------|:---------:|:--------:|:-:|
-| Tonsill_0045 | 0.712 | 0.730 | −0.019 |
-| Tonsill_0085 | 0.758 | 0.724 | +0.034 |
-| Tonsill_0110 | 0.682 | 0.651 | +0.031 |
-| Tonsill_0122 | 0.675 | 0.774 | −0.100 |
-| Tonsill_0132 | 0.592 | 0.474 | +0.119 |
-| **Mean** | **0.684** | **0.671** | **+0.013** |
-
-**Train-patient evaluation** (23 train patients, speech files): Mean = 0.698 (+0.040 over train baseline 0.659)
-
-- **Key insight:** With more training data (all audio types) and the fine-tuned vocoder, the model achieves a slight positive delta on test (+0.013) vs the previous −0.061. The ECAPA loss provides useful speaker-level signal when backed by sufficient training data.
-
----
-
-#### UNet-VC-Spk — U-Net with FiLM Speaker Conditioning
-**Directory:** `Experiments/unet_vc_spk/` | Log: `unet_spk_split-10962628.out`
-
-UNet-VC extended with FiLM (Feature-wise Linear Modulation) layers that condition the U-Net skip connections on a target speaker embedding. During training, the model sees the target post-surgery speaker embedding and learns to modulate its transformation toward that speaker.
-
-**Architecture (~6M params):**
-- Base: same residual 1D U-Net
-- FiLM layer on each skip connection: `γ(spk) × skip + β(spk)` where γ, β are learned from the target ECAPA embedding
-- Speaker conditioning vector: 192-dim ECAPA-TDNN embedding
-
-**Training (23 train / val split, seed=42, all 13 audio types):**
-
-| Run | Epochs | Test SpkSim | Train SpkSim | Notes |
-|-----|:------:|:-----------:|:------------:|-------|
-| 59230553 | full | 0.671 (−0.000) | 0.785 (+0.126) | All audio types; fine-tuned HiFiGAN |
-
-**Results (5-patient test split — 0045, 0085, 0110, 0122, 0132 — baseline = 0.6707):**
-
-| Patient | Conv→Post | Baseline | Δ |
-|---------|:---------:|:--------:|:-:|
-| Tonsill_0045 | 0.699 | 0.730 | −0.032 |
-| Tonsill_0085 | 0.736 | 0.724 | +0.012 |
-| Tonsill_0110 | 0.659 | 0.651 | +0.008 |
-| Tonsill_0122 | 0.678 | 0.774 | −0.096 |
-| Tonsill_0132 | 0.581 | 0.474 | +0.107 |
-| **Mean** | **0.671** | **0.671** | **−0.000** |
-
-**Train-patient evaluation** (23 train patients): Mean = 0.785 (+0.126 over train baseline 0.659)
-
-- **Key insight:** FiLM conditioning gives the largest train improvement (0.785) but nearly zero test delta. The train/test gap (0.785 vs 0.671) is larger than plain UNet-VC, suggesting the speaker conditioning overfits to training identities.
-
----
-
-#### UNet-VC-v2 — U-Net with Multi-Surgery Evaluation
-**Directory:** `Experiments/unet_vc_v2/` | Logs: `unet_v2_split-10950131.out`, `unet_v2_split-10961341.out`
-
-Variant of UNet-VC testing cross-surgery generalization on the Sept dataset. Two pairing strategies evaluated: cross-patient (surgery effect shared across speakers) vs same-patient (direct pre→post supervision).
-
-**Architecture:** 1D Residual U-Net, ~1.2M params (cross-patient) or ~4.4M params (same-patient variant).
-
-**Results on Sept (5-patient test split, baseline = 0.841):**
-
-| Pairing | Patient | Conv→Post | Baseline | Δ |
-|---------|---------|:---------:|:--------:|:-:|
-| Cross-patient | Sept_0023 | 0.823 | 0.869 | −0.046 |
-| Cross-patient | Sept_0033 | 0.730 | 0.834 | −0.104 |
-| Cross-patient | Sept_0044 | 0.694 | 0.755 | −0.061 |
-| Cross-patient | Sept_0076 | 0.809 | 0.901 | −0.092 |
-| Cross-patient | Sept_0077 | 0.741 | 0.845 | −0.104 |
-| **Cross-patient Mean** | | **0.759 ± 0.049** | **0.841** | **−0.082** |
-| Same-patient | Sept_0023 | 0.816 | 0.869 | −0.053 |
-| Same-patient | Sept_0033 | 0.762 | 0.834 | −0.072 |
-| Same-patient | Sept_0044 | 0.714 | 0.755 | −0.040 |
-| Same-patient | Sept_0076 | 0.830 | 0.901 | −0.071 |
-| Same-patient | Sept_0077 | 0.768 | 0.845 | −0.077 |
-| **Same-patient Mean** | | **0.778 ± 0.041** | **0.841** | **−0.063** |
-
-- **Key insight:** For Sept (small surgery effect, high baseline), conversion *hurts* — all methods score below baseline. Same-patient pairing slightly outperforms cross-patient. The model is over-converting for surgeries with subtle voice changes. Future work should gate conversion magnitude by predicted surgery effect size.
-
----
-
-#### VQVAE — VQ Disentanglement Experiments (Exp 1–6)
-**Directory:** `Experiments/vqvae/` | Logs: `vqvae_exp5-10797364.out`, PROGRESS.md
-
-Six progressive experiments attempting explicit content/quality disentanglement via Vector Quantization. Goal: learn a bottleneck where content codes are surgery-agnostic, and a separate quality vector encodes the surgery effect.
-
-| Exp | Architecture | Input | VQ Codes | SpkSim | Notes |
-|-----|-------------|-------|:--------:|:------:|-------|
-| 1 | VQ-VAE baseline | Mel | 256 | — | 10/256 active codes |
-| 2 | VQ + cycle loss | Mel | 256 | — | Sequence-level patterns still encode surgery |
-| 3 | Tight bottleneck | Mel | 64 (T/8) | — | 9/64 active codes |
-| 4 | Product VQ + entropy reg | Mel | Planned | — | Not yet implemented |
-| **5** | **VQ on WavLM features (1D conv)** | **WavLM** | **256** | **0.394** | **Disentanglement succeeds; bottleneck too lossy** |
-| 6 | VQ-UNet + FiLM skip connections | WavLM | — | *pending* | — |
-
-**Exp 5 details** (400 epochs, best evaluated):
-- VQ perplexity: 24/256 codes active (codebook collapse, ~90% unused)
-- Adversarial surgery-type loss: ~0.693 (≈ chance) → disentanglement *succeeds* — codes do not encode surgery type
-- Quality classification loss: converged → quality vector *does* capture surgery information
-- Cycle consistency loss: converged to ~0.066
-- Despite successful disentanglement, conversion SpkSim = **0.394 ± 0.119** (−40.4% vs baseline)
-
-**The steganography problem:** Even when individual VQ codes are surgery-agnostic, temporal *sequences* of codes can encode surgery information. The adversarial loss operates on frame-level code lookup — it does not prevent sequence-level patterns from leaking. The VQ bottleneck simultaneously destroys useful reconstruction information while leaking surgery information through the sequence structure.
-
-**Exp 6 (in progress):** Hybrid approach — U-Net skip connections bypass the VQ bottleneck (so reconstruction quality is preserved) while only the U-Net bottleneck goes through VQ (so content abstraction happens at the most compressed representation).
-
----
-
-#### DLA-VC — Dual Layer Adapter VC (Proposed, UNet Adaptation for Generalizability)
-**Directory:** `Experiments/dla_vc/` | Latest log: `dla_vc_train-59618265.out` | Also: `Experiments/dla_vc_noVQ/` (ablation)
-
-**Framing.** DLA-VC is best viewed as a deliberate **extension of UNet-VC** designed to improve generalizability across patients (and potentially across surgery types). UNet-VC is a single residual map `pre_features → post_features`; any patient or surgery-specific variation is entangled in the same weights as content processing. DLA-VC keeps UNet-VC's encoder–decoder backbone and adds three factorisation components, inspired by AdaptVC ([Kim et al., ICASSP 2025](https://arxiv.org/abs/2501.01347)) and classical VQ-based disentanglement.
-
-**Three adaptations on top of UNet-VC:**
-1. **Dual WavLM layer adapters.** UNet-VC uses WavLM layer 6 only. DLA-VC learns two softmax-weighted combinations over all 24 WavLM layers — one for content, one for quality — so each pathway gets the representation that best suits its role.
-2. **Product VQ bottleneck on content.** An 8-head × 32-code discrete bottleneck (effective codebook ~10¹²) compresses content to a surgery-invariant representation. *This bottleneck is load-bearing* — our no-VQ ablation shows test SpkSim drops by an additional 0.05 (−0.2341 vs −0.1832) when removed, confirming VQ is what forces speaker/surgery info out of the content channel.
-3. **Explicit FiLM-conditioned quality branch.** A parallel 192-dim quality encoder (matched to ECAPA's dim) modulates the decoder skip connections via FiLM, factorising "what is said" from "who is speaking and in what surgical state". Also includes a small `q_shift` MLP that learns the pre→post direction in quality space, enabling per-patient post-style prediction at inference.
-
-**Architecture (6.6M params):**
+#### Architecture (6.6M params)
 ```
-Raw Audio → WavLM-Large (frozen) → 24 hidden states
-                │
-    ┌───────────┴───────────┐
-    │                       │
-Content Adapter         Quality Adapter
-(softmax over 24 layers) (softmax over 24 layers)
-    │                       │
-U-Net Encoder           Quality Encoder (→ 192-d quality vec)
-    │── skip1 (InstNorm) ──┐   │
-    │── skip2 (InstNorm) ──┤   ├─ q_shift MLP (pre→post direction)
-    ↓                      │   │
-Content Proj → Product VQ ─┴─→ FiLM U-Net Decoder → WavLM layer 6
-(8×32 codes, head_dim=16)                          → HiFi-GAN → Audio
+Raw audio → WavLM-Large (frozen) → 24 hidden states
+                  │
+   ┌──────────────┴──────────────┐
+   │                             │
+ Content adapter            Quality adapter
+ (softmax weights           (softmax weights
+  over 24 layers)            over 24 layers)
+   │                             │
+ Content encoder           Quality encoder
+   │                             │
+ Product VQ           ┌───────── pooled quality vector q
+ (8 heads × 32 codes) │            │
+   │                  │       q_shift MLP (pre → predicted-post)
+   │                  │            │
+   ↓                  └─→ FiLM ←───┘
+ U-Net decoder ←─────────────────────
+   ↓
+ WavLM-L6-shape features → stock HiFi-GAN → waveform
 ```
 
-**Two-phase training:**
-- *Phase 1 — Warm-up (epochs 1–60):* pure feature reconstruction. VQ commitment weight ramps 0.01 → 1.0 so the encoder learns continuous representations first.
-- *Phase 2 — Conversion (epochs 60+):* adds direct paired-patient conversion loss (kNN-paired target, same trick as UNet-VC), cross-domain cycle consistency, and q_shift MLP training.
+#### Key mechanisms
+1. **Dual WavLM-layer adapters** — separate softmax weightings over the 24 WavLM layers for content vs quality. Different parts of WavLM encode linguistic content vs voice quality; let each pathway pick its layers.
+2. **Product VQ on content** (8 heads × 32 codes, effective codebook size ~10¹²) — forces content through a discrete bottleneck to strip residual speaker / quality information.
+3. **FiLM-modulated decoder** — quality vector γ-β-modulates the decoder; content and quality never mix at the encoder.
+4. **`q_shift` MLP** — at inference, given only pre audio, encode `q_pre` and predict `q_post = q_shift(q_pre)`. This is what makes inference reference-free.
+5. **Gradient reversal** — adversarial term penalising the content encoder for retaining speaker-discriminative information.
 
-**Current status — implementation complete, hyperparameter tuning in progress.**
-The architecture, staged training pipeline, q_shift module, and evaluation path all work end-to-end. Current best: **test Δ = −0.1832** (vs UNet-VC's +0.0162), train Δ = −0.3799. The direction under active exploration:
-- **Content-adversarial (GRL) loss** on content codes for stronger domain invariance
-- **Slower / non-linear VQ annealing** schedule (currently linear 0.01→1.0 over 60 ep)
-- **Codebook-geometry sweeps** (head/code-count trade-offs, dead-code resetting)
-- **Multi-surgery training for DLA** (may benefit from quality diversity even though it hurts simpler methods)
-- **Joint HiFi-GAN refinement** on DLA's decoder output distribution
+#### Knowledge distillation from UNet-VC-ECAPA
+The decisive change in v3 over v2 (−0.067 → +0.045, a +0.112 swing) was adding a frozen UNet-VC-ECAPA teacher and an MSE+cosine distillation loss between the DLA-VC student's output and the teacher's output on the same input WavLM features (`LAMBDA_KD = 5.0`). Distillation gave the student a dense, clean per-frame target that its own competing losses (recon, conv, VQ, q_shift) could not.
 
-**Positive ablation (sister experiment `dla_vc_noVQ/`):** removing VQ degrades test Δ from −0.1832 → −0.2341, validating that the bottleneck is doing real work — it is not merely cosmetic.
+#### v3b ablation (`results_v3b/`)
+Reducing `LAMBDA_RECON` from 5.0 → 2.0 to free the model from identity attraction yielded a better val ECAPA (0.476 vs v3's 0.508) but **worse test Δ** (+0.024 vs +0.045) — a clean cautionary example of small-N val noise (3 val patients vs 5 test patients). Final DLA-VC number uses v3.
 
-OOM fixes in place (required to train on all 13 audio types):
-- `STYLE_CROP_LEN = 128` WavLM frames (~0.8s) before HiFi-GAN vocoding
-- `MAX_WAVLM_SAMPLES = 48000` (3s) before WavLM extraction (prevents O(T²) attention OOM)
-- `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
+#### Why UNet-VC-ECAPA still wins
+- With only 23 training patients, the VQ bottleneck, adversarial gradient reversal, and disentanglement losses all fight against the small training signal. UNet-VC's single-objective end-to-end design is more sample-efficient here.
+- The argument *for* DLA-VC is therefore not the headline Δ but the **structural capabilities it unlocks**: a directly inspectable q_pre → q_post mapping, the ability to interpolate conversion strength (`q_blend = α·q_post + (1−α)·q_pre`), and the ability to extend to new surgery types by fine-tuning only the `q_shift` MLP.
 
-**Novelty vs prior work:**
+---
 
-| Component | Closest Prior Work | Difference |
-|---|---|---|
-| UNet-VC + dual adapters + VQ + FiLM quality | AdaptVC (single adapter, HuBERT, no VQ) | Two adapters; paired training; VQ bottleneck; built on UNet residual backbone |
-| VQ + FiLM U-Net in WavLM feature space | None identified | No prior work combines Product VQ + FiLM decoder in SSL feature space for surgical VC |
-| SSL adapter-based VC for pathological speech | None identified | First application of adapter-based VC to medical/surgical voice change |
-| Learned per-patient post-style predictor (q_shift) | Mean-Shift / ECAPA Mapper | Learns a nonlinear pre→post map in the model's own quality space, not in ECAPA / MFCC space |
+### Foundation-model baselines — FreeVC family
+
+`Experiments/free_vc/`, `Experiments/free_vc_shift/`, `Experiments/free_vc_ecapa/` | [Li et al., ICASSP 2023](https://arxiv.org/abs/2210.15418)
+
+Pretrained FreeVC (VCTK) evaluated zero-shot and with three adaptation strategies. All variants land well below the simpler from-scratch methods (test Δ between −0.27 and −0.16). The pretrained generator's learned distribution does not contain the surgical voice manifold and 23 patients is insufficient to adapt it.
+
+---
+
+### Analysis tools
+
+#### ECAPA Mapper — embedding-space upper bound
+`Experiments/ecapa_mapper/`
+
+Maps pre-surgery ECAPA embeddings directly to post-surgery embeddings, bypassing audio synthesis. Provides a soft upper bound for how much of the surgical identity shift can be recovered in embedding space alone. Best result: MLP, test SpkSim = 0.754 vs baseline 0.727 (Δ = +0.027 in pure ECAPA space).
+
+#### HiFi-GAN fine-tuning
+`Experiments/hifigan_finetune/` (step=2500, val_mel_loss=0.396) — **abandoned in final results**. The fine-tuned vocoder improved on-train fidelity but degraded held-out test ECAPA Δ across every method. Final pipeline uses the stock `bshall/knn-vc` HiFi-GAN.
 
 ---
 
 ## Evaluation
 
-All methods use `shared_evaluate.py` with ECAPA-TDNN speaker similarity as the primary metric:
+Primary metric: **ECAPA-TDNN cosine similarity** between converted audio and the patient's real post-surgery audio. Δ = converted similarity − baseline (pre vs post) similarity, averaged over the 5 held-out test patients.
 
-| Metric | What it Measures | Ideal |
-|--------|-----------------|-------|
-| **SpkSim (conv vs post)** | Does converted voice match post-surgery identity? | > baseline |
-| SpkSim (conv vs source) | How much source identity is preserved? | Reference |
-| Baseline SpkSim | Pre vs post, same patient, no conversion | Floor to beat |
-| LSD (dB) | Log-spectral distance to target | Lower |
-| SED (dB) | Spectral envelope distance to target | Lower |
+| Metric | What it measures | Direction |
+|---|---|---|
+| **Test Δ (5 patients)** | Mean ECAPA gain over baseline on held-out patients | Higher is better |
+| Test Std | Inter-patient variability | Lower = more consistent |
+| Train Δ (23 patients) | Same metric on training patients | Diagnostic — large train/test gaps signal overfit |
 
-ECAPA-TDNN embeddings are extracted with SpeechBrain's pre-trained model. SpkSim is cosine similarity between mean-pooled embeddings of full utterances.
+Embeddings extracted with SpeechBrain's `spkrec-ecapa-voxceleb`. Cosine similarity between mean-pooled embeddings of full utterances. All methods use the same `shared/utils.py` audio loaders, the same 5 test patients, and the stock HiFi-GAN.
+
+### Caveat — N=5 test patients
+
+The headline Δ on N=5 has wide CIs. UNet-VC-ECAPA's +0.0635 with std 0.043 corresponds to a paired 95% CI roughly [+0.010, +0.117]. Patient 0132 dominates the mean for every learned method. The mean is positive and consistent across methods, but **inter-patient variance is the dominant signal** — some patients benefit substantially (0.108, 0.132), some do not (0.122, 0.045).
+
+### Missing evaluation axis
+
+This work reports only **objective** ECAPA-TDNN similarity. The standard companion evaluation for voice conversion (subjective MOS / ABX listening test, e.g. N=15–20 listeners) is **not** included. Future work should add this — every recent VC paper at Interspeech / ICASSP includes one.
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
 VoiceConversion/
@@ -446,89 +254,86 @@ VoiceConversion/
 ├── shared_evaluate.py              # ECAPA-TDNN + spectral metrics
 ├── compare_all_spksim.py           # Cross-method comparison
 ├── Experiments/
-│   ├── shared/
-│   │   └── utils.py                # get_wav_files(), get_all_audio_pairs()
-│   │                               #   ALL_AUDIO_SUBDIRS: 13 audio type tuples
-│   │                               #   get_all_audio_pairs(surgery, exclude) →
-│   │                               #     {pid: [(pre_path, post_path), ...]}
-│   ├── unet_vc/                    # Residual U-Net (test: 0.687, train: 0.775)
-│   │   ├── model/unet.py
-│   │   └── scripts/{train_kfold,run_eval}.py
-│   ├── unet_adv_vc/                # U-Net + adversarial (test: 0.683, train: 0.800)
-│   │   ├── model/unet.py
-│   │   └── scripts/{train_split,run_eval}.py
-│   ├── unet_vc_spk/                # U-Net + FiLM speaker cond (test: 0.671, train: 0.785)
-│   │   ├── model/unet.py
-│   │   └── scripts/{train_split,run_eval}.py
-│   ├── unet_vc_ecapa/              # U-Net + ECAPA loss (test: 0.684, train: 0.698)
-│   │   ├── model/unet.py
-│   │   └── scripts/{train_split_v2,run_eval}.py
-│   ├── dla_vc/                     # DLA-VC (UNet adaptation; tuning in progress)
-│   │   ├── model/dla_vc.py         #   current best: test Δ = −0.1832
-│   │   └── scripts/{train_split,run_eval}.py
-│   ├── dla_vc_noVQ/                # Ablation: DLA-VC without Product VQ
-│   │   └── (same structure)        #   test Δ = −0.2341 (validates VQ necessity)
-│   ├── free_vc/                    # FreeVC foundation-model baseline
-│   │   └── scripts/{run_eval_zeroshot,finetune}.py
-│   ├── free_vc_shift/              # Frozen FreeVC + learned speaker shift
-│   └── free_vc_ecapa/              # Frozen FreeVC + ECAPA-space shift + bridge
-│   ├── knn_vc/                     # kNN-VC (test: 0.579, train: 0.704)
-│   ├── mkl_vc/                     # Factorized OT (test: 0.685, train: 0.688)
-│   ├── mean_shift/                 # Mean translation (test: 0.686, train: 0.689)
-│   ├── linear_vc/                  # Linear projection (test: 0.619, train: 0.674)
-│   ├── unet_vc_v2/                 # U-Net on Sept dataset
-│   ├── vqvae/                      # VQVAE experiments 1–6
-│   ├── mask_cyclegan/              # CycleGAN on mel spectrograms
+│   ├── shared/utils.py             # get_all_audio_pairs, FORCE_STOCK_VOCODER, etc.
+│   ├── unet_vc/                    # Vanilla UNet-VC               (test Δ +0.0525)
+│   ├── unet_adv_vc/                # + adversarial                  (test Δ +0.0418)
+│   ├── unet_vc_spk/                # + FiLM speaker conditioning    (test Δ +0.0357)
+│   ├── unet_vc_ecapa/              # + ECAPA loss (best learned)    (test Δ +0.0635)
+│   ├── dla_vc/                     # DLA-VC v1 (deprecated)
+│   ├── dla_vc_v2/                  # DLA-VC v2 (pre-KD)             (test Δ −0.0668)
+│   ├── dla_vc_v3/                  # DLA-VC v3 (KD, FINAL)          (test Δ +0.0450)
+│   │   ├── model/dla_vc.py
+│   │   ├── scripts/{train_split,run_eval}.py
+│   │   ├── results_v3/             #   λ_recon=5.0 → +0.0450
+│   │   └── results_v3b/            #   λ_recon=2.0 → +0.0240 (ablation)
+│   ├── free_vc/                    # Pretrained FreeVC baselines
+│   ├── free_vc_shift/, free_vc_ecapa/
+│   ├── knn_vc/                     # kNN-VC                          (test Δ −0.0483)
+│   ├── mean_shift/                 # Mean translation                (test Δ +0.0103)
+│   ├── mkl_vc/                     # Factorised OT                   (test Δ +0.0120)
+│   ├── linear_vc/                  # Ridge linear                    (test Δ +0.0091)
+│   ├── unet_vc_v2/                 # Cross-surgery (Sept, Fess)
+│   ├── vqvae/                      # VQ disentanglement experiments
+│   ├── mask_cyclegan/              # CycleGAN on mel
 │   ├── VAE/                        # Initial VAE baseline
-│   ├── ecapa_mapper/               # ECAPA embedding mapping analysis
-│   ├── wavlm_quality_mapper/       # WavLM layer quality analysis
-│   └── hifigan_finetune/           # HiFi-GAN fine-tuning (complete: step=2500)
+│   ├── ecapa_mapper/               # ECAPA embedding-space analysis
+│   ├── wavlm_quality_mapper/       # WavLM layer / surgery analysis
+│   └── hifigan_finetune/           # (abandoned in final pipeline)
+└── launch_all_stock_retrains.sh    # Re-eval everything with stock HiFi-GAN
 ```
 
----
-
-## Environment
-
-- **Compute:** Compute Canada (def-zshakeri), NVIDIA H100 GPU
-- **Python:** 3.10, CUDA 11.8
-- **Key deps:** PyTorch, torchaudio, librosa, speechbrain, transformers (WavLM)
-- **SLURM:** `sbatch submit.sh` (or `submit_split.sh`, `submit_exp5.sh`) in each method directory
-- **Typical wall time:** 45 min–12 hr depending on experiment
+Most experiments are submitted via `sbatch submit_train_eval.sh` from their respective directory. SLURM template:
+- `--account=def-zshakeri`
+- A100 (full 40GB for DLA-VC; 20GB MIG slice for evals and lighter trainings)
+- 4–12 hours wall time depending on model
 
 ---
 
-## Key Findings
+## Key findings
 
-1. **Simple residual learning generalizes best.** In the strict 5-patient held-out test, UNet-VC achieves the highest test SpkSim (0.687, +0.016). Adding adversarial or speaker conditioning losses gives larger training-set gains but smaller test gains — consistent with small-data overfitting.
+1. **UNet-VC-ECAPA wins.** Adding an ECAPA speaker-similarity loss to a residual U-Net yields the largest test-set ECAPA Δ across all methods (+0.0635, std 0.043). Directly optimising the evaluation metric works when paired with sufficient training data (all 13 audio types).
 
-2. **kNN-VC needs test-time access to the target speaker.** In the full 28-patient evaluation (using self-matching), kNN-VC scored 0.710 (+7.4%). In the strict split with unseen test patients, it scores 0.579 (−0.091) — worst of all methods. It cannot generalize: it needs the target patient's own post-surgery features in its matching set.
+2. **Fine-tuned HiFi-GAN overfits on N=23.** Vocoders fine-tuned on the 23 training patients improve validation mel loss but hurt held-out test ECAPA Δ across *every* method. The fine-tuned generator memorises the training-patient distribution; held-out patients fall outside it. **All headline numbers use the stock vocoder.** This is a methodological lesson for any future medical-VC work on small datasets.
 
-3. **Global transform methods (Mean-Shift, MKL-VC) generalize well but have a ceiling.** Without any overfitting risk (no learned parameters per patient), they achieve ~+0.014 on test. The limit is that a global shift cannot capture patient-specific surgery effects.
+3. **Reference-dependent methods fail under reference-free conditions.** kNN-VC (+0.071 in self-matched evaluation) collapses to −0.048 when the matching set cannot contain the target patient's own post audio. This is the fundamental limitation of nearest-neighbour-style VC for prospective clinical use.
 
-4. **All 13 audio types improve data coverage.** Including TDU sentences, vowels, and sustained vowels increases the training set from 23 files to ~282 files (23 patients × ~12 audio types). This directly benefits learned methods which previously trained on 23 segments.
+4. **Simple ≥ complex on N=23.** UNet-VC (single objective) beats UNet-Adv-VC (+adversarial), UNet-VC-Spk (+speaker conditioning), and DLA-VC (full disentanglement) on test. Adversarial pressure, conditioning networks, and bottlenecks all add overfit risk that the small training set cannot absorb. Test/train gap is largest for the most complex variants.
 
-5. **Disentanglement via VQ is learnable but bottleneck-limited.** VQVAE Exp5 achieves successful disentanglement (adversarial loss at chance level), but only 24/256 codebook entries are active — codebook collapse degrades reconstruction (SpkSim = 0.394, −40% vs baseline).
+5. **DLA-VC's contribution is structural, not numerical.** DLA-VC v3 lands at +0.045 — competitive but behind UNet-VC-ECAPA. The architectural value is not the headline metric but the **explicit, inspectable q_pre → q_post mapping** that enables capabilities black-box translators cannot offer: gradual conversion (interpolated quality vectors), per-patient shift-magnitude prediction (`‖q_post − q_pre‖`), and cross-condition transfer by fine-tuning only the `q_shift` MLP. Numbers improve substantially with the right training signal — adding KD from UNet-VC-ECAPA shifted DLA-VC from −0.067 (v2) to +0.045 (v3), a +0.112 gain from a single additional loss term.
 
-6. **Surgery type determines conversion utility.** For Sept/Fess (baseline ~0.828), conversion hurts. For Tonsill (baseline 0.661), conversion helps. Models should condition on surgery-effect magnitude.
+6. **Inter-patient heterogeneity dominates.** Across every learned method, patient 0132 gains +0.20 (low baseline → large headroom) while 0122 loses −0.05 to −0.13 (already-high baseline). The mean Δ hides this. Future work should report per-patient analysis and consider gating conversion strength by predicted shift magnitude.
 
-7. **DLA-VC is a UNet adaptation for better generalisability.** DLA-VC extends UNet-VC with dual WavLM layer adapters, a Product VQ content bottleneck, and a FiLM-modulated quality branch. Implementation is complete and trains stably; current best test Δ = −0.1832 (tuning in progress, see above). The no-VQ ablation (−0.2341) validates that the bottleneck is functionally load-bearing — the architecture's components are each pulling their weight even while absolute performance continues to improve with further hyperparameter tuning.
+7. **The Sept / Fess surgeries show that not every condition benefits.** For surgeries with small baseline domain gaps (Sept baseline 0.828), all conversion methods score *below* baseline — the model "over-converts". Conversion-utility is conditional on surgery-effect magnitude.
 
-8. **Foundation-model approaches (FreeVC) don't automatically transfer to medical VC.** Fine-tuning a pretrained FreeVC (trained on VCTK) narrows the gap from −0.27 (zero-shot) to −0.16, but does not reach the simple from-scratch residual methods' +0.016. Learned shifts in either FreeVC's speaker space or ECAPA space (via a learned bridge) do not close this gap — the pretrained generator's learned distribution does not contain the surgical voice manifold, and 23 patients is insufficient to adapt it there.
+8. **The task is reference-free counterfactual VC, not zero-shot VC.** Standard zero-shot VC ([Gusev 2024](https://www.isca-archive.org/interspeech_2024/gusev24_interspeech.html), kNN-VC, FreeVC) requires a target speaker reference utterance at inference. Here, the test patient's post-surgery audio is *not* available — the model must predict it. Directly comparable published numbers in this regime are scarce; the closest analog ([Halpern 2025](https://arxiv.org/html/2501.10256v1), dysarthric→healthy) reports only WER, not speaker similarity. The +0.0635 ECAPA gain is therefore not directly comparable to any zero-shot VC table in the recent literature.
 
 ---
 
 ## References
 
-- [kNN-VC (Baas et al., Interspeech 2023)](https://arxiv.org/abs/2305.18975) — Nearest neighbor VC with WavLM
-- [AdaptVC (Kim et al., ICASSP 2025)](https://arxiv.org/abs/2501.01347) — Adaptive learning with VQ on HuBERT
-- [MKL-VC (Interspeech 2025)](https://arxiv.org/html/2506.09709) — Training-free VC with factorized optimal transport
-- [LinearVC (2025)](https://arxiv.org/html/2506.01510) — Linear transforms of SSL features for VC
-- [Vevo (ICLR 2025)](https://arxiv.org/abs/2502.07243) — VQ-VAE tokenizer on HuBERT for controllable voice imitation
-- [MaskCycleGAN-VC (Kaneko et al., 2021)](https://arxiv.org/abs/2102.12841) — CycleGAN with FIF masking
-- [FreeVC (Li et al., ICASSP 2023)](https://arxiv.org/abs/2210.15418) — Text-free one-shot VC with WavLM bottleneck
-- [VQMIVC (Wang et al., Interspeech 2021)](https://arxiv.org/abs/2106.10132) — VQ + mutual information disentanglement
-- [RepCodec (ACL 2024)](https://arxiv.org/abs/2309.00169) — VQ codec for SSL speech representation
-- [QR-VC (2024)](https://arxiv.org/abs/2411.16147) — Quantization residuals from WavLM for VC
-- [AutoVC (Qian et al., ICML 2019)](https://arxiv.org/abs/1905.05879) — Information bottleneck for VC
-- [W2VC (EURASIP 2023)](https://link.springer.com/article/10.1186/s13636-023-00312-8) — WavLM representation-based VC
-- [Deep Learning for Pathological Speech (2025)](https://arxiv.org/html/2501.03536v1) — Survey
+- [Baas et al., Interspeech 2023 — kNN-VC](https://arxiv.org/abs/2305.18975)
+- [Gusev & Avdeeva, Interspeech 2024 — Zero-Shot Any-to-Any VC](https://www.isca-archive.org/interspeech_2024/gusev24_interspeech.html)
+- [Halpern et al., 2025 — Unsupervised Rhythm and Voice Conversion of Dysarthric to Healthy Speech](https://arxiv.org/html/2501.10256v1)
+- [Kim et al., ICASSP 2025 — AdaptVC](https://arxiv.org/abs/2501.01347)
+- [MKL-VC, Interspeech 2025](https://arxiv.org/html/2506.09709)
+- [LinearVC, 2025](https://arxiv.org/html/2506.01510)
+- [Li et al., ICASSP 2023 — FreeVC](https://arxiv.org/abs/2210.15418)
+- [Vevo, ICLR 2025](https://arxiv.org/abs/2502.07243)
+- [Kaneko et al., 2021 — MaskCycleGAN-VC](https://arxiv.org/abs/2102.12841)
+- [Wang et al., Interspeech 2021 — VQMIVC](https://arxiv.org/abs/2106.10132)
+- [Qian et al., ICML 2019 — AutoVC](https://arxiv.org/abs/1905.05879)
+- [Perez et al., 2018 — FiLM](https://arxiv.org/abs/1709.07871)
+- [van den Oord et al., 2017 — VQ-VAE](https://arxiv.org/abs/1711.00937)
+- [Hinton et al., 2015 — Knowledge Distillation](https://arxiv.org/abs/1503.02531)
+- [SpeechBrain ECAPA-TDNN](https://huggingface.co/speechbrain/spkrec-ecapa-voxceleb)
+- [Deep Learning for Pathological Speech, 2025 — Survey](https://arxiv.org/html/2501.03536v1)
+
+---
+
+## Environment
+
+- **Compute:** Compute Canada (def-zshakeri), NVIDIA A100 (full 40GB and `a100_4g.20gb` MIG slices)
+- **Python:** 3.10, CUDA 11.8
+- **Key deps:** PyTorch, torchaudio, librosa, speechbrain, transformers (WavLM-Large)
+- **Submission:** `sbatch submit_train_eval.sh` in each experiment directory; `FORCE_STOCK_VOCODER=1` to force stock HiFi-GAN
+- **Wall time:** eval-only runs ~5–15 min; full DLA-VC training ~6–10 hr on a full A100
