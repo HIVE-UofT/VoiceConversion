@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=dla_vc_v3_reeval
 #SBATCH --account=def-zshakeri
-#SBATCH --gres=gpu:a100_4g.20gb:1
+#SBATCH --gres=gpu:a100_3g.20gb:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=48G
 #SBATCH --time=01:00:00
